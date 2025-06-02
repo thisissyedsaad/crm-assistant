@@ -31,8 +31,8 @@
             <i class="fa fa-angle-right"></i>
           </a>
           <ul class="treeview-menu">
-            <li><a href="customers.html">Customer List</a></li>
-            <li><a href="customer-filters.html">Filter Customers</a></li>
+            <li><a href="{{ route('admin.customers.index') }}">Customer List</a></li>
+            <!-- <li><a href="customer-filters.html">Filter Customers</a></li> -->
           </ul>
         </li>
 
@@ -43,8 +43,8 @@
             <i class="fa fa-angle-right"></i>
           </a>
           <ul class="treeview-menu">
-            <li><a href="orders.html">All Orders</a></li>
-            <li><a href="orders-filter.html">Filtered Orders</a></li>
+            <li><a href="{{ route('admin.orders.index') }}">All Orders</a></li>
+            <!-- <li><a href="orders-filter.html">Filtered Orders</a></li> -->
           </ul>
         </li>
 
