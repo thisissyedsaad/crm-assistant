@@ -85,12 +85,8 @@
                                                 <a class="fw-bold" href="{{ route('password.request') }}">Forgot Password?</a>
                                             @endif
                                         </div>
-                                        <div class="text-center mt-2">
-                                            <span class="me-1">Don't have an account?</span>
-                                            <a class="fw-bold" href="{{ route('register') }}">Sign up</a>
-                                        </div> -->
+                                         -->
                                     </form>
-
                                 </div>
                             </div>
                         </div>
