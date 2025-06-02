@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,10 +35,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin/users')->group(function () {
-    Route::get('/', [UserManagementController::class, 'index'])->name('admin.users.index');
-    Route::get('/create', [UserManagementController::class, 'create'])->name('admin.users.create');
-    Route::post('/', [UserManagementController::class, 'store'])->name('admin.users.store');
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('users', UserController::class);
 });
+
 
 require __DIR__.'/auth.php';

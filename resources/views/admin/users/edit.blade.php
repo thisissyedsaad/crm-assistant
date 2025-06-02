@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Users Management')
+@section('title', 'Edit User')
 
 @section('content')
 <div class="main-content introduction-farm">
@@ -11,7 +11,7 @@
                     <div class="card">
                         <div class="card-body card-breadcrumb">
                                 <div class="page-title-box d-flex align-items-center justify-content-between">
-                                        <h4 class="mb-0">Create New User </h4>
+                                        <h4 class="mb-0">Edit User </h4>
                                         <div class="page-title-right">
                                         <a href="{{ route('admin.users.index') }}" class="btn btn-primary btn-sm">All Users</a>
                                         </div>
@@ -24,11 +24,11 @@
                     <div class="card card-h-100">
                         <div class="card-body">
                             <!-- <div class="card-title d-flex justify-content-between align-items-center">
-                            <h4>New User Form</h4>
+                            <h4>Edit User Form</h4>
                             <a href="{{ route('admin.users.index') }}" class="btn btn-primary btn-sm">All Users</a>
                             </div> -->
 
-                            <!-- <h4 class="card-title">New User Form</h4> -->
+                            <!-- <h4 class="card-title">Edit User Form</h4> -->
 
                             @if ($errors->any())
                                 <div class="alert alert-danger">
@@ -40,43 +40,35 @@
                                 </div>
                             @endif
 
-                            <form method="POST" action="{{ route('admin.users.store') }}">
+                            <!-- Note the method PUT for update -->
+                            <form method="POST" action="{{ route('admin.users.update', $user->id) }}">
                                 @csrf
+                                @method('PUT')
 
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Full Name</label>
-                                    <input type="text" name="name" class="form-control" id="name" value="{{ old('name') }}" required>
+                                    <input type="text" name="name" class="form-control" id="name" 
+                                        value="{{ old('name', $user->name) }}" required>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" name="email" class="form-control" id="email" value="{{ old('email') }}" required>
+                                    <input type="email" name="email" class="form-control" id="email" value="{{ old('email', $user->email) }}" readonly disabled>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="role" class="form-label">Role</label>
                                     <select name="role" id="role" class="form-select" required>
                                         <option value="">-- Select Role --</option>
-                                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                        <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>Staff</option>
+                                        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                                        <option value="staff" {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}>Staff</option>
                                     </select>
                                 </div>
 
-                                <!-- <div class="mb-3">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" name="password" class="form-control" id="password" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="password_confirmation" class="form-label">Confirm Password</label>
-                                    <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" required>
-                                </div> -->
-
-
                                 <div class="mb-3 position-relative">
-                                    <label for="password" class="form-label">Password</label>
+                                    <label for="password" class="form-label">Password <small>(Leave blank if you don't want to change)</small></label>
                                     <div class="input-group">
-                                        <input type="password" name="password" class="form-control" id="password" required>
+                                        <input type="password" name="password" class="form-control" id="password" autocomplete="new-password">
                                         <button type="button" class="btn btn-outline-secondary toggle-password" data-target="password">
                                             <i class="bi bi-eye" id="icon-password"></i>
                                         </button>
@@ -86,15 +78,14 @@
                                 <div class="mb-3 position-relative">
                                     <label for="password_confirmation" class="form-label">Confirm Password</label>
                                     <div class="input-group">
-                                        <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" required>
+                                        <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" autocomplete="new-password">
                                         <button type="button" class="btn btn-outline-secondary toggle-password" data-target="password_confirmation">
                                             <i class="bi bi-eye" id="icon-password_confirmation"></i>
                                         </button>
                                     </div>
                                 </div>                                
-                                
 
-                                <button type="submit" class="btn btn-primary w-md">Create User</button>
+                                <button type="submit" class="btn btn-primary w-md">Update User</button>
                             </form>
 
                         </div>
@@ -109,7 +100,7 @@
 
 @push('scripts')
 <script>
-    // For Password eye view 
+    // Password eye toggle script same as create form
     document.querySelectorAll('.toggle-password').forEach(function(button) {
         button.addEventListener('click', function() {
             const targetId = this.getAttribute('data-target');
@@ -127,7 +118,5 @@
             }
         });
     });
-    // For Password eye view 
 </script>
 @endpush
-

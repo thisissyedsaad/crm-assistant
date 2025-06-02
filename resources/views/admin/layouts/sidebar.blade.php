@@ -19,7 +19,7 @@
             <i class="fa fa-angle-right"></i>
           </a>
           <ul class="treeview-menu">
-            <li><a href="users-list.html">All Users</a></li>
+            <li><a href="{{ route('admin.users.index') }}">All Users</a></li>
             <li><a href="{{ route('admin.users.create') }}">Add New User</a></li>
           </ul>
         </li>

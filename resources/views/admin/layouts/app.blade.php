@@ -16,6 +16,8 @@
 
     <!-- Master Stylesheet [If you remove this CSS file, your file will be broken undoubtedly.] -->
     <link rel="stylesheet" href="{{ asset('assets/admin/style.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    @stack('links')
   </head>
 
   <body>
@@ -300,5 +302,8 @@
     <!-- <script src="{{ asset('assets/admin/js/intro.min.js') }}"></script> -->
     <script src="{{ asset('assets/admin/js/dashboard-custom.js') }}"></script>
     <!-- <script src="{{ asset('assets/admin/js/intro-active.js') }}"></script> -->
+
+    @stack('scripts')
+
   </body>
 </html>
