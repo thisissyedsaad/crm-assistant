@@ -10,12 +10,13 @@
         <li><a href="{{ route('dashboard') }}"><i class="bx bx-home-heart"></i> Dashboard </a></li>
 
         <li class="menu-header-title">CRM Modules</li>
-
+        <li><a href="{{ route('admin.customers.index') }}"><i class="bx bx-group"></i> Customer Overview</a></li>
+        <li><a href="{{ route('admin.orders.index') }}"><i class="bx bxs-cart"></i> Orders Overview</a></li>
         @if (auth()->user()->role === 'admin')
         <li class="treeview">
           <a href="javascript:void(0)">
             <i class="bx bx-user-circle"></i>
-            <span>Users</span>
+            <span>User Management</span>
             <i class="fa fa-angle-right"></i>
           </a>
           <ul class="treeview-menu">
@@ -24,6 +25,7 @@
           </ul>
         </li>
         @endif
+<!--         
         <li class="treeview">
           <a href="javascript:void(0)">
             <i class="bx bx-group"></i>
@@ -32,7 +34,6 @@
           </a>
           <ul class="treeview-menu">
             <li><a href="{{ route('admin.customers.index') }}">Customer List</a></li>
-            <!-- <li><a href="customer-filters.html">Filter Customers</a></li> -->
           </ul>
         </li>
 
@@ -44,9 +45,8 @@
           </a>
           <ul class="treeview-menu">
             <li><a href="{{ route('admin.orders.index') }}">All Orders</a></li>
-            <!-- <li><a href="orders-filter.html">Filtered Orders</a></li> -->
           </ul>
-        </li>
+        </li> -->
 
         <!-- <li class="menu-header-title">Account</li>
         <li>
