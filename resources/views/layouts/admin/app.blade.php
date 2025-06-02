@@ -151,7 +151,7 @@
         <!-- Desktop Logo -->
         <div class="flapt-logo">
           <p class="side-logo"><a href="{{ route('login') }}">
-            CRM Assistant
+            CRM
             <!-- 
               <img
               class="desktop-logo"
