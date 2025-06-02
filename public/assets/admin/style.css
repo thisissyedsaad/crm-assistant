@@ -1,36 +1,3 @@
-/* -------------------------------------
-[Master Stylesheet]
-
-Template Name: Laxom- Bootstrap Admin Template
-Author: Theme-life
-Version: v1.0.0
-
-[Table of Contents]  
-    * CSS Tables
-        + Reboot CSS
-        + Prelaoder Css
-        + Bootstraping CSS
-        + Dashboard Area CSS
-        + Chat Box CSS
-        + Account CSS
-        + Inbox CSS
-        + Inbox - 2 CSS
-        + Email View CSS
-        + Chat Box CSS
-        + Calendar CSS
-        + Form Wizard CSS
-        + Data Table CSS
-        + Basic Table CSS
-        + Timeline CSS
-        + Contact area CSS
-        + Accordion CSS
-        + eCommerce CSS
-        + Authentication CSS
-        + Profile Area CSS
-        + Core CSS
-        + All Responsive CSS
-------------------------------------- */
-
 /* Import Fonts & CSS Files */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
@@ -8024,4 +7991,14 @@ label {
   .follow--btn-area button {
     font-size: 11px;
   }
+}
+
+
+
+/* Customize  */
+
+.side-logo > a {
+    font-size: 26px;
+    color: #fff;
+    text-align: center !important;
 }
