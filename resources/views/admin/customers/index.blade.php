@@ -116,7 +116,7 @@
                         render: function(data, type, row) {
                                 return `<a href="/admin/customers/${row.id}">${data ?? 'N/A'}</a>`; 
                         }
-                    },
+                    },  
                     { data: 'address', name: 'address' },
                     { data: 'industry', name: 'industry' }
                 //     { data: 'numberOfOrders', name: 'numberOfOrders', orderable: false, searchable: false }

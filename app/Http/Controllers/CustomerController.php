@@ -67,9 +67,9 @@ class CustomerController extends Controller
                         'createdAt' => Carbon::parse($row['createdAt'])->format('d-m-Y H:i'),
                         'customerNo' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['customerNo'] ?? 'N/A') . '</a>',
                         'companyName' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['companyName'] ?? 'N/A') . '</a>',
-                        'address' => $row['attributes']['businessAddress']['address'] ?? 'N/A',
-                        // 'industry' => $row['attributes']['additionalField1'] ?? 'N/A',
-                        'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['CSD Instant Quote', 'Quote', 'N/A']) ? '' : $row['attributes']['additionalField1'],
+                        // 'address' => $row['attributes']['businessAddress']['address'] ?? '-',
+                        'address' => in_array($row['attributes']['businessAddress']['address'] ?? 'N/A', ['', 'N/A']) ? '-' : $row['attributes']['businessAddress']['address'],
+                        'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote','Aircall SDT']) ? '-' : $row['attributes']['additionalField1'],
                         'numberOfOrders' => rand(0, 100), // Replace with actual logic
                     ];
                 });
