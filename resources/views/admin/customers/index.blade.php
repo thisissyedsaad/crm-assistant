@@ -100,7 +100,7 @@
                         // DataTables automatically adds 'start', 'length', 'search[value]', 'order[0][column]', etc.
                     }
                 },
-                pageLength: 100, // Show 50 results per page (from the 100 fetched)
+                pageLength: 25, // Show 50 results per page (from the 100 fetched)
                 columns: [
                     { data: 'createdAt', name: 'createdAt' },
                     { 

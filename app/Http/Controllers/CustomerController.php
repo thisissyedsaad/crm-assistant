@@ -25,11 +25,11 @@ class CustomerController extends Controller
                 // DataTables parameters
                 $draw = $request->input('draw', 1);
                 $start = $request->input('start', 0);
-                $length = $request->input('length', 100);
+                $length = $request->input('length', 25);
                 $searchValue = $request->input('search.value', '');
 
                 // Calculate API page (API uses 1-based indexing)
-                $apiPage = floor($start / 100) + 1;
+                $apiPage = floor($start / 25) + 1;
 
                 $apiQuery = ['page' => $apiPage];
 
@@ -67,7 +67,6 @@ class CustomerController extends Controller
                         'createdAt' => Carbon::parse($row['createdAt'])->format('d-m-Y H:i'),
                         'customerNo' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['customerNo'] ?? 'N/A') . '</a>',
                         'companyName' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['companyName'] ?? 'N/A') . '</a>',
-                        // 'address' => $row['attributes']['businessAddress']['address'] ?? '-',
                         'address' => in_array($row['attributes']['businessAddress']['address'] ?? 'N/A', ['', 'N/A']) ? '-' : $row['attributes']['businessAddress']['address'],
                         'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote','Aircall SDT']) ? '-' : $row['attributes']['additionalField1'],
                         'numberOfOrders' => rand(0, 100), // Replace with actual logic
