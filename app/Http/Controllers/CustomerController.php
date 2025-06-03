@@ -2,38 +2,112 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use GuzzleHttp\Client;
+use Carbon\Carbon;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $client = new Client();
-        $apiUrl = env('TRANSPORT_API_URL');
-        $apiKey = env('TRANSPORT_API_KEY');
+        if ($request->ajax()) {
+            try {
+                $client = new Client();
+                $apiUrl = env('TRANSPORT_API_URL'); 
+                $apiKey = env('TRANSPORT_API_KEY');
 
-        // Fetch all orders from API with optional date filter
-        $response = $client->get($apiUrl . 'customers', [
-            'headers' => [
-                'Authorization' => 'Basic ' . $apiKey,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ],
-            // Optional filter; you can dynamically pass today's date
-            'query' => [
-                'filter[createdAt][gte]' => Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s'),
-            ],
-        ]);
+                // DataTables parameters
+                $draw = $request->input('draw', 1);
+                $start = $request->input('start', 0);
+                $length = $request->input('length', 100);
+                $searchValue = $request->input('search.value', '');
 
-        $body = $response->getBody()->getContents();
-        $data = json_decode($body, true);
-        $customers = collect($data['data'] ?? []);
-        return view('admin.customers.index', compact('customers'));
+                // Calculate API page (API uses 1-based indexing)
+                $apiPage = floor($start / 100) + 1;
+
+                $apiQuery = ['page' => $apiPage];
+
+                // Date Range Filtering
+                if ($request->filled('fromDate')) {
+                    $apiQuery['filter[createdAt][gte]'] = Carbon::parse($request->input('fromDate'))->startOfDay()->format('Y-m-d\TH:i:s');
+                }
+                if ($request->filled('toDate')) {
+                    $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
+                }
+                if (!$request->filled('fromDate') && !$request->filled('toDate')) {
+                    $apiQuery['filter[createdAt][gte]'] = Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s');
+                }
+
+                Log::info('API Request - Page: ' . $apiPage . ', Start: ' . $start . ', Length: ' . $length);
+                Log::info('API Query Parameters:', $apiQuery);
+
+                $response = $client->get($apiUrl . 'customers', [
+                    'headers' => [
+                        'Authorization' => 'Basic ' . $apiKey,
+                        'Content-Type'  => 'application/json',
+                        'Accept'        => 'application/json',
+                    ],
+                    'query' => $apiQuery,
+                ]);
+
+                $res = json_decode($response->getBody()->getContents(), true);
+                $customers = collect($res['data'] ?? []);
+                $meta = $res['meta'] ?? [];
+
+                // Transform data
+                $transformedData = $customers->map(function($row) {
+                    return [
+                        'id' => $row['id'] ?? null,
+                        'createdAt' => Carbon::parse($row['createdAt'])->format('Y-m-d H:i:s'),
+                        'customerNo' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['customerNo'] ?? 'N/A') . '</a>',
+                        'companyName' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['companyName'] ?? 'N/A') . '</a>',
+                        'address' => $row['attributes']['businessAddress']['address'] ?? 'N/A',
+                        'industry' => $row['attributes']['additionalField1'] ?? 'N/A',
+                        'numberOfOrders' => rand(0, 100), // Replace with actual logic
+                    ];
+                });
+
+                // Apply search filter if provided
+                if (!empty($searchValue)) {
+                    $transformedData = $transformedData->filter(function($item) use ($searchValue) {
+                        $searchLower = strtolower($searchValue);
+                        // Remove HTML tags for searching
+                        $customerNo = strip_tags($item['customerNo']);
+                        $companyName = strip_tags($item['companyName']);
+                        
+                        return str_contains(strtolower($companyName), $searchLower) ||
+                            str_contains(strtolower($customerNo), $searchLower) ||
+                            str_contains(strtolower($item['address']), $searchLower) ||
+                            str_contains(strtolower($item['industry']), $searchLower);
+                    });
+                }
+
+                return response()->json([
+                    'draw' => intval($draw),
+                    'recordsTotal' => $meta['total'] ?? 0,
+                    'recordsFiltered' => $meta['total'] ?? 0, // Since API handles filtering
+                    'data' => $transformedData->values()->toArray()
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error("DataTables error: " . $e->getMessage());
+                return response()->json([
+                    'draw'            => $request->input('draw', 1),
+                    'recordsTotal'    => 0,
+                    'recordsFiltered' => 0,
+                    'data'            => [],
+                    'error'           => 'Something went wrong while fetching data: ' . $e->getMessage()
+                ], 500);
+            }
+        }
+
+        return view('admin.customers.index');
     }
 
     /**
