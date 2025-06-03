@@ -64,11 +64,12 @@ class CustomerController extends Controller
                 $transformedData = $customers->map(function($row) {
                     return [
                         'id' => $row['id'] ?? null,
-                        'createdAt' => Carbon::parse($row['createdAt'])->format('Y-m-d H:i:s'),
+                        'createdAt' => Carbon::parse($row['createdAt'])->format('d-m-Y H:i'),
                         'customerNo' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['customerNo'] ?? 'N/A') . '</a>',
                         'companyName' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['companyName'] ?? 'N/A') . '</a>',
                         'address' => $row['attributes']['businessAddress']['address'] ?? 'N/A',
-                        'industry' => $row['attributes']['additionalField1'] ?? 'N/A',
+                        // 'industry' => $row['attributes']['additionalField1'] ?? 'N/A',
+                        'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['CSD Instant Quote', 'Quote', 'N/A']) ? '' : $row['attributes']['additionalField1'],
                         'numberOfOrders' => rand(0, 100), // Replace with actual logic
                     ];
                 });
