@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Customers List | CRM Assistant')
+@section('title', 'Customers Overview | CRM Assistant')
 
 @push('links')
     <link rel="stylesheet" href="{{ asset('assets/admin/css/dataTables.bootstrap5.min.css') }}">
@@ -93,7 +93,7 @@
                         <div class="card">
                             <div class="card-body card-breadcrumb">
                                 <div class="page-title-box d-flex align-items-center justify-content-between">
-                                    <h4 class="mb-0">Customers List</h4>
+                                    <h4 class="mb-0">Customers Overview</h4>
                                     <div class="page-title-right">
                                     </div>
                                 </div>

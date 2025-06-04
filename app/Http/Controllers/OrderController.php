@@ -103,38 +103,38 @@ class OrderController extends Controller
         return view('admin.orders.index');
     }
 
-public function getCustomer(Request $request)
-{
-    try {
-        $customerNo = $request->input('customerNo');
-        
-        $client = new Client();
-        $apiUrl = env('TRANSPORT_API_URL');
-        $apiKey = env('TRANSPORT_API_KEY');
+    public function getCustomer(Request $request)
+    {
+        try {
+            $customerNo = $request->input('customerNo');
+            
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL');
+            $apiKey = env('TRANSPORT_API_KEY');
 
-        $response = $client->get($apiUrl . "customers/{$customerNo}", [
-            'headers' => [
-                'Authorization' => 'Basic ' . $apiKey,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ],
-        ]);
+            $response = $client->get($apiUrl . "customers/{$customerNo}", [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+            ]);
 
-        $customerData = json_decode($response->getBody()->getContents(), true);
-        $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
+            $customerData = json_decode($response->getBody()->getContents(), true);
+            $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
 
-        return response()->json([
-            'success' => true,
-            'companyName' => $companyName
-        ]);
+            return response()->json([
+                'success' => true,
+                'companyName' => $companyName
+            ]);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'companyName' => "Customer #{$customerNo}"
-        ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'companyName' => "Customer #{$customerNo}"
+            ]);
+        }
     }
-}
 
     public function show($id)
     {
@@ -154,9 +154,21 @@ public function getCustomer(Request $request)
             ],
         ]);
 
-        $body = $response->getBody()->getContents();
-        $data = json_decode($body, true);
+        $data = json_decode($response->getBody()->getContents(), true);
         $order = collect($data['data'] ?? []);
+        $customerNo = $order['attributes']['customerNo'];
+
+        $res = $client->get($apiUrl . "customers/{$customerNo}", [
+            'headers' => [
+                'Authorization' => 'Basic ' . $apiKey,
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+            ],
+        ]);
+
+        $customerData = json_decode($res->getBody()->getContents(), true);
+        $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
+        $order['companyName'] = $companyName;
 
         if (!$order) {
             abort(404);

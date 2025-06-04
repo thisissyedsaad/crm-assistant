@@ -107,8 +107,8 @@
 
                                         <!-- Customer Number -->
                                         <div class="order-detail-item">
-                                            <span class="order-detail-label">Customer Number:</span>
-                                            <span class="order-detail-value">{{ $order['attributes']['customerNo'] ?? '-' }}</span>
+                                            <span class="order-detail-label">Company:</span>
+                                            <span class="order-detail-value">{{ $order['companyName'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Vehicle Type -->
@@ -127,7 +127,7 @@
 
                                         <!-- Purchase Price -->
                                         <div class="order-detail-item">
-                                            <span class="order-detail-label">Purchase Price:</span>
+                                            <span class="order-detail-label">Driver Cost:</span>
                                             <span class="order-detail-value">{{ $order['attributes']['orderPurchasePrice'] ?? '-' }}</span>
                                         </div>
 
