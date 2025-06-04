@@ -45,6 +45,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::resource('customers', CustomerController::class);
     Route::resource('orders', OrderController::class);
+    Route::post('admin/get-customer', [OrderController::class, 'getCustomer'])->name('getCustomer');
 });
 
 
