@@ -104,6 +104,133 @@ class CustomerController extends Controller
         return view('admin.customers.index');
     }
 
+    /**
+     * Autocomplete search for customers (FAST - no last order dates)
+     */
+    public function autocomplete(Request $request)
+    {
+        try {
+            $query = $request->input('query', '');
+            
+            if (strlen($query) < 2) {
+                return response()->json([
+                    'data' => [],
+                    'message' => 'Query too short'
+                ]);
+            }
+
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            $apiQuery = [
+                'filter[companyName]' => '%' . $query . '%',
+                // 'filter[customerNo]' => '%' . $query . '%',
+            ];
+
+            $response = $client->get($apiUrl . 'customers', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => $apiQuery,
+            ]);
+
+            $res = json_decode($response->getBody()->getContents(), true);
+            $customers = collect($res['data'] ?? []);
+            
+            // Transform data WITHOUT last order dates (for speed)
+            $transformedData = $customers->map(function($row) {
+                $customerNo = $row['attributes']['customerNo'] ?? null;
+                $companyName = $row['attributes']['companyName'] ?? null;
+                
+                return [
+                    'id' => $row['id'] ?? null,
+                    'customerNo' => $customerNo,
+                    'companyName' => $companyName,
+                    'displayText' => $companyName ?: $customerNo
+                ];
+            })->filter(function($item) {
+                return $item['customerNo'] || $item['companyName'];
+            });
+
+            return response()->json([
+                'data' => $transformedData->values()->toArray(),
+                'total' => $transformedData->count()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Autocomplete search error: " . $e->getMessage());
+            return response()->json([
+                'data' => [],
+                'error' => 'Error searching customers'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get last order date for specific customer (on-demand)
+     */
+    public function getLastOrder(Request $request)
+    {
+        try {
+            $customerId = $request->input('customer_id');
+            
+            if (!$customerId) {
+                return response()->json([
+                    'error' => 'Customer ID required'
+                ], 400);
+            }
+
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            $response = $client->get($apiUrl . 'orders', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => [
+                    'filter[customerNo]' => $customerId,
+                    'sort' => '-createdAt', // Sort by newest first
+                ],
+            ]);
+
+            $res = json_decode($response->getBody()->getContents(), true);
+            $orders = $res['data'] ?? [];
+
+            if (!empty($orders)) {
+                $lastOrder = $orders[0];
+                $lastOrderDate = $lastOrder['createdAt'] ?? null;
+                
+                if ($lastOrderDate) {
+                    $formattedDate = Carbon::parse($lastOrderDate)->format('d/m/Y');
+                    return response()->json([
+                        'success' => true,
+                        'last_order_date' => $formattedDate,
+                        'raw_date' => $lastOrderDate
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'last_order_date' => 'No orders',
+                'raw_date' => null
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error fetching last order for customer {$customerId}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Could not fetch last order'
+            ], 500);
+        }
+    }
+
     public function show($id)
     {
         $client = new Client();
@@ -116,10 +243,6 @@ class CustomerController extends Controller
                 'Authorization' => 'Basic ' . $apiKey,
                 'Content-Type'  => 'application/json',
                 'Accept'        => 'application/json',
-            ],
-            // Optional filter; you can dynamically pass today's date
-            'query' => [
-                // 'filter[createdAt][gte]' => Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s'),
             ],
         ]);
 
