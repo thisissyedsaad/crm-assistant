@@ -231,29 +231,101 @@ class CustomerController extends Controller
         }
     }
 
+    // public function show($id)
+    // {
+    //     $client = new Client();
+    //     $apiUrl = env('TRANSPORT_API_URL');
+    //     $apiKey = env('TRANSPORT_API_KEY');
+
+    //     try {
+    //         $response = $client->get($apiUrl . 'customers/' . $id, [
+    //             'headers' => [
+    //                 'Authorization' => 'Basic ' . $apiKey,
+    //                 'Content-Type'  => 'application/json',
+    //                 'Accept'        => 'application/json',
+    //             ],
+    //         ]);
+
+    //         $body = $response->getBody()->getContents();
+    //         $data = json_decode($body, true);
+    //         $customer = $data['data'] ?? null;
+
+    //         if (!$customer || empty($customer)) {
+    //             return redirect()->route('admin.customers.index')
+    //                 ->with('error', 'Customer not found.');
+    //         }
+
+    //         return view('admin.customers.view', compact('customer'));
+
+    //     } catch (\GuzzleHttp\Exception\ClientException $e) {
+    //         // Handle 404 error
+    //         if ($e->getResponse()->getStatusCode() === 404) {
+    //             return redirect()->route('admin.customers.index')
+    //                 ->with('error', 'Customer not found in the system.');
+    //         }
+    //     }
+    // }
+
     public function show($id)
     {
         $client = new Client();
         $apiUrl = env('TRANSPORT_API_URL');
         $apiKey = env('TRANSPORT_API_KEY');
 
-        // Fetch all orders from API with optional date filter
-        $response = $client->get($apiUrl . 'customers/'.$id, [
-            'headers' => [
-                'Authorization' => 'Basic ' . $apiKey,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ],
-        ]);
+        try {
+            // Fetch customer from API
+            $response = $client->get($apiUrl . 'customers/' . $id, [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+            ]);
 
-        $body = $response->getBody()->getContents();
-        $data = json_decode($body, true);
-        $customer = collect($data['data'] ?? []);
+            $body = $response->getBody()->getContents();
+            $data = json_decode($body, true);
+            $customer = $data['data'] ?? null;
 
-        if (!$customer) {
-            abort(404);
+            if (!$customer || empty($customer)) {
+                return redirect()->route('admin.customers.index')
+                    ->with('error', 'Customer not found.');
+            }
+
+            // Fetch orders for this customer using customerNo
+            $orders = [];
+            $customerNo = $customer['attributes']['customerNo'] ?? null;
+            
+            if ($customerNo) {
+                try {
+                    $ordersResponse = $client->get($apiUrl . 'orders', [
+                        'headers' => [
+                            'Authorization' => 'Basic ' . $apiKey,
+                            'Content-Type'  => 'application/json',
+                            'Accept'        => 'application/json',
+                        ],
+                        'query' => [
+                            'filter[customerNo]' => $customerNo
+                        ]
+                    ]);
+
+                    $ordersBody = $ordersResponse->getBody()->getContents();
+                    $ordersData = json_decode($ordersBody, true);
+                    $orders = $ordersData['data'] ?? [];
+                    
+                } catch (\Exception $e) {
+                    // If orders API fails, continue with empty orders array
+                    \Log::warning('Failed to fetch orders for customer ' . $customerNo . ': ' . $e->getMessage());
+                }
+            }
+
+            return view('admin.customers.view', compact('customer', 'orders'));
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            // Handle 404 error
+            if ($e->getResponse()->getStatusCode() === 404) {
+                return redirect()->route('admin.customers.index')
+                    ->with('error', 'Customer not found in the system.');
+            }
         }
-
-        return view('admin.customers.view', compact('customer'));
     }
 }
