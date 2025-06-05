@@ -202,7 +202,7 @@
                                             <input type="text" 
                                                    id="customerSearch" 
                                                    class="autocomplete-input" 
-                                                   placeholder="Type customer number or company name to search..."
+                                                   placeholder="Type company name to search..."
                                                    autocomplete="off">
                                             <div id="autocompleteResults" class="autocomplete-results"></div>
                                         </div>

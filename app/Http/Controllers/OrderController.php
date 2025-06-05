@@ -20,7 +20,6 @@ class OrderController extends Controller
                 $apiUrl = env('TRANSPORT_API_URL'); 
                 $apiKey = env('TRANSPORT_API_KEY');
 
-                // DataTables parameters
                 $draw = $request->input('draw', 1);
                 $start = $request->input('start', 0);
                 $length = $request->input('length', 25); // Changed from 100 to 25
@@ -34,7 +33,8 @@ class OrderController extends Controller
                     $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
                 }
                 if (!$request->filled('fromDate') && !$request->filled('toDate')) {
-                    $apiQuery['filter[createdAt][gte]'] = Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s');
+                    $apiQuery['filter[createdAt][gte]'] = Carbon::now('UTC')->subDays(7)->format('Y-m-d\TH:i:s\Z');
+                    // $apiQuery['filter[createdAt][gte]'] = Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s');
                 }
 
                 $response = $client->get($apiUrl . 'orders', [
@@ -136,47 +136,6 @@ class OrderController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
-    //     $client = new Client();
-    //     $apiUrl = env('TRANSPORT_API_URL');
-    //     $apiKey = env('TRANSPORT_API_KEY');
-
-    //     // Fetch all orders from API with optional date filter
-    //     $response = $client->get($apiUrl . 'orders/'.$id, [
-    //         'headers' => [
-    //             'Authorization' => 'Basic ' . $apiKey,
-    //             'Content-Type'  => 'application/json',
-    //             'Accept'        => 'application/json',
-    //         ],
-    //         // Optional filter; you can dynamically pass today's date
-    //         'query' => [
-    //         ],
-    //     ]);
-
-    //     $data = json_decode($response->getBody()->getContents(), true);
-    //     $order = collect($data['data'] ?? []);
-    //     $customerNo = $order['attributes']['customerNo'];
-
-    //     $res = $client->get($apiUrl . "customers/{$customerNo}", [
-    //         'headers' => [
-    //             'Authorization' => 'Basic ' . $apiKey,
-    //             'Content-Type'  => 'application/json',
-    //             'Accept'        => 'application/json',
-    //         ],
-    //     ]);
-
-    //     $customerData = json_decode($res->getBody()->getContents(), true);
-    //     $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
-    //     $order['companyName'] = $companyName;
-
-    //     if (!$order) {
-    //         abort(404);
-    //     }
-
-    //     return view('admin.orders.view', compact('order'));
-    // }
-
     public function show($id)
     {
         $client = new Client();
@@ -270,7 +229,9 @@ class OrderController extends Controller
         try {
             $query = $request->get('query');
             
-            if (strlen($query) < 1) {
+            \Log::info('Autocomplete function called with query: ' . $query);
+            
+            if (strlen($query) < 2) {
                 return response()->json(['data' => []]);
             }
 
@@ -278,44 +239,45 @@ class OrderController extends Controller
             $apiUrl = env('TRANSPORT_API_URL');
             $apiKey = env('TRANSPORT_API_KEY');
 
-            // Search orders using gte filter - simple and works!
+            $apiQuery = [
+                'filter[orderNo]' => $query // Direct filter on orderNo
+            ];
+
             $response = $client->get($apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
-                'query' => [
-                    'filter[orderNo][gte]' => $query,
-                    'limit' => 15
-                ]
+                'query' => $apiQuery
             ]);
 
             $ordersData = json_decode($response->getBody()->getContents(), true);
             $orders = collect($ordersData['data'] ?? []);
 
-            // Transform results
-            $results = $orders->map(function($order) {
+            $results = $orders->take(15)->map(function($order) {
                 $orderNo = $order['attributes']['orderNo'] ?? 'N/A';
-                $orderDate = isset($order['createdAt']) ? 
-                    \Carbon\Carbon::parse($order['createdAt'])->format('d/m/Y') : 'undefined';
+                $createdDate = isset($order['createdAt']) ? 
+                    \Carbon\Carbon::parse($order['createdAt'])->format('d/m/Y') : 'N/A';
 
                 return [
                     'id' => $order['id'],
                     'orderNo' => $orderNo,
-                    'orderDate' => $orderDate
+                    'createdDate' => $createdDate
                 ];
             });
 
             return response()->json([
-                'data' => $results->toArray()
+                'data' => $results->values()->toArray()
             ]);
 
-        } catch (\Exception $e) {
-            \Log::error('Autocomplete search error: ' . $e->getMessage());
+        }
+        catch (\GuzzleHttp\Exception\ClientException $e) {
+            $responseBody = $e->getResponse()->getBody()->getContents();
+            $responseJson = json_decode($responseBody, true);
             return response()->json([
                 'data' => [],
-                'error' => 'Search failed'
+                'error' => $responseJson['message']
             ]);
         }
     }

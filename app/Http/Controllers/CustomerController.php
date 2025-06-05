@@ -160,18 +160,17 @@ class CustomerController extends Controller
                 'total' => $transformedData->count()
             ]);
 
-        } catch (\Exception $e) {
-            Log::error("Autocomplete search error: " . $e->getMessage());
+        } 
+        catch (\GuzzleHttp\Exception\ClientException $e) {
+            $responseBody = $e->getResponse()->getBody()->getContents();
+            $responseJson = json_decode($responseBody, true);
             return response()->json([
                 'data' => [],
-                'error' => 'Error searching customers'
-            ], 500);
+                'error' => $responseJson['message']
+            ]);
         }
     }
 
-    /**
-     * Get last order date for specific customer (on-demand)
-     */
     public function getLastOrder(Request $request)
     {
         try {
@@ -230,41 +229,6 @@ class CustomerController extends Controller
             ], 500);
         }
     }
-
-    // public function show($id)
-    // {
-    //     $client = new Client();
-    //     $apiUrl = env('TRANSPORT_API_URL');
-    //     $apiKey = env('TRANSPORT_API_KEY');
-
-    //     try {
-    //         $response = $client->get($apiUrl . 'customers/' . $id, [
-    //             'headers' => [
-    //                 'Authorization' => 'Basic ' . $apiKey,
-    //                 'Content-Type'  => 'application/json',
-    //                 'Accept'        => 'application/json',
-    //             ],
-    //         ]);
-
-    //         $body = $response->getBody()->getContents();
-    //         $data = json_decode($body, true);
-    //         $customer = $data['data'] ?? null;
-
-    //         if (!$customer || empty($customer)) {
-    //             return redirect()->route('admin.customers.index')
-    //                 ->with('error', 'Customer not found.');
-    //         }
-
-    //         return view('admin.customers.view', compact('customer'));
-
-    //     } catch (\GuzzleHttp\Exception\ClientException $e) {
-    //         // Handle 404 error
-    //         if ($e->getResponse()->getStatusCode() === 404) {
-    //             return redirect()->route('admin.customers.index')
-    //                 ->with('error', 'Customer not found in the system.');
-    //         }
-    //     }
-    // }
 
     public function show($id)
     {

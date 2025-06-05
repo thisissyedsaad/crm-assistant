@@ -243,7 +243,7 @@
                                             <input type="text" 
                                                    id="orderSearch" 
                                                    class="autocomplete-input" 
-                                                   placeholder="Search by order number, company name, or customer name..."
+                                                   placeholder="Search by order number..."
                                                    autocomplete="off">
                                             <div id="autocompleteResults" class="autocomplete-results"></div>
                                         </div>
@@ -486,7 +486,7 @@
                 table.draw();
             });
 
-            // Autocomplete Search Functionality for Orders
+            // Autocomplete Search Functionality for Orders - UPDATED
             let searchTimeout;
             let currentRequest;
 
@@ -510,7 +510,7 @@
                 // Show loading state immediately
                 resultsContainer.html('<div class="autocomplete-loading">Searching orders...</div>').show();
 
-                // Debounce search - wait 500ms after user stops typing
+                // Debounce search - wait 300ms after user stops typing
                 searchTimeout = setTimeout(function() {
                     currentRequest = $.ajax({
                         url: "{{ route('admin.orders.autocomplete') }}",
@@ -525,10 +525,8 @@
                                 response.data.forEach(function(order) {
                                     const item = $(`
                                         <div class="autocomplete-item" data-id="${order.id}">
-                                            <div class="order-info">${order.orderNo}</div>
-                                            <div class="order-details">
-                                                Last Order: ${order.orderDate}
-                                            </div>
+                                            <div class="order-info">Order: ${order.orderNo}</div>
+                                            <div class="order-details">Created: ${order.createdDate}</div>
                                         </div>
                                     `);
 
@@ -549,16 +547,11 @@
                             currentRequest = null;
                         }
                     });
-                }, 500); // 500ms delay
+                }, 300); // Reduced to 300ms for faster response
             });
 
-            // Handle autocomplete item click
+            // Handle autocomplete item click - UPDATED
             $(document).on('click', '.autocomplete-item', function(e) {
-                // Don't redirect if clicking on status
-                if ($(e.target).hasClass('show-order-status') || $(e.target).hasClass('status-loading')) {
-                    return;
-                }
-                
                 const orderId = $(this).data('id');
                 const orderInfo = $(this).find('.order-info').text();
                 
@@ -569,7 +562,7 @@
                 window.location.href = `/admin/orders/${orderId}`;
             });
 
-            // Handle keyboard navigation
+            // Handle keyboard navigation - SAME AS BEFORE
             $(document).on('keydown', '#orderSearch', function(e) {
                 const resultsContainer = $('#autocompleteResults');
                 const items = resultsContainer.find('.autocomplete-item');
@@ -611,7 +604,7 @@
                 }
             });
 
-            // Hide results when clicking outside
+            // Hide results when clicking outside - SAME AS BEFORE
             $(document).on('click', function(e) {
                 if (!$(e.target).closest('.autocomplete-container').length) {
                     $('#autocompleteResults').hide();

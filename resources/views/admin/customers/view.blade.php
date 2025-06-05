@@ -288,7 +288,7 @@
                             aria-labelledby="v-pills-orders-tab" tabindex="0">
                             <div class="card">
                                 <div class="card-header-cu">
-                                    <h6 class="mb-0">Order History</h6>
+                                    <h6 class="mb-0">Order History (Total: {{count($orders) }})</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
