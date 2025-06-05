@@ -121,6 +121,103 @@
         .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        /* Autocomplete Search Styles */
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .autocomplete-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .autocomplete-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+        
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background-color: #f8f9fa;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-loading {
+            padding: 12px 16px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .autocomplete-no-results {
+            padding: 12px 16px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .order-info {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .order-details {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        /* Show button styling */
+        .show-order-status {
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.85em;
+        }
+
+        .show-order-status:hover {
+            color: #0056b3;
+        }
+
+        .status-loading {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.85em;
+        }
     </style>
 @endpush
 
@@ -136,6 +233,20 @@
                                 <div class="page-title-box d-flex align-items-center justify-content-between">
                                     <h4 class="mb-0">Orders Overview</h4>
                                     <div class="page-title-right">
+                                    </div>
+                                </div>
+                                
+                                <!-- Autocomplete Search Section -->
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="autocomplete-container" style="max-width: 100%;">
+                                            <input type="text" 
+                                                   id="orderSearch" 
+                                                   class="autocomplete-input" 
+                                                   placeholder="Search by order number, company name, or customer name..."
+                                                   autocomplete="off">
+                                            <div id="autocompleteResults" class="autocomplete-results"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -373,6 +484,138 @@
                 $('#fromDate').val('');
                 $('#toDate').val('');
                 table.draw();
+            });
+
+            // Autocomplete Search Functionality for Orders
+            let searchTimeout;
+            let currentRequest;
+
+            $('#orderSearch').on('input', function() {
+                const query = $(this).val().trim();
+                const resultsContainer = $('#autocompleteResults');
+
+                // Clear previous timeout
+                clearTimeout(searchTimeout);
+
+                // Cancel previous request if still pending
+                if (currentRequest) {
+                    currentRequest.abort();
+                }
+
+                if (query.length < 2) {
+                    resultsContainer.hide().empty();
+                    return;
+                }
+
+                // Show loading state immediately
+                resultsContainer.html('<div class="autocomplete-loading">Searching orders...</div>').show();
+
+                // Debounce search - wait 500ms after user stops typing
+                searchTimeout = setTimeout(function() {
+                    currentRequest = $.ajax({
+                        url: "{{ route('admin.orders.autocomplete') }}",
+                        method: 'GET',
+                        data: {
+                            query: query
+                        },
+                        success: function(response) {
+                            resultsContainer.empty();
+
+                            if (response.data && response.data.length > 0) {
+                                response.data.forEach(function(order) {
+                                    const item = $(`
+                                        <div class="autocomplete-item" data-id="${order.id}">
+                                            <div class="order-info">${order.orderNo}</div>
+                                            <div class="order-details">
+                                                Last Order: ${order.orderDate}
+                                            </div>
+                                        </div>
+                                    `);
+
+                                    resultsContainer.append(item);
+                                });
+                            } else {
+                                resultsContainer.html('<div class="autocomplete-no-results">No orders found</div>');
+                            }
+
+                            resultsContainer.show();
+                        },
+                        error: function(xhr) {
+                            if (xhr.statusText !== 'abort') {
+                                resultsContainer.html('<div class="autocomplete-no-results">Error searching orders</div>');
+                            }
+                        },
+                        complete: function() {
+                            currentRequest = null;
+                        }
+                    });
+                }, 500); // 500ms delay
+            });
+
+            // Handle autocomplete item click
+            $(document).on('click', '.autocomplete-item', function(e) {
+                // Don't redirect if clicking on status
+                if ($(e.target).hasClass('show-order-status') || $(e.target).hasClass('status-loading')) {
+                    return;
+                }
+                
+                const orderId = $(this).data('id');
+                const orderInfo = $(this).find('.order-info').text();
+                
+                $('#orderSearch').val(orderInfo);
+                $('#autocompleteResults').hide();
+                
+                // Redirect to order detail page
+                window.location.href = `/admin/orders/${orderId}`;
+            });
+
+            // Handle keyboard navigation
+            $(document).on('keydown', '#orderSearch', function(e) {
+                const resultsContainer = $('#autocompleteResults');
+                const items = resultsContainer.find('.autocomplete-item');
+                const activeItem = items.filter('.active');
+
+                if (e.keyCode === 40) { // Down arrow
+                    e.preventDefault();
+                    if (activeItem.length === 0) {
+                        items.first().addClass('active');
+                    } else {
+                        activeItem.removeClass('active');
+                        const next = activeItem.next('.autocomplete-item');
+                        if (next.length > 0) {
+                            next.addClass('active');
+                        } else {
+                            items.first().addClass('active');
+                        }
+                    }
+                } else if (e.keyCode === 38) { // Up arrow
+                    e.preventDefault();
+                    if (activeItem.length === 0) {
+                        items.last().addClass('active');
+                    } else {
+                        activeItem.removeClass('active');
+                        const prev = activeItem.prev('.autocomplete-item');
+                        if (prev.length > 0) {
+                            prev.addClass('active');
+                        } else {
+                            items.last().addClass('active');
+                        }
+                    }
+                } else if (e.keyCode === 13) { // Enter
+                    e.preventDefault();
+                    if (activeItem.length > 0) {
+                        activeItem.click();
+                    }
+                } else if (e.keyCode === 27) { // Escape
+                    resultsContainer.hide();
+                }
+            });
+
+            // Hide results when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.autocomplete-container').length) {
+                    $('#autocompleteResults').hide();
+                }
             });
         });
 

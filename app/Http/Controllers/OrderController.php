@@ -136,45 +136,187 @@ class OrderController extends Controller
         }
     }
 
+    // public function show($id)
+    // {
+    //     $client = new Client();
+    //     $apiUrl = env('TRANSPORT_API_URL');
+    //     $apiKey = env('TRANSPORT_API_KEY');
+
+    //     // Fetch all orders from API with optional date filter
+    //     $response = $client->get($apiUrl . 'orders/'.$id, [
+    //         'headers' => [
+    //             'Authorization' => 'Basic ' . $apiKey,
+    //             'Content-Type'  => 'application/json',
+    //             'Accept'        => 'application/json',
+    //         ],
+    //         // Optional filter; you can dynamically pass today's date
+    //         'query' => [
+    //         ],
+    //     ]);
+
+    //     $data = json_decode($response->getBody()->getContents(), true);
+    //     $order = collect($data['data'] ?? []);
+    //     $customerNo = $order['attributes']['customerNo'];
+
+    //     $res = $client->get($apiUrl . "customers/{$customerNo}", [
+    //         'headers' => [
+    //             'Authorization' => 'Basic ' . $apiKey,
+    //             'Content-Type'  => 'application/json',
+    //             'Accept'        => 'application/json',
+    //         ],
+    //     ]);
+
+    //     $customerData = json_decode($res->getBody()->getContents(), true);
+    //     $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
+    //     $order['companyName'] = $companyName;
+
+    //     if (!$order) {
+    //         abort(404);
+    //     }
+
+    //     return view('admin.orders.view', compact('order'));
+    // }
+
     public function show($id)
     {
         $client = new Client();
         $apiUrl = env('TRANSPORT_API_URL');
         $apiKey = env('TRANSPORT_API_KEY');
 
-        // Fetch all orders from API with optional date filter
-        $response = $client->get($apiUrl . 'orders/'.$id, [
-            'headers' => [
-                'Authorization' => 'Basic ' . $apiKey,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ],
-            // Optional filter; you can dynamically pass today's date
-            'query' => [
-            ],
-        ]);
+        try {
+            // Fetch order from API
+            $response = $client->get($apiUrl . 'orders/' . $id, [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+            ]);
 
-        $data = json_decode($response->getBody()->getContents(), true);
-        $order = collect($data['data'] ?? []);
-        $customerNo = $order['attributes']['customerNo'];
+            $data = json_decode($response->getBody()->getContents(), true);
+            $order = $data['data'] ?? null;
 
-        $res = $client->get($apiUrl . "customers/{$customerNo}", [
-            'headers' => [
-                'Authorization' => 'Basic ' . $apiKey,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ],
-        ]);
+            if (!$order) {
+                return redirect()->route('admin.orders.index')
+                    ->with('error', 'Order not found.');
+            }
 
-        $customerData = json_decode($res->getBody()->getContents(), true);
-        $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
-        $order['companyName'] = $companyName;
+            // Get customer number from order
+            $customerNo = $order['attributes']['customerNo'] ?? null;
+            $customer = [];
+            $totalOrders = 0;
 
-        if (!$order) {
-            abort(404);
+            if ($customerNo) {
+                try {
+                    // Fetch customer data
+                    $customerResponse = $client->get($apiUrl . "customers/{$customerNo}", [
+                        'headers' => [
+                            'Authorization' => 'Basic ' . $apiKey,
+                            'Content-Type'  => 'application/json',
+                            'Accept'        => 'application/json',
+                        ],
+                    ]);
+
+                    $customerData = json_decode($customerResponse->getBody()->getContents(), true);
+                    $customer = $customerData['data']['attributes'] ?? [];
+                    
+                    // Add company name to order for display
+                    $companyName = $customer['companyName'] ?? null;
+                    $order['companyName'] = $companyName ? "{$companyName} ({$customerNo})" : "- {$customerNo}";
+
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to fetch customer data for customerNo ' . $customerNo . ': ' . $e->getMessage());
+                    $order['companyName'] = "Customer #{$customerNo}";
+                }
+
+                try {
+                    // Fetch total orders count for this customer
+                    $ordersResponse = $client->get($apiUrl . 'orders', [
+                        'headers' => [
+                            'Authorization' => 'Basic ' . $apiKey,
+                            'Content-Type'  => 'application/json',
+                            'Accept'        => 'application/json',
+                        ],
+                        'query' => [
+                            'filter[customerNo]' => $customerNo
+                        ]
+                    ]);
+
+                    $ordersData = json_decode($ordersResponse->getBody()->getContents(), true);
+                    $totalOrders = count($ordersData['data'] ?? []);
+
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to fetch orders count for customerNo ' . $customerNo . ': ' . $e->getMessage());
+                    $totalOrders = 0;
+                }
+            }
+
+            // Flatten order attributes for easier access in view
+            $order = array_merge($order, $order['attributes'] ?? []);
+
+            return view('admin.orders.view', compact('order', 'customer', 'totalOrders'));
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            // Handle 404 and other 4xx errors
+            if ($e->getResponse()->getStatusCode() === 404) {
+                return redirect()->route('admin.orders.index')
+                    ->with('error', 'Order not found in the system.');
+            }
         }
-
-        return view('admin.orders.view', compact('order'));
     }
 
+    public function autocomplete(Request $request)
+    {
+        try {
+            $query = $request->get('query');
+            
+            if (strlen($query) < 1) {
+                return response()->json(['data' => []]);
+            }
+
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL');
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            // Search orders using gte filter - simple and works!
+            $response = $client->get($apiUrl . 'orders', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => [
+                    'filter[orderNo][gte]' => $query,
+                    'limit' => 15
+                ]
+            ]);
+
+            $ordersData = json_decode($response->getBody()->getContents(), true);
+            $orders = collect($ordersData['data'] ?? []);
+
+            // Transform results
+            $results = $orders->map(function($order) {
+                $orderNo = $order['attributes']['orderNo'] ?? 'N/A';
+                $orderDate = isset($order['createdAt']) ? 
+                    \Carbon\Carbon::parse($order['createdAt'])->format('d/m/Y') : 'undefined';
+
+                return [
+                    'id' => $order['id'],
+                    'orderNo' => $orderNo,
+                    'orderDate' => $orderDate
+                ];
+            });
+
+            return response()->json([
+                'data' => $results->toArray()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Autocomplete search error: ' . $e->getMessage());
+            return response()->json([
+                'data' => [],
+                'error' => 'Search failed'
+            ]);
+        }
+    }
 }
