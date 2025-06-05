@@ -296,12 +296,12 @@
 </div>
 
 <!-- Comments Modal -->
-<div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="commentsModalLabel">
-                    <i class="fas fa-comment-alt me-2"></i>Internal Comments
+                    <i class="fas fa-comment-alt me-2"></i>More Details
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -324,6 +324,57 @@
             </div>
         </div>
     </div>
+</div> -->
+
+<div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-lg">
+       <div class="modal-content border-0 shadow-lg">
+           <div class="modal-header bg-primary text-white border-0">
+               <h5 class="modal-title d-flex align-items-center" id="commentsModalLabel">
+                   <i class="bx bx-info-circle me-2"></i>Order Details
+               </h5>
+               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+           </div>
+           <div class="modal-body p-4">
+               <div class="row mb-3">
+                   <div class="col-sm-4">
+                       <div class="d-flex align-items-center">
+                           <i class="bx bx-hash text-secondary me-2"></i>
+                           <strong>Order Number:</strong>
+                       </div>
+                   </div>
+                   <div class="col-sm-8">
+                       <span id="modalOrderNumber" class="badge bg-light text-dark">-</span>
+                   </div>
+               </div>
+               <div class="row mb-3">
+                   <div class="col-sm-4">
+                       <div class="d-flex align-items-center">
+                           <i class="bx bx-buildings text-primary me-2"></i>
+                           <strong>Company:</strong>
+                       </div>
+                   </div>
+                   <div class="col-sm-8">
+                       <span id="modalCompanyName" class="text-muted">-</span>
+                   </div>
+               </div>
+               <div class="mb-3">
+                   <label class="form-label d-flex align-items-center mb-2">
+                       <i class="bx bx-message-square-detail text-primary me-2"></i>
+                       <strong>Comments:</strong>
+                   </label>
+                   <div id="modalCommentsContent" class="comments-content bg-light p-3 rounded border">
+                       No comments available
+                   </div>
+               </div>
+           </div>
+           <div class="modal-footer border-0 bg-light">
+               <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                   <i class="bx bx-check me-1"></i>Close
+               </button>
+           </div>
+       </div>
+   </div>
 </div>
 @endsection
 

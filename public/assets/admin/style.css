@@ -1392,7 +1392,7 @@ img {
   z-index: 99;
   width: calc(100% - 254px);
   height: 70px;
-  background-color: #ffffff;
+  background-color: #0e0b2b;
   left: 242px;
   top: 8px;
   -webkit-transition-duration: 500ms;
@@ -5398,6 +5398,7 @@ input#checkbox-2 {
 
 .modal-title {
   font-size: 15px;
+  color:#fff;
 }
 
 .modal-header.email {
@@ -8001,4 +8002,11 @@ label {
     font-size: 20px;
     color: #fff;
     text-align: center !important;
+}
+
+.user-style {
+    color: #fff;
+    font-weight: 500;
+    font-size: 15px;
+    text-transform: capitalize;
 }

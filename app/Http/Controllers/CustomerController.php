@@ -306,7 +306,8 @@ class CustomerController extends Controller
                             'Accept'        => 'application/json',
                         ],
                         'query' => [
-                            'filter[customerNo]' => $customerNo
+                            'filter[customerNo]' => $customerNo,
+                            'sort' => '-createdAt'
                         ]
                     ]);
 

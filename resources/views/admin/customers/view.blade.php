@@ -3,8 +3,10 @@
 @section('title', 'Customer Detail | CRM Assistant')
 
 @push('links')
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/dataTables.bootstrap5.min.css') }}">
     <style>
-        /* Card header styling */
+        /* Original Card header styling */
         .card-header-cu {
             background-color: #f8f9fa;
             border-bottom: 1px solid #e9ecef;
@@ -16,13 +18,27 @@
             color: #495057;
         }
         
-        /* Customer details styling */
+        /* Customer details styling with animations */
         .customer-detail-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 0;
             border-bottom: 1px solid #f1f3f4;
+            transition: all 0.3s ease;
+            position: relative;
+            /* Animation properties */
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .customer-detail-item:hover {
+            background: linear-gradient(90deg, rgba(13, 110, 253, 0.05), transparent);
+            padding-left: 15px;
+            border-radius: 8px;
+            margin: 0 -15px;
+            transform: translateY(-2px);
         }
         
         .customer-detail-item:last-child {
@@ -33,15 +49,26 @@
             font-weight: 600;
             color: #495057;
             min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .customer-detail-item:hover .customer-detail-label {
+            color: #0d6efd;
+            transform: translateX(5px);
         }
         
         .customer-detail-value {
             color: #6c757d;
             flex: 1;
             text-align: right;
+            transition: all 0.3s ease;
         }
 
-        /* Account tab styling */
+        .customer-detail-item:hover .customer-detail-value {
+            color: #495057;
+        }
+
+        /* Account tab styling with hover effects */
         .account-tab .nav-link {
             border-radius: 0.375rem;
             margin-bottom: 0.5rem;
@@ -49,51 +76,233 @@
             background: transparent;
             color: #6c757d;
             padding: 0.75rem 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-tab .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(13, 110, 253, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .account-tab .nav-link:hover::before {
+            left: 100%;
         }
 
         .account-tab .nav-link.active {
             background-color: #0d6efd;
             color: white;
+            transform: translateX(5px);
         }
 
         .account-tab .nav-link:hover {
             background-color: #e9ecef;
             color: #495057;
+            transform: translateX(3px);
         }
 
         .account-tab .nav-link.active:hover {
             background-color: #0d6efd;
             color: white;
+            transform: translateX(5px);
         }
 
-        /* Order Status Colors */
+        /* Order Status Colors (original) */
         .status-quote { 
             background-color: #ffbc62 !important; 
             color: #000 !important; 
+            transition: all 0.3s ease;
         }
         .status-open { 
             background-color: #e097fd !important; 
             color: #000 !important; 
+            transition: all 0.3s ease;
         }
         .status-mainopen { 
             background-color: #ff8888 !important; 
             color: #fff !important; 
+            transition: all 0.3s ease;
         }
         .status-planned { 
             background-color: #ffff69 !important; 
             color: #000 !important; 
+            transition: all 0.3s ease;
         }
         .status-signed-off { 
             background-color: #88ccff !important; 
             color: #000 !important; 
+            transition: all 0.3s ease;
         }
         .status-checked { 
             background-color: #88ff88 !important; 
             color: #000 !important; 
+            transition: all 0.3s ease;
         }
         .status-invoiced { 
             background-color: #e0e1df !important; 
             color: #000 !important; 
+            transition: all 0.3s ease;
+        }
+
+        /* Status badge hover effects */
+        .badge {
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: scale(1.05);
+        }
+
+        /* DataTables styling */
+        .dataTables_wrapper {
+            animation: fadeInUp 0.8s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            padding: 0.375rem 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            padding: 0.375rem 0.75rem;
+            margin: 0 0.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        /* Table hover effects for DataTables */
+        .dataTable tbody tr {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dataTable tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+            transform: translateX(5px);
+        }
+
+        /* Card hover effects */
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animation delays for staggered effect */
+        .customer-detail-item:nth-child(1) { animation-delay: 0.1s; }
+        .customer-detail-item:nth-child(2) { animation-delay: 0.2s; }
+        .customer-detail-item:nth-child(3) { animation-delay: 0.3s; }
+        .customer-detail-item:nth-child(4) { animation-delay: 0.4s; }
+        .customer-detail-item:nth-child(5) { animation-delay: 0.5s; }
+        .customer-detail-item:nth-child(6) { animation-delay: 0.6s; }
+        .customer-detail-item:nth-child(7) { animation-delay: 0.7s; }
+        .customer-detail-item:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Breadcrumb link hover effects */
+        .breadcrumb-item a {
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #0d6efd !important;
+        }
+
+        /* Link hover effects */
+        a {
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            transform: translateX(2px);
+        }
+
+        /* Page load animation for cards */
+        .card {
+            animation: cardFadeIn 0.8s ease forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .col-lg-3 .card {
+            animation-delay: 0.2s;
+        }
+
+        .col-lg-9 .card {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes cardFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth transitions for all interactive elements */
+        button, .nav-link, .btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Enhanced focus states */
+        .nav-link:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Pagination styling */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 0.375rem !important;
+            margin: 0 2px;
+            transition: all 0.3s ease;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* No data styling */
+        .dataTables_empty {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 2rem !important;
         }
     </style>
 @endpush
@@ -250,11 +459,24 @@
                             aria-labelledby="v-pills-customers-tab" tabindex="0">
                             <div class="card">
                                 <div class="card-header-cu">
-                                    <h6 class="mb-0">Company Contacts</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 d-flex align-items-center">
+                                            <i class="bx bx-group me-2 text-primary"></i>
+                                            Company Contacts
+                                        </h6>
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="bx bx-user me-1"></i>
+                                            @if(!empty($customer['attributes']['contacts']) && is_array($customer['attributes']['contacts']))
+                                                {{ count($customer['attributes']['contacts']) }} Contacts
+                                            @else
+                                                0 Contacts
+                                            @endif
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-striped">
+                                        <table id="contactsTable" class="table table-striped">
                                             <thead>
                                                 <tr>
                                                     <th>Name</th>
@@ -288,11 +510,20 @@
                             aria-labelledby="v-pills-orders-tab" tabindex="0">
                             <div class="card">
                                 <div class="card-header-cu">
-                                    <h6 class="mb-0">Order History (Total: {{count($orders) }})</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 d-flex align-items-center">
+                                            <i class="bx bx-list-ul me-2 text-primary"></i>
+                                            Order History
+                                        </h6>
+                                        <span class="badge bg-primary rounded-pill">
+                                            <i class="bx bx-hash me-1"></i>
+                                            {{count($orders) }} Orders
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-striped">
+                                        <table id="ordersTable" class="table table-striped">
                                             <thead>
                                                 <tr>
                                                     <th>Order Date/Time</th>
@@ -401,8 +632,97 @@
 @endsection
 
 @push('scripts')
-<script>
-    // Bootstrap tab functionality is automatically handled
-    // You can add custom JavaScript here if needed
-</script>
+    <!-- DataTables JS -->
+    <script src="{{ asset('assets/admin/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/admin/js/dataTables.bootstrap5.min.js') }}"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Contacts DataTable
+            $('#contactsTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+                responsive: true,
+                language: {
+                    search: "Search Contacts:",
+                    lengthMenu: "Show _MENU_ contacts per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ contacts",
+                    infoEmpty: "No contacts found",
+                    infoFiltered: "(filtered from _MAX_ total contacts)",
+                    emptyTable: "No contacts available",
+                    zeroRecords: "No matching contacts found"
+                },
+                dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
+                order: [[0, 'asc']], // Sort by name ascending
+                columnDefs: [
+                    {
+                        targets: [0, 1, 2], // All columns
+                        className: 'text-center'
+                    }
+                ]
+            });
+
+            // Initialize Orders DataTable
+            $('#ordersTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+                responsive: true,
+                language: {
+                    search: "Search Orders:",
+                    lengthMenu: "Show _MENU_ orders per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ orders",
+                    infoEmpty: "No orders found",
+                    infoFiltered: "(filtered from _MAX_ total orders)",
+                    emptyTable: "No orders available",
+                    zeroRecords: "No matching orders found"
+                },
+                dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
+                order: [[0, 'desc']], // Sort by date descending (newest first)
+                columnDefs: [
+                    {
+                        targets: [0], // Date column
+                        type: 'date'
+                    },
+                    {
+                        targets: [3, 4], // Price columns
+                        className: 'text-end'
+                    },
+                    {
+                        targets: [5], // Status column
+                        className: 'text-center'
+                    }
+                ]
+            });
+
+            // Bootstrap tab functionality with smooth scroll
+            const tabButtons = document.querySelectorAll('[data-bs-toggle="pill"]');
+            tabButtons.forEach(button => {
+                button.addEventListener('shown.bs.tab', function (e) {
+                    // Smooth scroll to top of content
+                    document.querySelector('.main-content').scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+
+                    // Redraw DataTables when tab is shown (fixes column width issues)
+                    setTimeout(function() {
+                        $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                    }, 200);
+                });
+            });
+
+            // Add animation to DataTables wrapper when tabs are shown
+            $('#v-pills-customers-tab').on('shown.bs.tab', function() {
+                setTimeout(function() {
+                    $('#contactsTable_wrapper').addClass('animate__fadeInUp');
+                }, 100);
+            });
+
+            $('#v-pills-orders-tab').on('shown.bs.tab', function() {
+                setTimeout(function() {
+                    $('#ordersTable_wrapper').addClass('animate__fadeInUp');
+                }, 100);
+            });
+        });
+    </script>
 @endpush

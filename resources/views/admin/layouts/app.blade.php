@@ -187,14 +187,14 @@
             </div>
 
             <!-- Triggers -->
-            <div class="flapt-triggers">
+            <!-- <div class="flapt-triggers">
               <div class="menu-collasped" id="menuCollasped">
                 <i class="bx bx-grid-alt"></i>
               </div>
               <div class="mobile-menu-open" id="mobileMenuOpen">
                 <i class="bx bx-grid-alt"></i>
               </div>
-            </div>
+            </div> -->
 
             <!-- Left Side Nav -->
             <!-- <ul class="left-side-navbar d-flex align-items-center">
@@ -219,7 +219,7 @@
 
             <!-- Top Bar Nav -->
             <ul class="right-side-content d-flex align-items-center">
-              <strong>{{ Auth::user()->name }}</strong>
+              <strong class="user-style">{{ Auth::user()->name }} ({{ Auth::user()->role }})</strong>
               <li class="nav-item dropdown">
                 <button
                   type="button"
@@ -233,10 +233,10 @@
                 <div class="dropdown-menu profile dropdown-menu-right">
 
                   <div class="user-profile-area">
-                    <a href="#" class="dropdown-item"
+                    <!-- <a href="#" class="dropdown-item"
                       ><i class="bx bx-user font-15" aria-hidden="true"></i> My
                       profile</a
-                    >
+                    > -->
                     <!-- <a href="#" class="dropdown-item"
                       ><i class="bx bx-wrench font-15" aria-hidden="true"></i>
                       settings</a
