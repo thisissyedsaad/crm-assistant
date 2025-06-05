@@ -42,13 +42,23 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::resource('users', UserController::class);
 });
 
+// Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+//     Route::resource('orders', OrderController::class);
+//     Route::get('/orders/autocomplete', [OrderController::class, 'autocomplete'])->name('orders.autocomplete');
+//     Route::post('admin/get-customer', [OrderController::class, 'getCustomer'])->name('getCustomer');
+
+//     Route::resource('customers', CustomerController::class);
+//     Route::get('/admin/customers/last-order', [CustomerController::class, 'getLastOrder'])->name('customers.lastorder');
+//     Route::get('/admin/customers/search/autocomplete', [CustomerController::class, 'autocomplete'])->name('customers.autocomplete');
+// });
+
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::resource('customers', CustomerController::class);
     Route::resource('orders', OrderController::class);
     Route::post('admin/get-customer', [OrderController::class, 'getCustomer'])->name('getCustomer');
+    Route::get('/orders/autocomplete', [OrderController::class, 'autocomplete'])->name('orders.autocomplete');
+    
+    Route::resource('customers', CustomerController::class);
     Route::get('/admin/customers/last-order', [CustomerController::class, 'getLastOrder'])->name('customers.lastorder');
     Route::get('/admin/customers/search/autocomplete', [CustomerController::class, 'autocomplete'])->name('customers.autocomplete');
 });
-
-
 require __DIR__.'/auth.php';
