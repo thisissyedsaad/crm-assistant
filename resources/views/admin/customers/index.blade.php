@@ -268,7 +268,7 @@
 
     <script>
         $(function () {
-            // Initialize DataTable (existing functionality)
+            // Initialize DataTable
             if ($.fn.DataTable.isDataTable('#datatable')) {
                 $('#datatable').DataTable().destroy();
             }
@@ -280,6 +280,8 @@
                 scrollCollapse: false,
                 autoWidth: true,
                 responsive: false,
+                ordering: true, // Enable column sorting
+                order: [[0, 'desc']], // Default sort by first column (Created Date/Time) descending
                 ajax: {
                     url: "{{ route('admin.customers.index') }}",
                     data: function (d) {
@@ -287,17 +289,20 @@
                         d.toDate = $('#toDate').val();
                     }
                 },
-                pageLength: 25,
+                pageLength: 25, // 25 records per page
+                lengthMenu: [[25, 50, 100], [25, 50, 100]], // Limit options to max 100
                 columns: [
                     { 
                         data: 'createdAt', 
                         name: 'createdAt',
-                        className: 'text-nowrap'
+                        className: 'text-nowrap',
+                        orderable: true
                     },
                     { 
                         data: 'customerNo', 
                         name: 'customerNo',
                         className: 'text-nowrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             return `<a href="/admin/customers/${row.id}">${data ?? '-'}</a>`; 
                         }
@@ -306,6 +311,7 @@
                         data: 'companyName', 
                         name: 'companyName',
                         className: 'text-wrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             return `<a href="/admin/customers/${row.id}">${data ?? '-'}</a>`; 
                         }
@@ -314,6 +320,7 @@
                         data: 'address', 
                         name: 'address',
                         className: 'text-wrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             if (type === 'display' && data && data.length > 40) {
                                 return '<span title="' + data + '">' + data.substr(0, 40) + '...</span>';
@@ -325,6 +332,7 @@
                         data: 'industry', 
                         name: 'industry',
                         className: 'text-wrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             return data || '-';
                         }
@@ -334,10 +342,16 @@
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
+                },
+                drawCallback: function(settings) {
+                    // Ensure proper styling after each draw
+                    $('.dataTables_wrapper').css({
+                        'width': '100%'
+                    });
                 }
             });
 
-            // DataTable filter functionality (existing)
+            // DataTable filter functionality
             $('#filterBtn').on('click', function () {
                 table.draw();
             });

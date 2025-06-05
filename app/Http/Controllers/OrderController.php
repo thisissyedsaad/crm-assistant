@@ -20,10 +20,22 @@ class OrderController extends Controller
                 $apiUrl = env('TRANSPORT_API_URL'); 
                 $apiKey = env('TRANSPORT_API_KEY');
 
+                // DataTables parameters
                 $draw = $request->input('draw', 1);
                 $start = $request->input('start', 0);
-                $length = $request->input('length', 25); // Changed from 100 to 25
+                $length = $request->input('length', 25);
                 $searchValue = $request->input('search.value', '');
+
+                // Get sorting parameters
+                $orderColumn = $request->input('order.0.column', 0);
+                $orderDirection = $request->input('order.0.dir', 'desc');
+                
+                // Map column index to field name
+                $columns = ['createdAt', 'orderNo', 'vehicleTypeName', 'orderPrice', 'orderPurchasePrice', 'status', 'internalNotes'];
+                $sortField = $columns[$orderColumn] ?? 'createdAt';
+
+                // Build API query
+                $apiQuery = [];
 
                 // Date Range Filtering
                 if ($request->filled('fromDate')) {
@@ -33,9 +45,23 @@ class OrderController extends Controller
                     $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
                 }
                 if (!$request->filled('fromDate') && !$request->filled('toDate')) {
-                    $apiQuery['filter[createdAt][gte]'] = Carbon::now('UTC')->subDays(7)->format('Y-m-d\TH:i:s\Z');
-                    // $apiQuery['filter[createdAt][gte]'] = Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s');
+                    $apiQuery['filter[createdAt][gte]'] = Carbon::now('UTC')->subDays(2)->format('Y-m-d\TH:i:s\Z');
                 }
+
+                // Set sorting - handle different field mappings for API
+                if ($sortField === 'createdAt') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-createdAt' : 'createdAt';
+                } elseif ($sortField === 'orderNo') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
+                } elseif ($sortField === 'status') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-status' : 'status';
+                } else {
+                    // Default sort for fields that don't support API sorting
+                    $apiQuery['sort'] = '-createdAt';
+                }
+
+                // Limit to maximum 100 records
+                $apiQuery['limit'] = 100;
 
                 $response = $client->get($apiUrl . 'orders', [
                     'headers' => [
@@ -50,7 +76,7 @@ class OrderController extends Controller
                 $orders = collect($res['data'] ?? []);
                 $meta = $res['meta'] ?? [];
 
-                // Transform data - FIXED: Return raw data for frontend processing
+                // Transform data
                 $transformedData = $orders->map(function($row) {
                     return [
                         'id' => $row['id'] ?? null,
@@ -72,19 +98,40 @@ class OrderController extends Controller
                         
                         return str_contains(strtolower($item['customerNo'] ?? ''), $searchLower) ||
                             str_contains(strtolower($item['orderNo'] ?? ''), $searchLower) ||
-                            str_contains(strtolower($item['vehicleTypeName'] ?? ''), $searchLower);
+                            str_contains(strtolower($item['vehicleTypeName'] ?? ''), $searchLower) ||
+                            str_contains(strtolower($item['status'] ?? ''), $searchLower);
                     });
                 }
 
-                // Handle frontend pagination (25 per page from 100 API results)
-                $recordsFromThisPage = $start % 100; // Position within current API page
-                $recordsToTake = min($length, $transformedData->count() - $recordsFromThisPage);
-                $paginatedData = $transformedData->slice($recordsFromThisPage, $recordsToTake)->values();
+                // Apply client-side sorting for fields not sortable by API
+                if (in_array($sortField, ['vehicleTypeName', 'orderPrice', 'orderPurchasePrice', 'internalNotes'])) {
+                    $transformedData = $transformedData->sortBy(function($item) use ($sortField) {
+                        // For price fields, convert to numeric for proper sorting
+                        if (in_array($sortField, ['orderPrice', 'orderPurchasePrice'])) {
+                            return (float) ($item[$sortField] ?? 0);
+                        }
+                        // For text fields, convert to lowercase
+                        return strtolower($item[$sortField] ?? '');
+                    });
+                    
+                    if ($orderDirection === 'desc') {
+                        $transformedData = $transformedData->reverse();
+                    }
+                    
+                    $transformedData = $transformedData->values(); // Reset keys
+                }
+
+                // Handle pagination - limit to 100 records total
+                $totalRecords = min($transformedData->count(), 100);
+                $recordsToTake = min($length, $totalRecords - $start);
+                $recordsToTake = max(0, $recordsToTake); // Ensure non-negative
+                
+                $paginatedData = $transformedData->slice($start, $recordsToTake)->values();
 
                 return response()->json([
                     'draw' => intval($draw),
-                    'recordsTotal' => $meta['total'] ?? 0,
-                    'recordsFiltered' => $meta['total'] ?? 0,
+                    'recordsTotal' => $totalRecords,
+                    'recordsFiltered' => $totalRecords,
                     'data' => $paginatedData->toArray()
                 ]);
 
@@ -213,7 +260,22 @@ class OrderController extends Controller
             // Flatten order attributes for easier access in view
             $order = array_merge($order, $order['attributes'] ?? []);
 
-            return view('admin.orders.view', compact('order', 'customer', 'totalOrders'));
+            $destinations = [];   
+            foreach ($order['destinations'] as $value) {
+                if($value['taskType'] == 'pickup'){
+                    $destinations['collections'] = $value;   
+                }
+                elseif ($value['taskType'] == 'delivery') {
+                    $destinations['delivery'] = $value;   
+                }
+                else{
+                    $destinations = [];
+                }
+            }
+            $customer['createdAt'] = $customerData['data']['createdAt'];
+            $customer['updatedAt'] = $customerData['data']['updatedAt'];
+
+            return view('admin.orders.view', compact('order', 'customer', 'totalOrders', 'destinations'));
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             // Handle 404 and other 4xx errors
@@ -228,8 +290,6 @@ class OrderController extends Controller
     {
         try {
             $query = $request->get('query');
-            
-            \Log::info('Autocomplete function called with query: ' . $query);
             
             if (strlen($query) < 2) {
                 return response()->json(['data' => []]);

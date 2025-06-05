@@ -22,8 +22,19 @@ class CustomerController extends Controller
                 // DataTables parameters
                 $draw = $request->input('draw', 1);
                 $start = $request->input('start', 0);
-                $length = $request->input('length', 25); // Changed from 100 to 25
+                $length = $request->input('length', 25);
                 $searchValue = $request->input('search.value', '');
+
+                // Get sorting parameters
+                $orderColumn = $request->input('order.0.column', 0);
+                $orderDirection = $request->input('order.0.dir', 'desc');
+                
+                // Map column index to field name
+                $columns = ['createdAt', 'customerNo', 'companyName', 'address', 'industry'];
+                $sortField = $columns[$orderColumn] ?? 'createdAt';
+
+                // Build API query
+                $apiQuery = [];
 
                 // Date Range Filtering
                 if ($request->filled('fromDate')) {
@@ -33,8 +44,23 @@ class CustomerController extends Controller
                     $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
                 }
                 if (!$request->filled('fromDate') && !$request->filled('toDate')) {
-                    $apiQuery['filter[createdAt][gte]'] = Carbon::now()->subDays(7)->format('Y-m-d\TH:i:s');
+                    $apiQuery['filter[createdAt][gte]'] = Carbon::now()->subDays(2)->format('Y-m-d\TH:i:s');
                 }
+
+                // Set sorting - handle different field mappings for API
+                if ($sortField === 'createdAt') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-createdAt' : 'createdAt';
+                } elseif ($sortField === 'customerNo') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-customerNo' : 'customerNo';
+                } elseif ($sortField === 'companyName') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-companyName' : 'companyName';
+                } else {
+                    // Default sort for other fields
+                    $apiQuery['sort'] = '-createdAt';
+                }
+
+                // Limit to maximum 100 records
+                $apiQuery['limit'] = 100;
 
                 $response = $client->get($apiUrl . 'customers', [
                     'headers' => [
@@ -54,8 +80,8 @@ class CustomerController extends Controller
                     return [
                         'id' => $row['id'] ?? null,
                         'createdAt' => Carbon::parse($row['createdAt'])->format('d-m-Y H:i'),
-                        'customerNo' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['customerNo'] ?? 'N/A') . '</a>',
-                        'companyName' => '<a href="/admin/customers/' . ($row['id'] ?? '') . '">' . ($row['attributes']['companyName'] ?? 'N/A') . '</a>',
+                        'customerNo' => $row['attributes']['customerNo'] ?? 'N/A',
+                        'companyName' => $row['attributes']['companyName'] ?? 'N/A',
                         'address' => in_array($row['attributes']['businessAddress']['address'] ?? 'N/A', ['', 'N/A']) ? '-' : $row['attributes']['businessAddress']['address'],
                         'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote','Aircall SDT']) ? '-' : $row['attributes']['additionalField1'],
                         'numberOfOrders' => rand(0, 100), // Replace with actual logic
@@ -66,26 +92,38 @@ class CustomerController extends Controller
                 if (!empty($searchValue)) {
                     $transformedData = $transformedData->filter(function($item) use ($searchValue) {
                         $searchLower = strtolower($searchValue);
-                        // Remove HTML tags for searching
-                        $customerNo = strip_tags($item['customerNo']);
-                        $companyName = strip_tags($item['companyName']);
                         
-                        return str_contains(strtolower($companyName), $searchLower) ||
-                            str_contains(strtolower($customerNo), $searchLower) ||
+                        return str_contains(strtolower($item['companyName']), $searchLower) ||
+                            str_contains(strtolower($item['customerNo']), $searchLower) ||
                             str_contains(strtolower($item['address']), $searchLower) ||
                             str_contains(strtolower($item['industry']), $searchLower);
                     });
                 }
 
-                // Handle frontend pagination (25 per page from 100 API results)
-                $recordsFromThisPage = $start % 100; // Position within current API page
-                $recordsToTake = min($length, $transformedData->count() - $recordsFromThisPage);
-                $paginatedData = $transformedData->slice($recordsFromThisPage, $recordsToTake)->values();
+                // Apply client-side sorting for address and industry (fields not sortable by API)
+                if (in_array($sortField, ['address', 'industry'])) {
+                    $transformedData = $transformedData->sortBy(function($item) use ($sortField) {
+                        return strtolower($item[$sortField]);
+                    });
+                    
+                    if ($orderDirection === 'desc') {
+                        $transformedData = $transformedData->reverse();
+                    }
+                    
+                    $transformedData = $transformedData->values(); // Reset keys
+                }
+
+                // Handle pagination - limit to 100 records total
+                $totalRecords = min($transformedData->count(), 100);
+                $recordsToTake = min($length, $totalRecords - $start);
+                $recordsToTake = max(0, $recordsToTake); // Ensure non-negative
+                
+                $paginatedData = $transformedData->slice($start, $recordsToTake)->values();
 
                 return response()->json([
                     'draw' => intval($draw),
-                    'recordsTotal' => $meta['total'] ?? 0,
-                    'recordsFiltered' => $meta['total'] ?? 0,
+                    'recordsTotal' => $totalRecords,
+                    'recordsFiltered' => $totalRecords,
                     'data' => $paginatedData->toArray()
                 ]);
 

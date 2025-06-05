@@ -341,38 +341,41 @@
 
     <script>
         $(function () {
-            // Check if DataTable is already initialized on this table
+            // Initialize DataTable
             if ($.fn.DataTable.isDataTable('#datatable')) {
-                // If it is, destroy the existing instance
                 $('#datatable').DataTable().destroy();
             }
 
             var table = $('#datatable').DataTable({
                 processing: true,
                 serverSide: true,
-                scrollX: true, // Enable horizontal scrolling only when needed
-                scrollCollapse: false, // Prevent table from collapsing
-                autoWidth: true, // Enable auto width calculation for better fit
-                responsive: false, // Disable responsive plugin to force scrolling
+                scrollX: true,
+                scrollCollapse: false,
+                autoWidth: true,
+                responsive: false,
+                ordering: true, // Enable column sorting
+                order: [[0, 'desc']], // Default sort by first column (Order Created) descending
                 ajax: {
                     url: "{{ route('admin.orders.index') }}",
                     data: function (d) {
                         d.fromDate = $('#fromDate').val();
                         d.toDate = $('#toDate').val();
-                        // DataTables automatically adds 'start', 'length', 'search[value]', 'order[0][column]', etc.
                     }
                 },
-                pageLength: 25, // Show 25 results per page
+                pageLength: 25, // 25 records per page
+                lengthMenu: [[25, 50, 100], [25, 50, 100]], // Limit options to max 100
                 columns: [
                     { 
                         data: 'createdAt', 
                         name: 'createdAt',
-                        className: 'text-nowrap'
+                        className: 'text-nowrap',
+                        orderable: true
                     },
                     { 
                         data: 'orderNo', 
                         name: 'orderNo',
                         className: 'text-nowrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             return `<a href="/admin/orders/${row.id}">${data ?? '-'}</a>`; 
                         }
@@ -381,6 +384,7 @@
                         data: 'vehicleTypeName', 
                         name: 'vehicleTypeName',
                         className: 'text-nowrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             return data ? data : '-';
                         }
@@ -389,6 +393,7 @@
                         data: 'orderPrice', 
                         name: 'orderPrice',
                         className: 'text-nowrap text-end',
+                        orderable: true,
                         render: function(data, type, row) {
                             return data ? '£' + data : '-';
                         }
@@ -397,6 +402,7 @@
                         data: 'orderPurchasePrice', 
                         name: 'orderPurchasePrice',
                         className: 'text-nowrap text-end',
+                        orderable: true,
                         render: function(data, type, row) {
                             return data ? '£' + data : '-';
                         }
@@ -405,6 +411,7 @@
                         data: 'status', 
                         name: 'status',
                         className: 'text-nowrap',
+                        orderable: true,
                         render: function(data, type, row) {
                             if (!data) return '-';
                             
@@ -450,7 +457,7 @@
                         data: null,
                         name: 'internalNotes', 
                         className: 'text-center',
-                        orderable: false,
+                        orderable: true,
                         searchable: false,
                         render: function(data, type, row) {
                             // Get the actual notes from the row
@@ -467,15 +474,20 @@
                         }
                     }
                 ],
-                // Force table layout
                 initComplete: function() {
-                    // Ensure table uses full width when possible
+                    $('.dataTables_wrapper').css({
+                        'width': '100%'
+                    });
+                },
+                drawCallback: function(settings) {
+                    // Ensure proper styling after each draw
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
                 }
             });
 
+            // DataTable filter functionality
             $('#filterBtn').on('click', function () {
                 table.draw();
             });
@@ -486,7 +498,7 @@
                 table.draw();
             });
 
-            // Autocomplete Search Functionality for Orders - UPDATED
+            // Autocomplete Search Functionality for Orders
             let searchTimeout;
             let currentRequest;
 
@@ -550,7 +562,7 @@
                 }, 300); // Reduced to 300ms for faster response
             });
 
-            // Handle autocomplete item click - UPDATED
+            // Handle autocomplete item click
             $(document).on('click', '.autocomplete-item', function(e) {
                 const orderId = $(this).data('id');
                 const orderInfo = $(this).find('.order-info').text();
@@ -562,7 +574,7 @@
                 window.location.href = `/admin/orders/${orderId}`;
             });
 
-            // Handle keyboard navigation - SAME AS BEFORE
+            // Handle keyboard navigation
             $(document).on('keydown', '#orderSearch', function(e) {
                 const resultsContainer = $('#autocompleteResults');
                 const items = resultsContainer.find('.autocomplete-item');
@@ -604,7 +616,7 @@
                 }
             });
 
-            // Hide results when clicking outside - SAME AS BEFORE
+            // Hide results when clicking outside
             $(document).on('click', function(e) {
                 if (!$(e.target).closest('.autocomplete-container').length) {
                     $('#autocompleteResults').hide();

@@ -162,9 +162,11 @@
                                         <!-- Order Number -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Order Number:</span>
-                                            <span class="order-detail-value">
-                                                <strong>{{ $order['orderNo'] ?? $order['orderNo'] ?? '-' }}</strong>
-                                            </span>
+                                            <a href="/admin/customers/{{$customer['customerNo']}}">
+                                                <span class="order-detail-value">
+                                                    <strong>{{ $order['orderNo'] ?? $order['orderNo'] ?? '-' }}</strong>
+                                                </span>
+                                            </a>
                                         </div>
 
                                         <!-- Order Date -->
@@ -256,51 +258,51 @@
                                         <!-- Collection Address -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Company Contact Address:</span>
-                                            <span class="order-detail-value">{{ $order['collectionAddress'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['address'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Address 2 -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Address 2:</span>
-                                            <span class="order-detail-value">{{ $order['collectionAddress2'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['address2'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Postcode -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Postcode:</span>
-                                            <span class="order-detail-value">{{ $order['collectionPostcode'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['postcode'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- City -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">City:</span>
-                                            <span class="order-detail-value">{{ $order['collectionCity'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['city'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Country -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Country:</span>
-                                            <span class="order-detail-value">{{ $order['collectionCountry'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['country'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Phone -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Phone:</span>
-                                            <span class="order-detail-value">{{ $order['collectionPhone'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['phone'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Collection Date -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Date:</span>
                                             <span class="order-detail-value">
-                                                {{ isset($order['collectionDate']) ? \Carbon\Carbon::parse($order['collectionDate'])->format('d-m-Y') : '-' }}
+                                                {{ isset($destinations['collections']) ? \Carbon\Carbon::parse($destinations['collections']['date'])->format('d-m-Y') : '-' }}
                                             </span>
                                         </div>
 
                                         <!-- Collection Time -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Delivery Time:</span>
-                                            <span class="order-detail-value">{{ $order['collectionTime'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['collections']['deliveryTime'] ?? '-' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -316,51 +318,51 @@
                                         <!-- Delivery Address -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Company Contact Address:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryAddress'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['address'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Address 2 -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Address 2:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryAddress2'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['address2'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Postcode -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Postcode:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryPostcode'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['postcode'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- City -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">City:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryCity'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['city'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Country -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Country:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryCountry'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['country'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Phone -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Phone:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryPhone'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['phone'] ?? '-' }}</span>
                                         </div>
 
                                         <!-- Delivery Date -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Date:</span>
                                             <span class="order-detail-value">
-                                                {{ isset($order['deliveryDate']) ? \Carbon\Carbon::parse($order['deliveryDate'])->format('d-m-Y') : '-' }}
+                                                {{ isset($destinations['delivery']) ? \Carbon\Carbon::parse($destinations['delivery']['date'])->format('d-m-Y') : '-' }}
                                             </span>
                                         </div>
 
                                         <!-- Delivery Time -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">To Time:</span>
-                                            <span class="order-detail-value">{{ $order['deliveryToTime'] ?? $order['deliveryTime'] ?? '-' }}</span>
+                                            <span class="order-detail-value">{{ $destinations['delivery']['toTime'] ?? $destinations['delivery']['toTime'] ?? '-' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -450,12 +452,15 @@
                                         <!-- Company Name & Customer ID -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Company Name & ID:</span>
-                                            <span class="order-detail-value">
-                                                <strong>{{ $customer['companyName'] ?? '-' }}</strong>
-                                                @if(!empty($customer['customerNo']))
-                                                    ({{ $customer['customerNo'] }})
-                                                @endif
-                                            </span>
+                                            
+                                            <a href="/admin/customers/{{$customer['customerNo']}}">
+                                                <span class="order-detail-value">
+                                                    <strong>{{ $customer['companyName'] ?? '-' }}</strong>
+                                                    @if(!empty($customer['customerNo']))
+                                                        ({{ $customer['customerNo'] }})
+                                                    @endif
+                                                </span>
+                                            </a>
                                         </div>
 
                                         <!-- Company Address -->
