@@ -31,8 +31,8 @@ class OrderController extends Controller
                 $orderDirection = $request->input('order.0.dir', 'desc');
                 
                 // Map column index to field name
-                $columns = ['createdAt', 'orderNo', 'vehicleTypeName', 'orderPrice', 'orderPurchasePrice', 'status', 'internalNotes'];
-                $sortField = $columns[$orderColumn] ?? 'createdAt';
+                $columns = ['updatedAt', 'orderNo', 'vehicleTypeName', 'orderPrice', 'orderPurchasePrice', 'status', 'internalNotes'];
+                $sortField = $columns[$orderColumn] ?? 'updatedAt';
 
                 // Build API query
                 $apiQuery = [];
@@ -49,15 +49,16 @@ class OrderController extends Controller
                 }
 
                 // Set sorting - handle different field mappings for API
-                if ($sortField === 'createdAt') {
-                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-createdAt' : 'createdAt';
+                if ($sortField === 'updatedAt') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-updatedAt' : 'updatedAt';
                 } elseif ($sortField === 'orderNo') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
                 } elseif ($sortField === 'status') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-status' : 'status';
                 } else {
                     // Default sort for fields that don't support API sorting
-                    $apiQuery['sort'] = '-createdAt';
+                    // $apiQuery['sort'] = '-createdAt';
+                    $apiQuery['sort'] = '-updatedAt';
                 }
 
                 // Limit to maximum 100 records
@@ -80,7 +81,7 @@ class OrderController extends Controller
                 $transformedData = $orders->map(function($row) {
                     return [
                         'id' => $row['id'] ?? null,
-                        'createdAt' => Carbon::parse($row['createdAt'])->format('d-m-Y H:i'),
+                        'updatedAt' => Carbon::parse($row['updatedAt'])->format('d-m-Y H:i'),
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
                         'customerNo' => $row['attributes']['customerNo'] ?? null,
                         'vehicleTypeName' => $row['attributes']['vehicleTypeName'] ?? null,

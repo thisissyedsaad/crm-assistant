@@ -30,8 +30,8 @@ class CustomerController extends Controller
                 $orderDirection = $request->input('order.0.dir', 'desc');
                 
                 // Map column index to field name
-                $columns = ['createdAt', 'customerNo', 'companyName', 'address', 'industry'];
-                $sortField = $columns[$orderColumn] ?? 'createdAt';
+                $columns = ['updatedAt', 'customerNo', 'companyName', 'address', 'industry', 'numberOfOrders'];
+                $sortField = $columns[$orderColumn] ?? 'updatedAt';
 
                 // Build API query
                 $apiQuery = [];
@@ -48,15 +48,16 @@ class CustomerController extends Controller
                 }
 
                 // Set sorting - handle different field mappings for API
-                if ($sortField === 'createdAt') {
-                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-createdAt' : 'createdAt';
+                if ($sortField === 'updatedAt') {
+                    $apiQuery['sort'] = ($orderDirection === 'desc') ? '-updatedAt' : 'updatedAt';
                 } elseif ($sortField === 'customerNo') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-customerNo' : 'customerNo';
                 } elseif ($sortField === 'companyName') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-companyName' : 'companyName';
                 } else {
                     // Default sort for other fields
-                    $apiQuery['sort'] = '-createdAt';
+                    // $apiQuery['sort'] = '-createdAt';
+                    $apiQuery['sort'] = '-updatedAt';
                 }
 
                 // Limit to maximum 100 records
@@ -79,12 +80,12 @@ class CustomerController extends Controller
                 $transformedData = $customers->map(function($row) {
                     return [
                         'id' => $row['id'] ?? null,
-                        'createdAt' => Carbon::parse($row['createdAt'])->format('d-m-Y H:i'),
+                        'updatedAt' => Carbon::parse($row['updatedAt'])->format('d-m-Y H:i'),
                         'customerNo' => $row['attributes']['customerNo'] ?? 'N/A',
                         'companyName' => $row['attributes']['companyName'] ?? 'N/A',
                         'address' => in_array($row['attributes']['businessAddress']['address'] ?? 'N/A', ['', 'N/A']) ? '-' : $row['attributes']['businessAddress']['address'],
                         'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote','Aircall SDT']) ? '-' : $row['attributes']['additionalField1'],
-                        'numberOfOrders' => rand(0, 100), // Replace with actual logic
+                        'numberOfOrders' => 'Show', // Default to "Show" button
                     ];
                 });
 
@@ -100,8 +101,8 @@ class CustomerController extends Controller
                     });
                 }
 
-                // Apply client-side sorting for address and industry (fields not sortable by API)
-                if (in_array($sortField, ['address', 'industry'])) {
+                // Apply client-side sorting for address, industry, and numberOfOrders (fields not sortable by API)
+                if (in_array($sortField, ['address', 'industry', 'numberOfOrders'])) {
                     $transformedData = $transformedData->sortBy(function($item) use ($sortField) {
                         return strtolower($item[$sortField]);
                     });
@@ -264,6 +265,50 @@ class CustomerController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Could not fetch last order'
+            ], 500);
+        }
+    }
+
+    public function getOrderCount(Request $request)
+    {
+        try {
+            $customerNo = $request->input('customer_no');
+            
+            if (!$customerNo) {
+                return response()->json([
+                    'error' => 'Customer Number required'
+                ], 400);
+            }
+
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            $response = $client->get($apiUrl . 'orders', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => [
+                    'filter[customerNo]' => $customerNo,
+                ],
+            ]);
+
+            $res = json_decode($response->getBody()->getContents(), true);
+            $orders = $res['data'] ?? [];
+            $totalOrders = count($orders);
+
+            return response()->json([
+                'success' => true,
+                'total_orders' => $totalOrders
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error fetching order count for customer {$customerNo}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Could not fetch order count'
             ], 500);
         }
     }

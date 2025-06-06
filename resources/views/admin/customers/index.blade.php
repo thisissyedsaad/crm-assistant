@@ -26,28 +26,33 @@
         /* Set minimum widths but allow columns to expand to fill available space */
         #datatable th:nth-child(1), #datatable td:nth-child(1) { 
             min-width: 150px; 
-            width: 20%; /* Flexible width */
+            width: 18%; /* Flexible width */
         } /* Created Date/Time */
         
         #datatable th:nth-child(2), #datatable td:nth-child(2) { 
             min-width: 130px; 
-            width: 15%; /* Flexible width */
+            width: 13%; /* Flexible width */
         } /* Customer Number */
         
         #datatable th:nth-child(3), #datatable td:nth-child(3) { 
             min-width: 200px; 
-            width: 25%; /* Flexible width */
+            width: 23%; /* Flexible width */
         } /* Company Name */
         
         #datatable th:nth-child(4), #datatable td:nth-child(4) { 
             min-width: 180px; 
-            width: 25%; /* Flexible width */
+            width: 23%; /* Flexible width */
         } /* Address */
         
         #datatable th:nth-child(5), #datatable td:nth-child(5) { 
             min-width: 140px; 
-            width: 15%; /* Flexible width */
+            width: 13%; /* Flexible width */
         } /* Business Industry */
+
+        #datatable th:nth-child(6), #datatable td:nth-child(6) { 
+            min-width: 120px; 
+            width: 10%; /* Flexible width */
+        } /* # Of Orders */
         
         /* Most columns should not wrap by default */
         #datatable th,
@@ -161,14 +166,14 @@
         }
 
         /* Show button styling */
-        .show-last-order {
+        .show-last-order, .show-order-count {
             color: #007bff;
             cursor: pointer;
             text-decoration: underline;
             font-size: 0.85em;
         }
 
-        .show-last-order:hover {
+        .show-last-order:hover, .show-order-count:hover {
             color: #0056b3;
         }
 
@@ -176,6 +181,24 @@
             color: #6c757d;
             font-style: italic;
             font-size: 0.85em;
+        }
+
+        /* DataTable show order count button */
+        .table .show-order-count {
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9em;
+        }
+
+        .table .show-order-count:hover {
+            color: #0056b3;
+        }
+
+        .table .order-loading {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.9em;
         }
     </style>
 @endpush
@@ -239,6 +262,7 @@
                                             <th>Company Name</th>
                                             <th>Address</th>
                                             <th>Business Industry</th>
+                                            <th># Of Orders</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -293,8 +317,8 @@
                 lengthMenu: [[25, 50, 100], [25, 50, 100]], // Limit options to max 100
                 columns: [
                     { 
-                        data: 'createdAt', 
-                        name: 'createdAt',
+                        data: 'updatedAt', 
+                        name: 'updatedAt',
                         className: 'text-nowrap',
                         orderable: true
                     },
@@ -336,6 +360,15 @@
                         render: function(data, type, row) {
                             return data || '-';
                         }
+                    },
+                    { 
+                        data: 'numberOfOrders', 
+                        name: 'numberOfOrders',
+                        className: 'text-nowrap text-center',
+                        orderable: true,
+                        render: function(data, type, row) {
+                            return `<span class="show-order-count" data-customer-no="${row.customerNo}">Show</span>`;
+                        }
                     }
                 ],
                 initComplete: function() {
@@ -360,6 +393,38 @@
                 $('#fromDate').val('');
                 $('#toDate').val('');
                 table.draw();
+            });
+
+            // Handle "Show" click for order count in DataTable
+            $(document).on('click', '.show-order-count', function(e) {
+                e.stopPropagation();
+                
+                const $this = $(this);
+                const customerNo = $this.data('customer-no');
+                
+                // Show loading state
+                $this.text('Loading...').addClass('order-loading').removeClass('show-order-count');
+                
+                // Fetch order count
+                $.ajax({
+                    url: "{{ route('admin.customers.ordercount') }}",
+                    method: 'GET',
+                    data: {
+                        customer_no: customerNo
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $this.text(response.total_orders);
+                            $this.removeClass('order-loading');
+                            $this.css('cursor', 'default');
+                        } else {
+                            $this.text('Error').removeClass('order-loading');
+                        }
+                    },
+                    error: function() {
+                        $this.text('Error').removeClass('order-loading');
+                    }
+                });
             });
 
             // Autocomplete Search Functionality

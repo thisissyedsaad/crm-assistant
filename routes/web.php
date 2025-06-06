@@ -50,5 +50,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::resource('customers', CustomerController::class);
     Route::get('/admin/customers/last-order', [CustomerController::class, 'getLastOrder'])->name('customers.lastorder');
     Route::get('/admin/customers/search/autocomplete', [CustomerController::class, 'autocomplete'])->name('customers.autocomplete');
+    Route::get('/admin/customers/ordercount', [CustomerController::class, 'getOrderCount'])->name('customers.ordercount');
+
 });
 require __DIR__.'/auth.php';

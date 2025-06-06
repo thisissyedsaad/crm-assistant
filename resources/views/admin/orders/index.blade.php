@@ -417,8 +417,8 @@
                 lengthMenu: [[25, 50, 100], [25, 50, 100]], // Limit options to max 100
                 columns: [
                     { 
-                        data: 'createdAt', 
-                        name: 'createdAt',
+                        data: 'updatedAt', 
+                        name: 'updatedAt',
                         className: 'text-nowrap',
                         orderable: true
                     },
