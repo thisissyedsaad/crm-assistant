@@ -17,7 +17,7 @@
         
         <li class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
           <a href="{{ route('admin.customers.index') }}" class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
-            <i class="bx bx-group"></i> Customer Overview
+            <i class="bx bx-group"></i> Companies Overview
           </a>
         </li>
         

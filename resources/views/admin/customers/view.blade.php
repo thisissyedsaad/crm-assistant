@@ -449,6 +449,14 @@
                                                 @endif
                                             </span>
                                         </div>
+
+                                        <!-- Number of Previous Orders -->
+                                        <div class="customer-detail-item">
+                                            <span class="customer-detail-label">Number of Previous Orders:</span>
+                                            <span class="customer-detail-value">
+                                                <strong>{{ count($orders) ?? 0 }}</strong> orders
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

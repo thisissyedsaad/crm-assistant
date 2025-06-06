@@ -218,6 +218,11 @@
             font-style: italic;
             font-size: 0.85em;
         }
+
+        span#modalOrderNumber {
+            font-size: 15px;
+            text-decoration: none !important;
+        }
     </style>
 @endpush
 
@@ -344,7 +349,8 @@
                        </div>
                    </div>
                    <div class="col-sm-8">
-                       <span id="modalOrderNumber" class="badge bg-light text-dark">-</span>
+                        <!-- <span id="modalOrderNumber" class="badge bg-light text-dark">-</span> -->
+                        <span id="modalOrderNumber" class="badge bg-primary text-white" >-</span>
                    </div>
                </div>
                <div class="row mb-3">
@@ -681,7 +687,15 @@
             $('#modalCompanyName').text('Loading...');
             $('#modalCommentsContent').text(comments || 'No comments available');
             $('#commentsModal').modal('show');
-            
+                    
+            // Make order number clickable if orderNo exists
+            // if (orderNo) {
+            //     $('#modalOrderNumber').off('click').on('click', function() {
+            //         // Redirect to order details page
+            //         window.location.href = `/admin/orders/${orderNo}`;
+            //     });
+            // }
+
             // API call for company name
             if (customerNo) {
                 $.ajax({
@@ -694,6 +708,17 @@
                     success: function(response) {
                         if (response.success) {
                             $('#modalCompanyName').text(response.companyName);
+
+                            // Make company name clickable
+                            $('#modalCompanyName').off('click').on('click', function() {
+                                // Redirect to customer details page
+                                window.location.href = `/admin/customers/${customerNo}`;
+                            });
+
+                            $('#modalCompanyName').css({
+                                'cursor': 'pointer',
+                            });
+
                         } else {
                             $('#modalCompanyName').text('Customer #' + customerNo);
                         }

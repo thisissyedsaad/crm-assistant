@@ -549,7 +549,7 @@
 
                                         <!-- Collection Date -->
                                         <div class="order-detail-item">
-                                            <span class="order-detail-label">Date:</span>
+                                            <span class="order-detail-label">Collection Date:</span>
                                             <span class="order-detail-value">
                                                 {{ isset($destinations['collections']) ? \Carbon\Carbon::parse($destinations['collections']['date'])->format('d-m-Y') : '-' }}
                                             </span>
@@ -557,7 +557,7 @@
 
                                         <!-- Collection Time -->
                                         <div class="order-detail-item">
-                                            <span class="order-detail-label">Delivery Time:</span>
+                                            <span class="order-detail-label">Collection Time:</span>
                                             <span class="order-detail-value">{{ $destinations['collections']['deliveryTime'] ?? '-' }}</span>
                                         </div>
                                     </div>
@@ -609,7 +609,7 @@
 
                                         <!-- Delivery Date -->
                                         <div class="order-detail-item">
-                                            <span class="order-detail-label">Date:</span>
+                                            <span class="order-detail-label">Delivery Date:</span>
                                             <span class="order-detail-value">
                                                 {{ isset($destinations['delivery']) ? \Carbon\Carbon::parse($destinations['delivery']['date'])->format('d-m-Y') : '-' }}
                                             </span>
@@ -617,7 +617,7 @@
 
                                         <!-- Delivery Time -->
                                         <div class="order-detail-item">
-                                            <span class="order-detail-label">To Time:</span>
+                                            <span class="order-detail-label">Delivery Time:</span>
                                             <span class="order-detail-value">{{ $destinations['delivery']['toTime'] ?? $destinations['delivery']['toTime'] ?? '-' }}</span>
                                         </div>
                                     </div>
