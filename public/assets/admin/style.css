@@ -1829,7 +1829,7 @@ span.flag-thumb-cu {
   }
 
   .flapt-page-wrapper .flapt-sidemenu-wrapper {
-    left: -250px;
+    /* left: -250px; */
   }
 
   .flapt-page-wrapper .flapt-logo a {
@@ -8009,4 +8009,51 @@ label {
     font-weight: 500;
     font-size: 15px;
     text-transform: capitalize;
+}
+
+
+/* ------  */
+
+
+/* DataTable Search Input Fix */
+@media (max-width: 767px) {
+  .dataTables_filter input[type="search"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 200px !important;
+    box-sizing: border-box !important;
+    display: block !important;
+  }
+  
+  .dataTables_filter {
+    width: 100% !important;
+    display: block !important;
+  }
+  
+  .dataTables_filter label {
+    width: 100% !important;
+    display: block !important;
+  }
+  
+  /* Override any existing width constraints */
+  #datatable_filter input {
+    width: 100% !important;
+  }
+  
+  .form-control-sm {
+    width: 100% !important;
+  }
+}
+
+/* Force override for all DataTable search inputs */
+.dataTables_wrapper .dataTables_filter input {
+  width: 200px !important;
+  min-width: 200px !important;
+}
+
+@media (max-width: 767px) {
+  .dataTables_wrapper .dataTables_filter input {
+    width: 100% !important;
+    min-width: 250px !important;
+  }
 }
