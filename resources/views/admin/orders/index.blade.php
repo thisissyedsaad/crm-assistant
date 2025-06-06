@@ -270,7 +270,7 @@
                                         <label for="toDate" class="form-label">To Date</label>
                                         <input type="date" id="toDate" class="form-control">
                                     </div>
-                                    <div class="col-md-3 d-flex align-items-end">
+                                    <div class="col-md-3 d-flex align-items-end date-btn-filter">
                                         <button id="filterBtn" class="btn btn-primary">Filter</button>
                                         <button id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
                                     </div>

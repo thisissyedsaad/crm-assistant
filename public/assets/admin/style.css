@@ -1877,8 +1877,8 @@ span.flag-thumb-cu {
   -webkit-box-flex: 0;
   -ms-flex: 0 0 50%;
   flex: 0 0 50%;
-  max-width: 50%;
-  width: 50%;
+  max-width: 20%;
+  /* width: 50%; */
 }
 
 @media only screen and (max-width: 767px) {
@@ -1886,8 +1886,8 @@ span.flag-thumb-cu {
     -webkit-box-flex: 0;
     -ms-flex: 0 0 80%;
     flex: 0 0 80%;
-    max-width: 80%;
-    width: 80%;
+    /* max-width: 80%;
+    width: 80%; */
   }
 }
 
@@ -1922,7 +1922,8 @@ span.flag-thumb-cu {
   font-size: 25px;
   line-height: 30px;
   text-align: center;
-  color: #495057;
+  /* color: #495057; */
+  color: #fff;
 }
 
 .top-header-area .right-side-navbar .right-side-trigger i:hover {
@@ -8074,5 +8075,12 @@ label {
   .dataTables_wrapper .dataTables_filter input {
     width: 100% !important;
     min-width: 250px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .date-btn-filter {
+      margin-top: 20px;
+      text-align: center;
   }
 }

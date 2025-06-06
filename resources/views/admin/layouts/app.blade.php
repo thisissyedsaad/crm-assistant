@@ -31,7 +31,7 @@
         .mobile-nav-btn {
           display: block !important;
           position: fixed;
-          top: 15px;
+          top: 20px;
           left: 15px;
           z-index: 10001;
           background: transparent;
@@ -102,11 +102,17 @@
       
       /* Desktop - Hide mobile elements */
       @media (min-width: 768px) {
+        .mobile-text-logo,
         .mobile-nav-btn,
         .mobile-close-btn,
         .mobile-overlay {
           display: none !important;
         }
+      }
+      p.mobile-text-logo {
+          padding-top: 17px;
+          color: #fff;
+          font-size: 20px;
       }
     </style>
     
@@ -116,7 +122,7 @@
   <body>
     <!-- Mobile Menu Button (Only visible on mobile) -->
     <button class="mobile-nav-btn d-none" id="mobileMenuBtn">
-      <i class="bx bx-menu-alt-right" style="font-size: 24px;"></i>
+      <i class="bx bx-menu-alt-left" style="font-size: 25px;"></i>
     </button>
     
     <!-- Mobile Overlay -->
@@ -182,7 +188,6 @@
           class="top-header-area d-flex align-items-center justify-content-between"
         >
           <div class="left-side-content-area d-flex align-items-center">
-            <!-- Mobile Logo -->
             <div class="mobile-logo">
               <a href="index.html"
                 ><img src="{{ asset('assets/admin/img/core-img/small-logo.png' ) }}" alt="Mobile Logo"
@@ -190,9 +195,11 @@
             </div>
           </div>
 
-          <div
-            class="right-side-navbar d-flex align-items-center justify-content-end"
-          >
+          <div class="d-flex align-items-center">
+            <p class = "mobile-text-logo">CSDassistant</p>
+          </div>
+
+          <div class="right-side-navbar d-flex align-items-center justify-content-end">
             <!-- Mobile Trigger -->
             <div class="right-side-trigger" id="rightSideTrigger">
               <i class="bx bx-menu-alt-right"></i>
