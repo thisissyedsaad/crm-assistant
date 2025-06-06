@@ -58,7 +58,7 @@ class OrderController extends Controller
                 } else {
                     // Default sort for fields that don't support API sorting
                     // $apiQuery['sort'] = '-createdAt';
-                    $apiQuery['sort'] = '-updatedAt';
+                    // $apiQuery['sort'] = '-updatedAt';
                 }
 
                 // Limit to maximum 100 records

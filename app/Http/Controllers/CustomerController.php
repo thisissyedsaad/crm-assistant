@@ -57,7 +57,7 @@ class CustomerController extends Controller
                 } else {
                     // Default sort for other fields
                     // $apiQuery['sort'] = '-createdAt';
-                    $apiQuery['sort'] = '-updatedAt';
+                    // $apiQuery['sort'] = '-updatedAt';
                 }
 
                 // Limit to maximum 100 records
