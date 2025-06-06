@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Title -->
-    <title>@yield('title', 'Admin Dashboard')</title>
+    <title>@yield('title', 'Admin Dashboard | CSD Assistant')</title>
 
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('assets/admin/img/core-img/favicon.ico') }}" />

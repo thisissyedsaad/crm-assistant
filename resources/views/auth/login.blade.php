@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Laxom- Bootstrap Admin Template</title>
+    <title>CSD Assistant Portal</title>
     <link rel="icon" href="{{ asset('assets/admin/img/core-img/favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/animate.css') }}">

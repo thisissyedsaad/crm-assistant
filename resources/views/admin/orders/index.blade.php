@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Orders Overview | CRM Assistant')
+@section('title', 'Orders Overview | CSD Assistant')
 
 @push('links')
     <link rel="stylesheet" href="{{ asset('assets/admin/css/dataTables.bootstrap5.min.css') }}">

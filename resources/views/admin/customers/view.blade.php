@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Customer Detail | CRM Assistant')
+@section('title', 'Customer Detail | CSD Assistant')
 
 @push('links')
     <!-- DataTables CSS -->

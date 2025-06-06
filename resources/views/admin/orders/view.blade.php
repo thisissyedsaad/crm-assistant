@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Order Detail | CRM Assistant')
+@section('title', 'Order Detail | CSD Assistant')
 
 @push('links')
     <style>

@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', 'Admin Dashboard | CSD Assistant')
 
 @push('links')
 <style>
