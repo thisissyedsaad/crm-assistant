@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Users Management')
+@section('title', 'Create User | CSD Assistant')
 
 @section('content')
 <div class="main-content introduction-farm">
