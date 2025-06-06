@@ -146,108 +146,6 @@
     </div>
     <!-- /Preloader -->
 
-    <!-- Choose Layout -->
-    <!-- <div class="choose-layout-area">
-      <div class="setting-trigger-icon" id="settingTrigger">
-        <i class="ti-settings"></i>
-      </div>
-      <div class="choose-layout" id="chooseLayout">
-        <div class="quick-setting-tab">
-          <div class="widgets-todo-list-area">
-            <h4 class="todo-title">Todo List:</h4>
-            <form id="form-add-todo" class="form-add-todo">
-              <input
-                type="text"
-                id="new-todo-item"
-                class="new-todo-item form-control"
-                name="todo"
-                placeholder="Add New"
-              />
-              <input
-                type="submit"
-                id="add-todo-item"
-                class="add-todo-item"
-                value="+"
-              />
-            </form>
-
-            <form id="form-todo-list">
-              <ul id="flaptToDo-list" class="todo-list">
-                <li>
-                  <label class="ckbox"
-                    ><input
-                      type="checkbox"
-                      name="todo-item-done"
-                      class="todo-item-done"
-                      value="test" /><span></span></label
-                  >Go to Market
-                  <i class="todo-item-delete ti-close"></i>
-                </li>
-
-                <li>
-                  <label class="ckbox"
-                    ><input
-                      type="checkbox"
-                      name="todo-item-done"
-                      class="todo-item-done"
-                      value="hello" /><span></span></label
-                  >Meeting with AD
-                  <i class="todo-item-delete ti-close"></i>
-                </li>
-
-                <li>
-                  <label class="ckbox"
-                    ><input
-                      type="checkbox"
-                      name="todo-item-done"
-                      class="todo-item-done"
-                      value="hello" /><span></span></label
-                  >Check Mail
-                  <i class="todo-item-delete ti-close"></i>
-                </li>
-
-                <li>
-                  <label class="ckbox"
-                    ><input
-                      type="checkbox"
-                      name="todo-item-done"
-                      class="todo-item-done"
-                      value="hello" /><span></span></label
-                  >Work for Theme
-                  <i class="todo-item-delete ti-close"></i>
-                </li>
-
-                <li>
-                  <label class="ckbox"
-                    ><input
-                      type="checkbox"
-                      name="todo-item-done"
-                      class="todo-item-done"
-                      value="hello" /><span></span></label
-                  >Create a Plugin
-                  <i class="todo-item-delete ti-close"></i>
-                </li>
-
-                <li>
-                  <label class="ckbox"
-                    ><input
-                      type="checkbox"
-                      name="todo-item-done"
-                      class="todo-item-done"
-                      value="hello" /><span></span></label
-                  >Fixed Template Issues
-                  <i class="todo-item-delete ti-close"></i>
-                </li>
-              </ul>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
-    <!-- ======================================
-    ******* Page Wrapper Area Start **********
-    ======================================= -->
     <div class="flapt-page-wrapper">
       <!-- Sidemenu Area -->
       <div class="flapt-sidemenu-wrapper">
@@ -258,8 +156,8 @@
         
         <!-- Desktop Logo -->
         <div class="flapt-logo">
-          <p class="side-logo"><a href="{{ route('login') }}">
-            CRM
+          <p class="side-logo"><a href="{{ route('login') }}">CSDassistant </a></p>
+
             <!-- 
               <img
               class="desktop-logo"
@@ -270,7 +168,6 @@
               src="{{ asset('assets/admin/img/core-img/small-logo.png' ) }}"
               alt="Mobile Logo"/> 
             -->
-          </a></p>
         </div>
 
       <!-- Side navigation  -->
@@ -291,28 +188,6 @@
                 ><img src="{{ asset('assets/admin/img/core-img/small-logo.png' ) }}" alt="Mobile Logo"
               /></a>
             </div>
-
-            <!-- Triggers -->
-            <!-- <div class="flapt-triggers">
-              <div class="menu-collasped" id="menuCollasped">
-                <i class="bx bx-grid-alt"></i>
-              </div>
-              <div class="mobile-menu-open" id="mobileMenuOpen">
-                <i class="bx bx-grid-alt"></i>
-              </div>
-            </div> -->
-
-            <!-- Left Side Nav -->
-            <!-- <ul class="left-side-navbar d-flex align-items-center">
-              <li class="hide-phone app-search">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search..."
-                />
-                <span class="bx bx-search-alt"></span>
-              </li>
-            </ul> -->
           </div>
 
           <div
@@ -339,14 +214,6 @@
                 <div class="dropdown-menu profile dropdown-menu-right">
 
                   <div class="user-profile-area">
-                    <!-- <a href="#" class="dropdown-item"
-                      ><i class="bx bx-user font-15" aria-hidden="true"></i> My
-                      profile</a
-                    > -->
-                    <!-- <a href="#" class="dropdown-item"
-                      ><i class="bx bx-wrench font-15" aria-hidden="true"></i>
-                      settings</a
-                    > -->
                     <form method="POST" action="{{ route('logout') }}" id="logout-form">
                         @csrf
                         <a href="{{ route('logout') }}" 
@@ -388,10 +255,6 @@
         </div>
       </div>
     </div>
-
-    <!-- ======================================
-    ********* Page Wrapper Area End ***********
-    ======================================= -->
 
     <!-- Must needed plugins to the run this Template -->
     <script src="{{ asset('assets/admin/js/jquery.min.js') }}"></script>

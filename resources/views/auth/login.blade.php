@@ -8,6 +8,18 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/style.css') }}">
+    <style>
+        .log-header-area.card.p-4.mb-4.text-center {
+            background-color: #0652dd;
+        }
+        .text-logo {
+            color: #fff;
+            font-size: 35px;
+        }
+        .text-logo-sub{
+            color: #fff;
+        }
+    </style>
 </head>
 <body class="login-area">
 
@@ -29,11 +41,14 @@
                 <div class="col-sm-10 col-md-7 col-lg-5">
                     <div class="middle-box">
                         <div class="card-body">
-                            <div class="log-header-area card p-4 mb-4 text-center">
+                            <!-- <div class="log-header-area card p-4 mb-4 text-center">
                                 <h5>Welcome To CRM Assistant</h5>
                                 <p class="mb-0">Sign in to continue.</p>
+                            </div> -->
+                            <div class="log-header-area card p-4 mb-4 text-center">
+                                <h4 class="mb-2 text-logo fw-bold">CSDassistant</h4>
+                                <p class="mb-0 text-logo-sub">Your Gateway to Better Management</p>
                             </div>
-
                             <div class="card">
                                 <div class="card-body p-4">
                                     

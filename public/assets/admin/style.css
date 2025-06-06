@@ -1321,7 +1321,7 @@ img {
   transition-duration: 500ms;
 }
 
-.flapt-logo a {
+/* .flapt-logo a {
   position: fixed;
   z-index: 999;
   top: 0;
@@ -1340,7 +1340,26 @@ img {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+} */
+
+.flapt-logo a {
+    position: fixed;
+    z-index: 999;
+    top: 0px;
+    left: 0;
+    width: 230px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    text-align: center;
+    height: 70px;
+    -webkit-transition-duration: 500ms;
+    -o-transition-duration: 500ms;
+    transition-duration: 500ms;
+    padding: 18px 15px;
+    display: -ms-flexbox;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
 }
+
 
 .flapt-logo a img {
   max-height: 29px;
@@ -7999,7 +8018,7 @@ label {
 /* Customize  */
 
 .side-logo > a {
-    font-size: 20px;
+    font-size: 25px;
     color: #fff;
     text-align: center !important;
 }
