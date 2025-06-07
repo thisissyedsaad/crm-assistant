@@ -457,7 +457,7 @@
                                                     // Get FIRST (oldest) order
                                                     $firstOrder = end($orders);
                                                     $firstOrderDate = isset($firstOrder['createdAt']) 
-                                                        ? \Carbon\Carbon::parse($firstOrder['createdAt'])->format('d-m-Y') 
+                                                        ? \Carbon\Carbon::parse($firstOrder['createdAt'])->format('d-m-Y H:i')
                                                         : null;
                                                 @endphp
                                                 @if($firstOrderDate)

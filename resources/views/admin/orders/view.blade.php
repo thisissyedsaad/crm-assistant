@@ -418,11 +418,9 @@
                                         <!-- Order Number -->
                                         <div class="order-detail-item">
                                             <span class="order-detail-label">Order Number:</span>
-                                            <a href="/admin/customers/{{$customer['customerNo']}}">
-                                                <span class="order-detail-value">
-                                                    <strong>{{ $order['orderNo'] ?? $order['orderNo'] ?? '-' }}</strong>
-                                                </span>
-                                            </a>
+                                            <span class="order-detail-value">
+                                                <strong>{{ $order['orderNo'] ?? $order['orderNo'] ?? '-' }}</strong>
+                                            </span>
                                         </div>
 
                                         <!-- Order Date -->
@@ -697,106 +695,132 @@
                         </div>
 
                         <!-- Company Tab -->
-                        <div class="tab-pane fade" id="v-pills-company" role="tabpanel"
-                            aria-labelledby="v-pills-company-tab" tabindex="0">
-                            <div class="card mb-4">
-                                <div class="card-header-cu">
-                                    <h6 class="mb-0">Company Information</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="order-details">
-                                        <!-- Company Name & Customer ID -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Company Name & ID:</span>
-                                            
-                                            <a href="/admin/customers/{{$customer['customerNo']}}">
+                        @if(isset($customer) && count($customer) > 0)
+                            <div class="tab-pane fade" id="v-pills-company" role="tabpanel"
+                                aria-labelledby="v-pills-company-tab" tabindex="0">
+                                <div class="card mb-4">
+                                    <div class="card-header-cu">
+                                        <h6 class="mb-0">Company Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="order-details">
+                                            <!-- Company Name & Customer ID -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Company Name & ID:</span>
+                                                
+                                                <a href="/admin/customers/{{$customer['customerNo']}}">
+                                                    <span class="order-detail-value">
+                                                        <strong>{{ $customer['companyName'] ?? '-' }}</strong>
+                                                        @if(!empty($customer['customerNo']))
+                                                            ({{ $customer['customerNo'] }})
+                                                        @endif
+                                                    </span>
+                                                </a>
+                                            </div>
+
+                                            <!-- Company Address -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Company Address:</span>
+                                                <span class="order-detail-value">{{ !empty($customer['businessAddress']['address']) ? $customer['businessAddress']['address'] : '-' }}</span>
+                                            </div>
+
+                                            <!-- Website -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Website:</span>
                                                 <span class="order-detail-value">
-                                                    <strong>{{ $customer['companyName'] ?? '-' }}</strong>
-                                                    @if(!empty($customer['customerNo']))
-                                                        ({{ $customer['customerNo'] }})
+                                                    @if(!empty($customer['website']) && trim($customer['website']) !== '')
+                                                        <a href="{{ $customer['website'] }}" target="_blank">{{ $customer['website'] }}</a>
+                                                    @else
+                                                        -
                                                     @endif
                                                 </span>
-                                            </a>
-                                        </div>
+                                            </div>
 
-                                        <!-- Company Address -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Company Address:</span>
-                                            <span class="order-detail-value">{{ !empty($customer['businessAddress']['address']) ? $customer['businessAddress']['address'] : '-' }}</span>
-                                        </div>
+                                            <!-- Business Industry -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Business Industry:</span>
+                                                <span class="order-detail-value">
+                                                    @php
+                                                        $industry = $customer['additionalField1'] ?? '';
+                                                        $excludedIndustries = ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote', 'Aircall SDT'];
+                                                    @endphp
+                                                    
+                                                    @if(!empty($industry) && !in_array($industry, $excludedIndustries))
+                                                        {{ $industry }}
+                                                    @else
+                                                        -
+                                                    @endif                                            
+                                                </span>
+                                            </div>
 
-                                        <!-- Website -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Website:</span>
-                                            <span class="order-detail-value">
-                                                @if(!empty($customer['website']) && trim($customer['website']) !== '')
-                                                    <a href="{{ $customer['website'] }}" target="_blank">{{ $customer['website'] }}</a>
+                                            <!-- Comments -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Comments:</span>
+                                                <span class="order-detail-value">
+                                                    {{ !empty($customer['notes']) ? $customer['notes'] : '-' }}
+                                                </span>
+                                            </div>
+
+                                            <!-- CRM Notes -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">CRM Notes:</span>
+                                                <span class="order-detail-value">
+                                                    {{ !empty($customer['crmNotes']) ? $customer['crmNotes'] : '-' }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Date Created -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Date Created:</span>
+                                                <span class="order-detail-value">
+                                                    {{ isset($customer['createdAt']) ? \Carbon\Carbon::parse($customer['createdAt'])->format('d-m-Y H:i') : '-' }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Date Updated -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">Date Updated:</span>
+                                                <span class="order-detail-value">
+                                                    {{ isset($customer['updatedAt']) ? \Carbon\Carbon::parse($customer['updatedAt'])->format('d-m-Y H:i') : '-' }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Number of Previous Orders -->
+                                            <div class="order-detail-item">
+                                                @if($firstOrderDate)
+                                                    <!-- <br><small class="text-muted">(since {{ $firstOrderDate }})</small> -->
+                                                    <span class="customer-detail-label">Number of Previous Orders Since ({{$firstOrderDate}}):</span>
                                                 @else
-                                                    -
+                                                    <span class="customer-detail-label">Number of Previous Orders:</span>
                                                 @endif
-                                            </span>
-                                        </div>
-
-                                        <!-- Business Industry -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Business Industry:</span>
-                                            <span class="order-detail-value">
-                                                @php
-                                                    $industry = $customer['additionalField1'] ?? '';
-                                                    $excludedIndustries = ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote', 'Aircall SDT'];
-                                                @endphp
-                                                
-                                                @if(!empty($industry) && !in_array($industry, $excludedIndustries))
-                                                    {{ $industry }}
-                                                @else
-                                                    -
-                                                @endif                                            
-                                            </span>
-                                        </div>
-
-                                        <!-- Comments -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Comments:</span>
-                                            <span class="order-detail-value">
-                                                {{ !empty($customer['notes']) ? $customer['notes'] : '-' }}
-                                            </span>
-                                        </div>
-
-                                        <!-- CRM Notes -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">CRM Notes:</span>
-                                            <span class="order-detail-value">
-                                                {{ !empty($customer['crmNotes']) ? $customer['crmNotes'] : '-' }}
-                                            </span>
-                                        </div>
-
-                                        <!-- Date Created -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Date Created:</span>
-                                            <span class="order-detail-value">
-                                                {{ isset($customer['createdAt']) ? \Carbon\Carbon::parse($customer['createdAt'])->format('d-m-Y H:i') : '-' }}
-                                            </span>
-                                        </div>
-
-                                        <!-- Date Updated -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Date Updated:</span>
-                                            <span class="order-detail-value">
-                                                {{ isset($customer['updatedAt']) ? \Carbon\Carbon::parse($customer['updatedAt'])->format('d-m-Y H:i') : '-' }}
-                                            </span>
-                                        </div>
-
-                                        <!-- Number of Previous Orders -->
-                                        <div class="order-detail-item">
-                                            <span class="order-detail-label">Number of Previous Orders:</span>
-                                            <span class="order-detail-value">
-                                                <strong>{{ $totalOrders ?? 0 }}</strong> orders
-                                            </span>
+                                                <span class="order-detail-value">
+                                                    <strong>{{ $totalOrders ?? 0 }}</strong> orders
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @else
+                            <div class="tab-pane fade" id="v-pills-company" role="tabpanel"
+                                aria-labelledby="v-pills-company-tab" tabindex="0">
+                                <div class="card mb-4">
+                                    <div class="card-header-cu">
+                                        <h6 class="mb-0">Company Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="order-details">
+                                            <!-- Company Name & Customer ID -->
+                                            <div class="order-detail-item">
+                                                <span class="order-detail-label">{{$order['customerNo']}} - Customer Not Found.</span>
+                                                <span class="order-detail-value">
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

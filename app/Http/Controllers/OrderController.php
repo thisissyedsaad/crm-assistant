@@ -226,10 +226,12 @@ class OrderController extends Controller
 
                     $customerData = json_decode($customerResponse->getBody()->getContents(), true);
                     $customer = $customerData['data']['attributes'] ?? [];
-                    
                     // Add company name to order for display
                     $companyName = $customer['companyName'] ?? null;
                     $order['companyName'] = $companyName ? "{$companyName} ({$customerNo})" : "- {$customerNo}";
+
+                    $customer['createdAt'] = $customerData['data']['createdAt'];
+                    $customer['updatedAt'] = $customerData['data']['updatedAt'];
 
                 } catch (\Exception $e) {
                     \Log::warning('Failed to fetch customer data for customerNo ' . $customerNo . ': ' . $e->getMessage());
@@ -245,11 +247,20 @@ class OrderController extends Controller
                             'Accept'        => 'application/json',
                         ],
                         'query' => [
-                            'filter[customerNo]' => $customerNo
+                            'filter[customerNo]' => $customerNo,
+                            'sort' => '-createdAt'
                         ]
                     ]);
-
                     $ordersData = json_decode($ordersResponse->getBody()->getContents(), true);
+                    
+                    // Get FIRST (oldest) order
+                    if(!empty($ordersData['data']) && count($ordersData['data']) > 0){
+                        $firstOrder = end($ordersData['data']);
+                        $firstOrderDate = isset($firstOrder['createdAt']) 
+                            ? \Carbon\Carbon::parse($firstOrder['createdAt'])->format('d-m-Y H:i')
+                            : null;
+                    }
+
                     $totalOrders = count($ordersData['data'] ?? []);
 
                 } catch (\Exception $e) {
@@ -273,10 +284,8 @@ class OrderController extends Controller
                     $destinations = [];
                 }
             }
-            $customer['createdAt'] = $customerData['data']['createdAt'];
-            $customer['updatedAt'] = $customerData['data']['updatedAt'];
 
-            return view('admin.orders.view', compact('order', 'customer', 'totalOrders', 'destinations'));
+            return view('admin.orders.view', compact('order', 'customer', 'totalOrders', 'destinations', 'firstOrderDate'));
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             // Handle 404 and other 4xx errors
