@@ -359,7 +359,6 @@ class CustomerController extends Controller
                     $ordersBody = $ordersResponse->getBody()->getContents();
                     $ordersData = json_decode($ordersBody, true);
                     $orders = $ordersData['data'] ?? [];
-                    // dd($orders);
                 } catch (\Exception $e) {
                     // If orders API fails, continue with empty orders array
                     \Log::warning('Failed to fetch orders for customer ' . $customerNo . ': ' . $e->getMessage());
