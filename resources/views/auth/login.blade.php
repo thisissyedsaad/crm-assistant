@@ -46,7 +46,7 @@
                                 <p class="mb-0">Sign in to continue.</p>
                             </div> -->
                             <div class="log-header-area card p-4 mb-4 text-center">
-                                <h4 class="mb-2 text-logo fw-bold">CSDassistant</h4>
+                                <h4 class="mb-2 text-logo fw-bold">CSD Assistant</h4>
                                 <p class="mb-0 text-logo-sub">Your Gateway to Better Management</p>
                             </div>
                             <div class="card">

@@ -162,7 +162,7 @@
         
         <!-- Desktop Logo -->
         <div class="flapt-logo">
-          <p class="side-logo"><a href="{{ route('login') }}">CSDassistant </a></p>
+          <p class="side-logo"><a href="{{ route('login') }}">CSD Assistant </a></p>
 
             <!-- 
               <img
@@ -196,7 +196,7 @@
           </div>
 
           <div class="d-flex align-items-center">
-            <p class = "mobile-text-logo">CSDassistant</p>
+            <p class = "mobile-text-logo">CSD Assistant</p>
           </div>
 
           <div class="right-side-navbar d-flex align-items-center justify-content-end">

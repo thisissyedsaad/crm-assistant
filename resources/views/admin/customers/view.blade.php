@@ -450,9 +450,24 @@
                                             </span>
                                         </div>
 
-                                        <!-- Number of Previous Orders -->
+                                        <!-- Number of Previous Orders Since First Order -->
                                         <div class="customer-detail-item">
-                                            <span class="customer-detail-label">Number of Previous Orders:</span>
+                                            @if(!empty($orders) && count($orders) > 0)
+                                                @php
+                                                    // Get FIRST (oldest) order
+                                                    $firstOrder = end($orders);
+                                                    $firstOrderDate = isset($firstOrder['createdAt']) 
+                                                        ? \Carbon\Carbon::parse($firstOrder['createdAt'])->format('d-m-Y') 
+                                                        : null;
+                                                @endphp
+                                                @if($firstOrderDate)
+                                                    <!-- <br><small class="text-muted">(since {{ $firstOrderDate }})</small> -->
+                                                    <span class="customer-detail-label">Number of Previous Orders Since ({{$firstOrderDate}}):</span>
+                                                @else
+                                                    <span class="customer-detail-label">Number of Previous Orders:</span>
+                                                @endif
+                                            @endif
+
                                             <span class="customer-detail-value">
                                                 <strong>{{ count($orders) ?? 0 }}</strong> orders
                                             </span>
@@ -670,7 +685,7 @@
                 ]
             });
 
-            // Initialize Orders DataTable
+            // Initialize Orders DataTable - Simple fix
             $('#ordersTable').DataTable({
                 pageLength: 10,
                 lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
@@ -685,12 +700,8 @@
                     zeroRecords: "No matching orders found"
                 },
                 dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
-                order: [[0, 'desc']], // Sort by date descending (newest first)
+                order: [], // Remove initial sorting - preserve API order
                 columnDefs: [
-                    {
-                        targets: [0], // Date column
-                        type: 'date'
-                    },
                     {
                         targets: [3, 4], // Price columns
                         className: 'text-end'
