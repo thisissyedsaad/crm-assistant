@@ -249,7 +249,7 @@
                   <!-- Copywrite Text -->
                   <div class="copywrite-text">
                     <p class="font-13">
-                      Developed by &copy; <a href="#">Our Team</a>
+                      <!-- Developed by &copy; <a href="#">Our Team</a> -->
                     </p>
                   </div>
                   <div class="fotter-icon text-center">
