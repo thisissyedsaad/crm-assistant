@@ -452,7 +452,7 @@
 
                                         <!-- Number of Previous Orders Since First Order -->
                                         <div class="customer-detail-item">
-                                            @if(!empty($orders) && count($orders) > 0)
+                                            @if($totalOrders > 0)
                                                 @php
                                                     // Get FIRST (oldest) order
                                                     $firstOrder = end($orders);
@@ -469,7 +469,7 @@
                                             @endif
 
                                             <span class="customer-detail-value">
-                                                <strong>{{ count($orders) ?? 0 }}</strong> orders
+                                                <strong>{{ $totalOrders ?? 0 }}</strong> orders
                                             </span>
                                         </div>
                                     </div>
@@ -540,7 +540,7 @@
                                         </h6>
                                         <span class="badge bg-primary rounded-pill">
                                             <i class="bx bx-hash me-1"></i>
-                                            {{count($orders) }} Orders
+                                            {{ $totalOrders }} Orders
                                         </span>
                                     </div>
                                 </div>

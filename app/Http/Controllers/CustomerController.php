@@ -365,7 +365,14 @@ class CustomerController extends Controller
                 }
             }
 
-            return view('admin.customers.view', compact('customer', 'orders'));
+            $meta = $ordersData['meta'] ?? [];
+            
+            // Check if meta has total count
+            if (isset($meta['total']) && is_numeric($meta['total'])) {
+                $totalOrders = (int) $meta['total'];
+            }
+
+            return view('admin.customers.view', compact('customer', 'orders', 'totalOrders'));
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             // Handle 404 error
@@ -375,4 +382,141 @@ class CustomerController extends Controller
             }
         }
     }
+    // public function show($id)
+    // {
+    //     $client = new Client();
+    //     $apiUrl = env('TRANSPORT_API_URL');
+    //     $apiKey = env('TRANSPORT_API_KEY');
+
+    //     try {
+    //         // Fetch customer from API
+    //         $response = $client->get($apiUrl . 'customers/' . $id, [
+    //             'headers' => [
+    //                 'Authorization' => 'Basic ' . $apiKey,
+    //                 'Content-Type'  => 'application/json',
+    //                 'Accept'        => 'application/json',
+    //             ],
+    //         ]);
+
+    //         $body = $response->getBody()->getContents();
+    //         $data = json_decode($body, true);
+    //         $customer = $data['data'] ?? null;
+
+    //         if (!$customer || empty($customer)) {
+    //             return redirect()->route('admin.customers.index')
+    //                 ->with('error', 'Customer not found.');
+    //         }
+
+    //         // Fetch orders for this customer using customerNo
+    //         $orders = [];
+    //         $totalOrders = 0;
+    //         $customerNo = $customer['attributes']['customerNo'] ?? null;
+            
+    //         if ($customerNo) {
+    //             try {
+    //                 // FAST SOLUTION: Smart 2-page check with meta fallback
+    //                 $ordersResponse = $client->get($apiUrl . 'orders', [
+    //                     'headers' => [
+    //                         'Authorization' => 'Basic ' . $apiKey,
+    //                         'Content-Type'  => 'application/json',
+    //                         'Accept'        => 'application/json',
+    //                     ],
+    //                     'query' => [
+    //                         'filter[customerNo]' => $customerNo,
+    //                         'sort' => '-createdAt',
+    //                         'page' => 1
+    //                     ]
+    //                 ]);
+
+    //                 $ordersBody = $ordersResponse->getBody()->getContents();
+    //                 $ordersData = json_decode($ordersBody, true);
+    //                 $page1Orders = $ordersData['data'] ?? [];
+    //                 $meta = $ordersData['meta'] ?? [];
+                    
+    //                 \Log::info("Customer {$customerNo}: Page 1 returned " . count($page1Orders) . " orders");
+    //                 \Log::info("Customer {$customerNo}: Meta data: " . json_encode($meta));
+
+    //                 // Strategy 1: Check if meta has total count
+    //                 if (isset($meta['total']) && is_numeric($meta['total'])) {
+    //                     $totalOrders = (int) $meta['total'];
+    //                     $orders = array_slice($page1Orders, 0, 10); // Show first 10
+    //                     \Log::info("Customer {$customerNo}: Using meta total = {$totalOrders}");
+    //                 }
+    //                 // Strategy 2: Smart page checking
+    //                 else {
+    //                     $allOrders = $page1Orders;
+                        
+    //                     // If page 1 has exactly 100 records, check page 2
+    //                     if (count($page1Orders) === 100) {
+    //                         try {
+    //                             $page2Response = $client->get($apiUrl . 'orders', [
+    //                                 'headers' => [
+    //                                     'Authorization' => 'Basic ' . $apiKey,
+    //                                     'Content-Type'  => 'application/json',
+    //                                     'Accept'        => 'application/json',
+    //                                 ],
+    //                                 'query' => [
+    //                                     'filter[customerNo]' => $customerNo,
+    //                                     'sort' => '-createdAt',
+    //                                     'page' => 2
+    //                                 ]
+    //                             ]);
+
+    //                             $page2Body = $page2Response->getBody()->getContents();
+    //                             $page2Data = json_decode($page2Body, true);
+    //                             $page2Orders = $page2Data['data'] ?? [];
+                                
+    //                             \Log::info("Customer {$customerNo}: Page 2 returned " . count($page2Orders) . " orders");
+                                
+    //                             if (!empty($page2Orders)) {
+    //                                 $allOrders = array_merge($allOrders, $page2Orders);
+                                    
+    //                                 // If page 2 also has 100 records, there might be more
+    //                                 if (count($page2Orders) === 100) {
+    //                                     $totalOrders = count($allOrders) . '+'; // Show as 200+
+    //                                     \Log::info("Customer {$customerNo}: Estimated total = {$totalOrders} (more pages likely)");
+    //                                 } else {
+    //                                     $totalOrders = count($allOrders); // Exact count
+    //                                     \Log::info("Customer {$customerNo}: Exact total = {$totalOrders}");
+    //                                 }
+    //                             } else {
+    //                                 $totalOrders = count($page1Orders); // Exactly 100
+    //                                 \Log::info("Customer {$customerNo}: Exact total = {$totalOrders}");
+    //                             }
+                                
+    //                         } catch (\Exception $page2Error) {
+    //                             \Log::warning("Failed to fetch page 2 for customer {$customerNo}: " . $page2Error->getMessage());
+    //                             $totalOrders = count($page1Orders) . '+'; // Show as 100+
+    //                         }
+    //                     } else {
+    //                         $totalOrders = count($page1Orders); // Less than 100, exact count
+    //                         \Log::info("Customer {$customerNo}: Exact total = {$totalOrders}");
+    //                     }
+                        
+    //                     // Always show first 10 orders for display
+    //                     $orders = array_slice($allOrders, 0, 10);
+    //                 }
+                    
+    //             } catch (\Exception $e) {
+    //                 // If orders API fails, continue with empty orders array
+    //                 \Log::warning('Failed to fetch orders for customer ' . $customerNo . ': ' . $e->getMessage());
+    //                 $orders = [];
+    //                 $totalOrders = 0;
+    //             }
+    //         }
+
+    //         return view('admin.customers.view', compact('customer', 'orders', 'totalOrders'));
+
+    //     } catch (\GuzzleHttp\Exception\ClientException $e) {
+    //         // Handle 404 error
+    //         if ($e->getResponse()->getStatusCode() === 404) {
+    //             return redirect()->route('admin.customers.index')
+    //                 ->with('error', 'Customer not found in the system.');
+    //         }
+            
+    //         \Log::error('Customer show error: ' . $e->getMessage());
+    //         return redirect()->route('admin.customers.index')
+    //             ->with('error', 'Error loading customer details.');
+    //     }
+    // }
 }
