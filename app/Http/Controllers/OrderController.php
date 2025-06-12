@@ -261,7 +261,12 @@ class OrderController extends Controller
                             : null;
                     }
 
-                    $totalOrders = count($ordersData['data'] ?? []);
+                    $meta = $ordersData['meta'] ?? [];
+                    // Check if meta has total count
+                    if (isset($meta['total']) && is_numeric($meta['total'])) {
+                        $totalOrders = (int) $meta['total'];
+                    }
+                    // $totalOrders = count($ordersData['data'] ?? []);
 
                 } catch (\Exception $e) {
                     \Log::warning('Failed to fetch orders count for customerNo ' . $customerNo . ': ' . $e->getMessage());

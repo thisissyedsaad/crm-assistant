@@ -450,24 +450,9 @@
                                             </span>
                                         </div>
 
-                                        <!-- Number of Previous Orders Since First Order -->
+                                        <!-- Number of Previous Orders -->
                                         <div class="customer-detail-item">
-                                            @if($totalOrders > 0)
-                                                @php
-                                                    // Get FIRST (oldest) order
-                                                    $firstOrder = end($orders);
-                                                    $firstOrderDate = isset($firstOrder['createdAt']) 
-                                                        ? \Carbon\Carbon::parse($firstOrder['createdAt'])->format('d-m-Y H:i')
-                                                        : null;
-                                                @endphp
-                                                @if($firstOrderDate)
-                                                    <!-- <br><small class="text-muted">(since {{ $firstOrderDate }})</small> -->
-                                                    <span class="customer-detail-label">Number of Previous Orders Since ({{$firstOrderDate}}):</span>
-                                                @else
-                                                    <span class="customer-detail-label">Number of Previous Orders:</span>
-                                                @endif
-                                            @endif
-
+                                            <span class="customer-detail-label">Number of Previous Orders:</span>
                                             <span class="customer-detail-value">
                                                 <strong>{{ $totalOrders ?? 0 }}</strong> orders
                                             </span>

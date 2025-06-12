@@ -787,12 +787,7 @@
 
                                             <!-- Number of Previous Orders -->
                                             <div class="order-detail-item">
-                                                @if($firstOrderDate)
-                                                    <!-- <br><small class="text-muted">(since {{ $firstOrderDate }})</small> -->
-                                                    <span class="customer-detail-label">Number of Previous Orders Since ({{$firstOrderDate}}):</span>
-                                                @else
-                                                    <span class="customer-detail-label">Number of Previous Orders:</span>
-                                                @endif
+                                                <span class="customer-detail-label">Number of Previous Orders:</span>
                                                 <span class="order-detail-value">
                                                     <strong>{{ $totalOrders ?? 0 }}</strong> orders
                                                 </span>
