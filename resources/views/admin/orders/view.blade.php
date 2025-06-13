@@ -184,7 +184,7 @@
             padding: 1rem;
             border-radius: 0.375rem;
             border: 1px solid #e9ecef;
-            white-space: pre-wrap;
+            /* white-space: pre-wrap; */
             word-wrap: break-word;
             max-height: 200px;
             overflow-y: auto;
