@@ -87,6 +87,9 @@ class CustomerController extends Controller
                         'industry' => in_array($row['attributes']['additionalField1'] ?? 'N/A', ['SDT Contact Us', 'CSD Instant Quote', 'Quote', 'N/A', 'Aircall CSD', 'MSDC Instant Quote','Aircall SDT']) ? '-' : $row['attributes']['additionalField1'],
                         'numberOfOrders' => 'Show', // Default to "Show" button
                     ];
+                })->filter(function($item) {
+                    // FILTER OUT records with +44 in companyName
+                    return !str_contains($item['companyName'], '+44');
                 });
 
                 // Apply search filter if provided
