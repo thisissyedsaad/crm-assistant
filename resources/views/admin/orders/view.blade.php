@@ -180,7 +180,7 @@
 
         /* Comments section with animation */
         .comments-section {
-            background-color: #f8f9fa;
+          /* background-color: #f8f9fa; */
             padding: 1rem;
             border-radius: 0.375rem;
             border: 1px solid #e9ecef;
@@ -196,7 +196,7 @@
         }
 
         .comments-section:hover {
-            background-color: #f1f3f4;
+            /* background-color: #f1f3f4; */
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
@@ -352,6 +352,55 @@
             color: #28a745 !important;
             font-weight: 600;
         }
+
+/* Add this CSS to your existing styles */
+
+/* Equal height row for Order Information and Cost Details */
+.equal-height-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.equal-height-row .col-lg-6 {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure cards take full height */
+.equal-height-row .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Make card body flexible */
+.equal-height-row .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Ensure order-details fills available space */
+.equal-height-row .order-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Optional: Add minimum height for consistency */
+.equal-height-row .card {
+    min-height: 400px;
+}
+
+/* Ensure equal spacing between items */
+.equal-height-row .order-detail-item {
+    flex: 0 0 auto;
+}
+
+/* If one card has fewer items, this will distribute space evenly */
+.equal-height-row .order-details.flex-grow-1 {
+    justify-content: flex-start;
+}
     </style>
 @endpush
 
@@ -403,180 +452,168 @@
                         <div class="tab-pane fade show active" id="v-pills-order" role="tabpanel"
                             aria-labelledby="v-pills-order-tab" tabindex="0">
                             
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <!-- Basic Order Information -->
-                                    <div class="card mb-4">
-                                        <!-- <div class="card-header-cu">
-                                            <div class="card-title d-flex justify-content-between align-items-center">
-                                                <h4>Order Information</h4>
-                                            </div>                                                
-                                        </div> -->
-                                        <div class="card-header-cu">
-                                            <h6 class="mb-0">Order Information</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="order-details">
-                                                <!-- Order Number -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Order Number:</span>
-                                                    <span class="order-detail-value">
-                                                        <strong>{{ $order['orderNo'] ?? $order['orderNo'] ?? '-' }}</strong>
-                                                    </span>
-                                                </div>
+<!-- Replace the Order Information & Cost Details section with this -->
 
-                                                <!-- Order Date -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Order Date:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ isset($order['createdAt']) ? \Carbon\Carbon::parse($order['createdAt'])->format('d-m-Y H:i') : '-' }}
-                                                    </span>
-                                                </div>
+<div class="row equal-height-row">
+    <div class="col-lg-6">
+        <!-- Basic Order Information -->
+        <div class="card mb-4 h-100">
+            <div class="card-header-cu">
+                <h6 class="mb-0">Order Information</h6>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="order-details flex-grow-1">
+                    <!-- Order Number -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Order Number:</span>
+                        <span class="order-detail-value">
+                            <strong>{{ $order['orderNo'] ?? $order['orderNo'] ?? '-' }}</strong>
+                        </span>
+                    </div>
 
-                                                <!-- Order Status -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Order Status:</span>
-                                                    <span class="order-detail-value">
-                                                        @if(!empty($order['status']))
-                                                            @php
-                                                                $status = strtolower($order['status']);
-                                                                $statusClass = 'badge ';
-                                                                
-                                                                switch($status) {
-                                                                    case 'quote':
-                                                                        $statusClass .= 'status-quote';
-                                                                        break;
-                                                                    case 'open':
-                                                                        $statusClass .= 'status-open';
-                                                                        break;
-                                                                    case 'mainopen':
-                                                                        $statusClass .= 'status-mainopen';
-                                                                        break;
-                                                                    case 'planned':
-                                                                        $statusClass .= 'status-planned';
-                                                                        break;
-                                                                    case 'signedoff':
-                                                                        $statusClass .= 'status-signed-off';
-                                                                        break;
-                                                                    case 'checked':
-                                                                        $statusClass .= 'status-checked';
-                                                                        break;
-                                                                    case 'invoiced':
-                                                                        $statusClass .= 'status-invoiced';
-                                                                        break;
-                                                                    default:
-                                                                        $statusClass .= 'bg-secondary';
-                                                                }
-                                                            @endphp
-                                                            <span class="{{ $statusClass }}">
-                                                                {{ ucfirst($order['status']) }}
-                                                            </span>
-                                                        @else
-                                                            -
-                                                        @endif
-                                                    </span>
-                                                </div>
+                    <!-- Order Date -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Order Date:</span>
+                        <span class="order-detail-value">
+                            {{ isset($order['createdAt']) ? \Carbon\Carbon::parse($order['createdAt'])->format('d-m-Y H:i') : '-' }}
+                        </span>
+                    </div>
 
-                                                <!-- Company Name & Customer Number -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Company Name:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ $order['companyName'] ?? '-' }}
-                                                    </span>
-                                                </div>
+                    <!-- Order Status -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Order Status:</span>
+                        <span class="order-detail-value">
+                            @if(!empty($order['status']))
+                                @php
+                                    $status = strtolower($order['status']);
+                                    $statusClass = 'badge ';
+                                    
+                                    switch($status) {
+                                        case 'quote':
+                                            $statusClass .= 'status-quote';
+                                            break;
+                                        case 'open':
+                                            $statusClass .= 'status-open';
+                                            break;
+                                        case 'mainopen':
+                                            $statusClass .= 'status-mainopen';
+                                            break;
+                                        case 'planned':
+                                            $statusClass .= 'status-planned';
+                                            break;
+                                        case 'signedoff':
+                                            $statusClass .= 'status-signed-off';
+                                            break;
+                                        case 'checked':
+                                            $statusClass .= 'status-checked';
+                                            break;
+                                        case 'invoiced':
+                                            $statusClass .= 'status-invoiced';
+                                            break;
+                                        default:
+                                            $statusClass .= 'bg-secondary';
+                                    }
+                                @endphp
+                                <span class="{{ $statusClass }}">
+                                    {{ ucfirst($order['status']) }}
+                                </span>
+                            @else
+                                -
+                            @endif
+                        </span>
+                    </div>
 
-                                                <!-- Contact Name -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Contact Name:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ !empty($customer['contacts']) && isset($customer['contacts'][0]['name']) ? $customer['contacts'][0]['name'] : '-' }}
-                                                    </span>
-                                                </div>
+                    <!-- Company Name & Customer Number -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Company Name:</span>
+                        <span class="order-detail-value">
+                            {{ $order['companyName'] ?? '-' }}
+                        </span>
+                    </div>
 
-                                                <!-- Carrier/Vehicle -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Carrier/Vehicle:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ $order['vehicleTypeName'] ?? '-' }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Contact Name -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Contact Name:</span>
+                        <span class="order-detail-value">
+                            {{ !empty($customer['contacts']) && isset($customer['contacts'][0]['name']) ? $customer['contacts'][0]['name'] : '-' }}
+                        </span>
+                    </div>
 
-                                <div class="col-lg-6">
-                                    <!-- Cost Details -->
-                                    <div class="card mb-4">
-                                        <div class="card-header-cu">
-                                            <h6 class="mb-0">Cost Details</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="order-details">
-                                                <!-- Carrier/Vehicle -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Carrier/Vehicle:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ $order['vehicleTypeName'] ?? '-' }}
-                                                    </span>
-                                                </div>
+                    <!-- Carrier/Vehicle -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Carrier/Vehicle:</span>
+                        <span class="order-detail-value">
+                            {{ $order['vehicleTypeName'] ?? '-' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                                <!-- Sale Price -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Sale Price:</span>
-                                                    <span class="order-detail-value">
-                                                        @if(isset($order['orderPrice']))
-                                                            £{{ number_format($order['orderPrice'] ?? $order['orderPrice'], 2) }}
-                                                        @else
-                                                            -
-                                                        @endif
-                                                    </span>
-                                                </div>
+    <div class="col-lg-6">
+        <!-- Cost Details -->
+        <div class="card mb-4 h-100">
+            <div class="card-header-cu">
+                <h6 class="mb-0">Cost Details</h6>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="order-details flex-grow-1">
+                    <!-- Carrier/Vehicle -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Carrier/Vehicle:</span>
+                        <span class="order-detail-value">
+                            {{ $order['vehicleTypeName'] ?? '-' }}
+                        </span>
+                    </div>
 
-                                                <!-- Purchase Price -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Driver Cost:</span>
-                                                    <span class="order-detail-value">
-                                                        @if(isset($order['orderPurchasePrice']))
-                                                            £{{ number_format($order['orderPurchasePrice'] ?? $order['orderPurchasePrice'], 2) }}
-                                                        @else
-                                                            -
-                                                        @endif
-                                                    </span>
-                                                </div>
+                    <!-- Sale Price -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Sale Price:</span>
+                        <span class="order-detail-value">
+                            @if(isset($order['orderPrice']))
+                                £{{ number_format($order['orderPrice'] ?? $order['orderPrice'], 2) }}
+                            @else
+                                -
+                            @endif
+                        </span>
+                    </div>
 
-                                                <!-- Distance -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Distance:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ $order['distance'] ?? '-' }}
-                                                        @if(!empty($order['distance']))
-                                                            miles
-                                                        @endif
-                                                    </span>
-                                                </div>
+                    <!-- Purchase Price -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Driver Cost:</span>
+                        <span class="order-detail-value">
+                            @if(isset($order['orderPurchasePrice']))
+                                £{{ number_format($order['orderPurchasePrice'] ?? $order['orderPurchasePrice'], 2) }}
+                            @else
+                                -
+                            @endif
+                        </span>
+                    </div>
 
-                                                <!-- Last Updated -->
-                                                <div class="order-detail-item">
-                                                    <span class="order-detail-label">Last Updated:</span>
-                                                    <span class="order-detail-value">
-                                                        {{ isset($order['updatedAt']) ? \Carbon\Carbon::parse($order['updatedAt'])->format('d-m-Y H:i') : '-' }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <!-- Internal Comments -->
-                                            <!-- @if(!empty($order['internalComments']) || !empty($order['internalNotes']))
-                                                <div class="section-header mt-3">
-                                                    Internal Comments
-                                                </div>
-                                                <div class="comments-section">
-                                                    {{ $order['internalComments'] ?? $order['internalNotes'] ?? 'No comments available' }}
-                                                </div>
-                                            @endif -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Distance -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Distance:</span>
+                        <span class="order-detail-value">
+                            {{ $order['distance'] ?? '-' }}
+                            @if(!empty($order['distance']))
+                                miles
+                            @endif
+                        </span>
+                    </div>
+
+                    <!-- Last Updated -->
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Last Updated:</span>
+                        <span class="order-detail-value">
+                            {{ isset($order['updatedAt']) ? \Carbon\Carbon::parse($order['updatedAt'])->format('d-m-Y H:i') : '-' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                             <div class="row">
                                 <div class="col-lg-12">
@@ -586,7 +623,7 @@
                                             <h6 class="mb-0">Internal Comments</h6>
                                         </div>
                                         <div class="card-body">
-                                            <div class="order-details">
+                                            <div class="order-details comments-section">
                                                 @if(!empty($order['internalComments']) || !empty($order['internalNotes']))
                                                         {{ $order['internalComments'] ?? $order['internalNotes'] ?? 'No comments available' }}
                                                 @endif     
