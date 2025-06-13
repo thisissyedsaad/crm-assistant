@@ -530,9 +530,9 @@
                                                     <th>Order Date/Time</th>
                                                     <th>Order Number</th>
                                                     <th>Carrier/Vehicle</th>
+                                                    <th>Distance</th>
                                                     <th>Sale Price</th>
                                                     <th>Purchase</th>
-                                                    <th>Distance</th>
                                                     <th>Order Status</th>
                                                 </tr>
                                             </thead>
@@ -559,6 +559,9 @@
                                                             {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
                                                         </td>
                                                         <td>
+                                                            {{ $order['attributes']['distance'] ?? '-' }}
+                                                        </td>
+                                                        <td>
                                                             @if(isset($order['attributes']['orderPrice']))
                                                                 £{{ number_format($order['attributes']['orderPrice'], 2) }}
                                                             @else
@@ -571,9 +574,6 @@
                                                             @else
                                                                 -
                                                             @endif
-                                                        </td>
-                                                        <td>
-                                                            {{ $order['attributes']['distance'] ?? '-' }}
                                                         </td>
                                                         <td>
                                                             @if(!empty($order['attributes']['status']))
