@@ -532,6 +532,7 @@
                                                     <th>Carrier/Vehicle</th>
                                                     <th>Sale Price</th>
                                                     <th>Purchase</th>
+                                                    <th>Distance</th>
                                                     <th>Order Status</th>
                                                 </tr>
                                             </thead>
@@ -570,6 +571,9 @@
                                                             @else
                                                                 -
                                                             @endif
+                                                        </td>
+                                                        <td>
+                                                            {{ $order['attributes']['distance'] ?? '-' }}
                                                         </td>
                                                         <td>
                                                             @if(!empty($order['attributes']['status']))
