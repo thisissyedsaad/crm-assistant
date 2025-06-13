@@ -304,6 +304,34 @@
             font-style: italic;
             padding: 2rem !important;
         }
+
+        /* Section divider styling */
+        .section-divider {
+            margin: 2rem 0;
+            border-top: 2px solid #e9ecef;
+            padding: 1.25rem;
+            border-radius: .75rem;
+            background-color: rgba(255, 255, 255, 0.42);
+            border: 2px solid #fff;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .section-title h5 {
+            margin: 0;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .section-title .badge {
+            margin-left: auto;
+        }
     </style>
 @endpush
 
@@ -343,9 +371,6 @@
                                 <button class="nav-link" id="v-pills-customers-tab" data-bs-toggle="pill"
                                     data-bs-target="#v-pills-customers" type="button" role="tab"
                                     aria-controls="v-pills-customers" aria-selected="false">Customers</button>
-                                <button class="nav-link" id="v-pills-orders-tab" data-bs-toggle="pill"
-                                    data-bs-target="#v-pills-orders" type="button" role="tab"
-                                    aria-controls="v-pills-orders" aria-selected="false">Order History</button>
                             </div>
                         </div>
                     </div>
@@ -357,7 +382,8 @@
                         <!-- Company Tab -->
                         <div class="tab-pane fade show active" id="v-pills-company" role="tabpanel"
                             aria-labelledby="v-pills-company-tab" tabindex="0">
-                            <!-- Replace the Company Information section in your view with this -->
+                            
+                            <!-- Company Information Section -->
                             <div class="card mb-4">
                                 <div class="card-header-cu">
                                     <div class="card-title d-flex justify-content-between align-items-center">
@@ -456,7 +482,19 @@
                                             </span>
                                         </div>
 
-                                        <!-- NEW: Average Order Value (AOV) -->
+                                        <!-- Last Order Date -->
+                                        @php
+                                            $latestOrder = collect($orders)->sortByDesc('createdAt')->first();
+                                            $latestOrderDate = $latestOrder ? \Carbon\Carbon::parse($latestOrder['createdAt'])->format('d-m-Y H:i') : null;
+                                        @endphp
+                                        <div class="customer-detail-item">
+                                            <span class="customer-detail-label">Last Order Date:</span>
+                                            <span class="customer-detail-value">
+                                                <strong>{{ $latestOrderDate ?? '-' }}</strong>
+                                            </span>
+                                        </div>
+
+                                        <!-- Average Order Value (AOV) -->
                                         <div class="customer-detail-item">
                                             <span class="customer-detail-label">Average Order Value (AOV):</span>
                                             <span class="customer-detail-value">
@@ -469,6 +507,124 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Order History Section -->
+                            <div class="section-divider">
+                                <div class="section-title">
+                                    <h5>
+                                        <i class="bx bx-list-ul me-2 text-primary"></i>
+                                        Order History
+                                    </h5>
+                                    <span class="badge bg-primary rounded-pill">
+                                        <i class="bx bx-hash me-1"></i>
+                                        {{ $totalOrders }} Orders
+                                    </span>
+                                </div>
+
+                                @if(!empty($orders) && is_array($orders) && count($orders) > 0)
+                                    <div class="table-responsive">
+                                        <table id="ordersTable" class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order Date/Time</th>
+                                                    <th>Order Number</th>
+                                                    <th>Carrier/Vehicle</th>
+                                                    <th>Sale Price</th>
+                                                    <th>Purchase</th>
+                                                    <th>Order Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($orders as $order)
+                                                    <tr>
+                                                        <td>
+                                                            @if(isset($order['createdAt']))
+                                                                {{ \Carbon\Carbon::parse($order['createdAt'])->format('d-m-Y H:i') }}
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if(!empty($order['attributes']['orderNo']))
+                                                                <a href="{{ route('admin.orders.show', $order['id'] ?? '#') }}" class="text-primary">
+                                                                    {{ $order['attributes']['orderNo'] }}
+                                                                </a>
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
+                                                        </td>
+                                                        <td>
+                                                            @if(isset($order['attributes']['orderPrice']))
+                                                                £{{ number_format($order['attributes']['orderPrice'], 2) }}
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if(isset($order['attributes']['orderPurchasePrice']))
+                                                                £{{ number_format($order['attributes']['orderPurchasePrice'], 2) }}
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if(!empty($order['attributes']['status']))
+                                                                @php
+                                                                    $status = strtolower($order['attributes']['status']);
+                                                                    $statusClass = 'badge ';
+                                                                    
+                                                                    switch($status) {
+                                                                        case 'quote':
+                                                                            $statusClass .= 'status-quote';
+                                                                            break;
+                                                                        case 'open':
+                                                                            $statusClass .= 'status-open';
+                                                                            break;
+                                                                        case 'mainopen':
+                                                                            $statusClass .= 'status-mainopen';
+                                                                            break;
+                                                                        case 'planned':
+                                                                            $statusClass .= 'status-planned';
+                                                                            break;
+                                                                        case 'signedoff':
+                                                                            $statusClass .= 'status-signed-off';
+                                                                            break;
+                                                                        case 'checked':
+                                                                            $statusClass .= 'status-checked';
+                                                                            break;
+                                                                        case 'invoiced':
+                                                                            $statusClass .= 'status-invoiced';
+                                                                            break;
+                                                                        default:
+                                                                            $statusClass .= 'bg-secondary';
+                                                                    }
+                                                                @endphp
+                                                                <span class="{{ $statusClass }}">
+                                                                    {{ ucfirst($order['attributes']['status']) }}
+                                                                </span>
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <!-- No Orders Found Message -->
+                                    <div class="text-center py-5">
+                                        <div class="mb-3">
+                                            <i class="bx bx-package" style="font-size: 3rem; color: #6c757d;"></i>
+                                        </div>
+                                        <h5 class="text-muted mb-2">No Orders Found</h5>
+                                        <p class="text-muted">This customer hasn't placed any orders yet.</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 
@@ -519,130 +675,6 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Order History Tab -->
-                        <div class="tab-pane fade" id="v-pills-orders" role="tabpanel"
-                            aria-labelledby="v-pills-orders-tab" tabindex="0">
-                            <div class="card">
-                                <div class="card-header-cu">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0 d-flex align-items-center">
-                                            <i class="bx bx-list-ul me-2 text-primary"></i>
-                                            Order History
-                                        </h6>
-                                        <span class="badge bg-primary rounded-pill">
-                                            <i class="bx bx-hash me-1"></i>
-                                            {{ $totalOrders }} Orders
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    @if(!empty($orders) && is_array($orders) && count($orders) > 0)
-                                        <div class="table-responsive">
-                                            <table id="ordersTable" class="table table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Order Date/Time</th>
-                                                        <th>Order Number</th>
-                                                        <th>Carrier/Vehicle</th>
-                                                        <th>Sale Price</th>
-                                                        <th>Purchase</th>
-                                                        <th>Order Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($orders as $order)
-                                                        <tr>
-                                                            <td>
-                                                                @if(isset($order['createdAt']))
-                                                                    {{ \Carbon\Carbon::parse($order['createdAt'])->format('d-m-Y H:i') }}
-                                                                @else
-                                                                    -
-                                                                @endif
-                                                            </td>
-                                                            <td>
-                                                                @if(!empty($order['attributes']['orderNo']))
-                                                                    <a href="{{ route('admin.orders.show', $order['id'] ?? '#') }}" class="text-primary">
-                                                                        {{ $order['attributes']['orderNo'] }}
-                                                                    </a>
-                                                                @else
-                                                                    -
-                                                                @endif
-                                                            </td>
-                                                            <td>
-                                                                {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
-                                                            </td>
-                                                            <td>
-                                                                @if(isset($order['attributes']['orderPrice']))
-                                                                    £{{ number_format($order['attributes']['orderPrice'], 2) }}
-                                                                @else
-                                                                    -
-                                                                @endif
-                                                            </td>
-                                                            <td>
-                                                                @if(isset($order['attributes']['orderPurchasePrice']))
-                                                                    £{{ number_format($order['attributes']['orderPurchasePrice'], 2) }}
-                                                                @else
-                                                                    -
-                                                                @endif
-                                                            </td>
-                                                            <td>
-                                                                @if(!empty($order['attributes']['status']))
-                                                                    @php
-                                                                        $status = strtolower($order['attributes']['status']);
-                                                                        $statusClass = 'badge ';
-                                                                        
-                                                                        switch($status) {
-                                                                            case 'quote':
-                                                                                $statusClass .= 'status-quote';
-                                                                                break;
-                                                                            case 'open':
-                                                                                $statusClass .= 'status-open';
-                                                                                break;
-                                                                            case 'mainopen':
-                                                                                $statusClass .= 'status-mainopen';
-                                                                                break;
-                                                                            case 'planned':
-                                                                                $statusClass .= 'status-planned';
-                                                                                break;
-                                                                            case 'signedoff':
-                                                                                $statusClass .= 'status-signed-off';
-                                                                                break;
-                                                                            case 'checked':
-                                                                                $statusClass .= 'status-checked';
-                                                                                break;
-                                                                            case 'invoiced':
-                                                                                $statusClass .= 'status-invoiced';
-                                                                                break;
-                                                                            default:
-                                                                                $statusClass .= 'bg-secondary';
-                                                                        }
-                                                                    @endphp
-                                                                    <span class="{{ $statusClass }}">
-                                                                        {{ ucfirst($order['attributes']['status']) }}
-                                                                    </span>
-                                                                @else
-                                                                    -
-                                                                @endif
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    @else
-                                        <!-- No Orders Found Message -->
-                                        <div class="text-center py-5">
-                                            <div class="mb-3">
-                                                <i class="bx bx-package" style="font-size: 3rem; color: #6c757d;"></i>
-                                            </div>
-                                            <h5 class="text-muted mb-2">No Orders Found</h5>
-                                            <p class="text-muted">This customer hasn't placed any orders yet.</p>
-                                        </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -736,14 +768,6 @@
             $('#v-pills-customers-tab').on('shown.bs.tab', function() {
                 setTimeout(function() {
                     $('#contactsTable_wrapper').addClass('animate__fadeInUp');
-                }, 100);
-            });
-
-            $('#v-pills-orders-tab').on('shown.bs.tab', function() {
-                setTimeout(function() {
-                    if ($('#ordersTable_wrapper').length) {
-                        $('#ordersTable_wrapper').addClass('animate__fadeInUp');
-                    }
                 }, 100);
             });
         });
