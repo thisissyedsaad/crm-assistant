@@ -341,41 +341,111 @@ class CustomerController extends Controller
                     ->with('error', 'Customer not found.');
             }
 
-            // Fetch orders for this customer using customerNo
+            // Initialize variables
             $orders = [];
+            $totalOrders = 0;
+            $customerAOV = 0;
             $customerNo = $customer['attributes']['customerNo'] ?? null;
             
             if ($customerNo) {
                 try {
-                    $ordersResponse = $client->get($apiUrl . 'orders', [
-                        'headers' => [
-                            'Authorization' => 'Basic ' . $apiKey,
-                            'Content-Type'  => 'application/json',
-                            'Accept'        => 'application/json',
-                        ],
-                        'query' => [
-                            'filter[customerNo]' => $customerNo,
-                            'sort' => '-createdAt'
-                        ]
-                    ]);
+                    \Log::info("Starting AOV calculation for customer: {$customerNo}");
+                    
+                    // FETCH ALL ORDERS WITH PAGINATION LOOP
+                    $allOrders = collect();
+                    $currentPage = 1;
+                    $maxPages = 50; // Safety limit: max 50 pages (5000 orders)
+                    $totalRevenue = 0;
+                    $orderCount = 0;
+                    
+                    do {
+                        \Log::info("Fetching page {$currentPage} for customer {$customerNo}");
+                        
+                        $ordersResponse = $client->get($apiUrl . 'orders', [
+                            'headers' => [
+                                'Authorization' => 'Basic ' . $apiKey,
+                                'Content-Type'  => 'application/json',
+                                'Accept'        => 'application/json',
+                            ],
+                            'query' => [
+                                'filter[customerNo]' => $customerNo,
+                                'sort' => '-createdAt',
+                                'page' => $currentPage
+                            ]
+                        ]);
 
-                    $ordersBody = $ordersResponse->getBody()->getContents();
-                    $ordersData = json_decode($ordersBody, true);
-                    $orders = $ordersData['data'] ?? [];
+                        $ordersBody = $ordersResponse->getBody()->getContents();
+                        $ordersData = json_decode($ordersBody, true);
+                        $pageOrders = collect($ordersData['data'] ?? []);
+                        
+                        \Log::info("Page {$currentPage} returned {$pageOrders->count()} orders for customer {$customerNo}");
+                        
+                        // If no orders on this page, we're done
+                        if ($pageOrders->isEmpty()) {
+                            \Log::info("No more orders found. Stopping at page {$currentPage}");
+                            break;
+                        }
+                        
+                        // Add to collection
+                        $allOrders = $allOrders->merge($pageOrders);
+                        
+                        // Calculate revenue from this page
+                        foreach ($pageOrders as $order) {
+                            $orderPrice = $order['attributes']['orderPrice'] ?? 0;
+                            if (is_numeric($orderPrice) && $orderPrice > 0) {
+                                $totalRevenue += (float) $orderPrice;
+                                $orderCount++;
+                            }
+                        }
+                        
+                        // If less than 100 records, this is the last page
+                        if ($pageOrders->count() < 100) {
+                            \Log::info("Last page reached (< 100 records). Total pages: {$currentPage}");
+                            break;
+                        }
+                        
+                        $currentPage++;
+                        
+                    } while ($currentPage <= $maxPages);
+                    
+                    // Calculate final AOV
+                    $customerAOV = $orderCount > 0 ? round($totalRevenue / $orderCount, 2) : 0;
+                    $totalOrders = $allOrders->count();
+                    
+                    // Get first 10 orders for display in Order History tab
+                    $orders = $allOrders->toArray();
+                    
+                    \Log::info("Customer {$customerNo}: Total orders = {$totalOrders}, Total revenue = £{$totalRevenue}, AOV = £{$customerAOV}");
+                    
+                    // Get meta from first page if needed (for compatibility)
+                    if ($currentPage === 2) { // Only 1 page was fetched
+                        $ordersResponse = $client->get($apiUrl . 'orders', [
+                            'headers' => [
+                                'Authorization' => 'Basic ' . $apiKey,
+                                'Content-Type'  => 'application/json',
+                                'Accept'        => 'application/json',
+                            ],
+                            'query' => [
+                                'filter[customerNo]' => $customerNo,
+                                'sort' => '-createdAt',
+                                'page' => 1
+                            ]
+                        ]);
+                        $ordersBody = $ordersResponse->getBody()->getContents();
+                        $ordersData = json_decode($ordersBody, true);
+                        $orders = array_slice($ordersData['data'] ?? [], 0, 10);
+                    }
+                    
                 } catch (\Exception $e) {
-                    // If orders API fails, continue with empty orders array
-                    \Log::warning('Failed to fetch orders for customer ' . $customerNo . ': ' . $e->getMessage());
+                    // If orders API fails, continue with empty data
+                    \Log::error('Failed to fetch orders for customer ' . $customerNo . ': ' . $e->getMessage());
+                    $orders = [];
+                    $totalOrders = 0;
+                    $customerAOV = 0;
                 }
             }
 
-            $meta = $ordersData['meta'] ?? [];
-            
-            // Check if meta has total count
-            if (isset($meta['total']) && is_numeric($meta['total'])) {
-                $totalOrders = (int) $meta['total'];
-            }
-
-            return view('admin.customers.view', compact('customer', 'orders', 'totalOrders'));
+            return view('admin.customers.view', compact('customer', 'orders', 'totalOrders', 'customerAOV'));
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             // Handle 404 error
@@ -383,6 +453,10 @@ class CustomerController extends Controller
                 return redirect()->route('admin.customers.index')
                     ->with('error', 'Customer not found in the system.');
             }
+            
+            \Log::error('Customer show error: ' . $e->getMessage());
+            return redirect()->route('admin.customers.index')
+                ->with('error', 'Error loading customer details.');
         }
     }
 }

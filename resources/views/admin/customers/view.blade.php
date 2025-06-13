@@ -357,13 +357,11 @@
                         <!-- Company Tab -->
                         <div class="tab-pane fade show active" id="v-pills-company" role="tabpanel"
                             aria-labelledby="v-pills-company-tab" tabindex="0">
+                            <!-- Replace the Company Information section in your view with this -->
                             <div class="card mb-4">
                                 <div class="card-header-cu">
                                     <div class="card-title d-flex justify-content-between align-items-center">
                                         <h4>Company Information</h4>
-                                        <!-- <a href="{{ route('admin.customers.index') }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-arrow-left me-1"></i>All Customers
-                                        </a> -->
                                     </div>                                                
                                 </div>
                                 <div class="card-body">
@@ -457,6 +455,18 @@
                                                 <strong>{{ $totalOrders ?? 0 }}</strong> orders
                                             </span>
                                         </div>
+
+                                        <!-- NEW: Average Order Value (AOV) -->
+                                        <div class="customer-detail-item">
+                                            <span class="customer-detail-label">Average Order Value (AOV):</span>
+                                            <span class="customer-detail-value">
+                                                @if(isset($customerAOV) && $customerAOV > 0)
+                                                    <strong style="color: #28a745;">£{{ number_format($customerAOV, 2) }}</strong>
+                                                @else
+                                                    <span style="color: #6c757d;">£0.00</span>
+                                                @endif
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -530,20 +540,20 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table id="ordersTable" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Order Date/Time</th>
-                                                    <th>Order Number</th>
-                                                    <th>Carrier/Vehicle</th>
-                                                    <th>Sale Price</th>
-                                                    <th>Purchase</th>
-                                                    <th>Order Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @if(!empty($orders) && is_array($orders) && count($orders) > 0)
+                                    @if(!empty($orders) && is_array($orders) && count($orders) > 0)
+                                        <div class="table-responsive">
+                                            <table id="ordersTable" class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Order Date/Time</th>
+                                                        <th>Order Number</th>
+                                                        <th>Carrier/Vehicle</th>
+                                                        <th>Sale Price</th>
+                                                        <th>Purchase</th>
+                                                        <th>Order Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                                     @foreach($orders as $order)
                                                         <tr>
                                                             <td>
@@ -620,14 +630,19 @@
                                                             </td>
                                                         </tr>
                                                     @endforeach
-                                                @else
-                                                    <tr>
-                                                        <td colspan="6" class="text-center text-muted">No orders found for this customer</td>
-                                                    </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <!-- No Orders Found Message -->
+                                        <div class="text-center py-5">
+                                            <div class="mb-3">
+                                                <i class="bx bx-package" style="font-size: 3rem; color: #6c757d;"></i>
+                                            </div>
+                                            <h5 class="text-muted mb-2">No Orders Found</h5>
+                                            <p class="text-muted">This customer hasn't placed any orders yet.</p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -670,33 +685,35 @@
                 ]
             });
 
-            // Initialize Orders DataTable - Simple fix
-            $('#ordersTable').DataTable({
-                pageLength: 10,
-                lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
-                responsive: true,
-                language: {
-                    search: "Search Orders:",
-                    lengthMenu: "Show _MENU_ orders per page",
-                    info: "Showing _START_ to _END_ of _TOTAL_ orders",
-                    infoEmpty: "No orders found",
-                    infoFiltered: "(filtered from _MAX_ total orders)",
-                    emptyTable: "No orders available",
-                    zeroRecords: "No matching orders found"
-                },
-                dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
-                order: [], // Remove initial sorting - preserve API order
-                columnDefs: [
-                    {
-                        targets: [3, 4], // Price columns
-                        className: 'text-end'
+            // Initialize Orders DataTable ONLY if table exists and has data
+            if ($('#ordersTable').length && $('#ordersTable tbody tr').length > 0) {
+                $('#ordersTable').DataTable({
+                    pageLength: 10,
+                    lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+                    responsive: true,
+                    language: {
+                        search: "Search Orders:",
+                        lengthMenu: "Show _MENU_ orders per page",
+                        info: "Showing _START_ to _END_ of _TOTAL_ orders",
+                        infoEmpty: "No orders found",
+                        infoFiltered: "(filtered from _MAX_ total orders)",
+                        emptyTable: "No orders available",
+                        zeroRecords: "No matching orders found"
                     },
-                    {
-                        targets: [5], // Status column
-                        className: 'text-center'
-                    }
-                ]
-            });
+                    dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
+                    order: [], // Remove initial sorting - preserve API order
+                    columnDefs: [
+                        {
+                            targets: [3, 4], // Price columns
+                            className: 'text-end'
+                        },
+                        {
+                            targets: [5], // Status column
+                            className: 'text-center'
+                        }
+                    ]
+                });
+            }
 
             // Bootstrap tab functionality with smooth scroll
             const tabButtons = document.querySelectorAll('[data-bs-toggle="pill"]');
@@ -724,7 +741,9 @@
 
             $('#v-pills-orders-tab').on('shown.bs.tab', function() {
                 setTimeout(function() {
-                    $('#ordersTable_wrapper').addClass('animate__fadeInUp');
+                    if ($('#ordersTable_wrapper').length) {
+                        $('#ordersTable_wrapper').addClass('animate__fadeInUp');
+                    }
                 }, 100);
             });
         });
