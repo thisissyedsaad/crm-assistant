@@ -149,6 +149,70 @@ class CustomerController extends Controller
     /**
      * Autocomplete search for customers (FAST - no last order dates)
      */
+    // public function autocomplete(Request $request)
+    // {
+    //     try {
+    //         $query = $request->input('query', '');
+            
+    //         if (strlen($query) < 2) {
+    //             return response()->json([
+    //                 'data' => [],
+    //                 'message' => 'Query too short'
+    //             ]);
+    //         }
+
+    //         $client = new Client();
+    //         $apiUrl = env('TRANSPORT_API_URL'); 
+    //         $apiKey = env('TRANSPORT_API_KEY');
+
+    //         $apiQuery = [
+    //             'filter[companyName]' => '%' . $query . '%',
+    //             // 'filter[customerNo]' => '%' . $query . '%',
+    //         ];
+
+    //         $response = $client->get($apiUrl . 'customers', [
+    //             'headers' => [
+    //                 'Authorization' => 'Basic ' . $apiKey,
+    //                 'Content-Type'  => 'application/json',
+    //                 'Accept'        => 'application/json',
+    //             ],
+    //             'query' => $apiQuery,
+    //         ]);
+
+    //         $res = json_decode($response->getBody()->getContents(), true);
+    //         $customers = collect($res['data'] ?? []);
+            
+    //         // Transform data WITHOUT last order dates (for speed)
+    //         $transformedData = $customers->map(function($row) {
+    //             $customerNo = $row['attributes']['customerNo'] ?? null;
+    //             $companyName = $row['attributes']['companyName'] ?? null;
+                
+    //             return [
+    //                 'id' => $row['id'] ?? null,
+    //                 'customerNo' => $customerNo,
+    //                 'companyName' => $companyName,
+    //                 'displayText' => $companyName ?: $customerNo
+    //             ];
+    //         })->filter(function($item) {
+    //             return $item['customerNo'] || $item['companyName'];
+    //         });
+
+    //         return response()->json([
+    //             'data' => $transformedData->values()->toArray(),
+    //             'total' => $transformedData->count()
+    //         ]);
+
+    //     } 
+    //     catch (\GuzzleHttp\Exception\ClientException $e) {
+    //         $responseBody = $e->getResponse()->getBody()->getContents();
+    //         $responseJson = json_decode($responseBody, true);
+    //         return response()->json([
+    //             'data' => [],
+    //             'error' => $responseJson['message']
+    //         ]);
+    //     }
+    // }
+
     public function autocomplete(Request $request)
     {
         try {
@@ -165,25 +229,62 @@ class CustomerController extends Controller
             $apiUrl = env('TRANSPORT_API_URL'); 
             $apiKey = env('TRANSPORT_API_KEY');
 
-            $apiQuery = [
-                'filter[companyName]' => '%' . $query . '%',
-                // 'filter[customerNo]' => '%' . $query . '%',
-            ];
-
-            $response = $client->get($apiUrl . 'customers', [
-                'headers' => [
-                    'Authorization' => 'Basic ' . $apiKey,
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
-                ],
-                'query' => $apiQuery,
-            ]);
-
-            $res = json_decode($response->getBody()->getContents(), true);
-            $customers = collect($res['data'] ?? []);
+            // Create SMART patterns that actually work
+            $words = explode(' ', trim($query));
+            $patterns = [];
             
-            // Transform data WITHOUT last order dates (for speed)
-            $transformedData = $customers->map(function($row) {
+            // Add original query
+            $patterns[] = $query;
+            
+            // Add version without spaces
+            $patterns[] = str_replace(' ', '', $query);
+            
+            // Add version with different separators
+            $patterns[] = str_replace(' ', '-', $query);
+            $patterns[] = str_replace(' ', '_', $query);
+            
+            // For each word, also add spaced version (only for short words)
+            foreach ($words as $word) {
+                if (strlen(trim($word)) >= 2 && strlen(trim($word)) <= 4) {
+                    $spacedWord = implode(' ', str_split(trim($word)));
+                    $patterns[] = str_replace($word, $spacedWord, $query);
+                }
+            }
+            
+            // Remove duplicates and empty patterns
+            $patterns = array_unique(array_filter($patterns));
+            
+            $allResults = collect();
+            
+            foreach ($patterns as $pattern) {
+                $apiQuery = [
+                    'filter[companyName]' => '%' . $pattern . '%',
+                ];
+
+                try {
+                    $response = $client->get($apiUrl . 'customers', [
+                        'headers' => [
+                            'Authorization' => 'Basic ' . $apiKey,
+                            'Content-Type'  => 'application/json',
+                            'Accept'        => 'application/json',
+                        ],
+                        'query' => $apiQuery,
+                    ]);
+
+                    $res = json_decode($response->getBody()->getContents(), true);
+                    $customers = collect($res['data'] ?? []);
+                    $allResults = $allResults->merge($customers);
+                } catch (\Exception $e) {
+                    // Continue with other patterns if one fails
+                    continue;
+                }
+            }
+
+            // Remove duplicates by ID
+            $uniqueResults = $allResults->unique('id');
+            
+            // Transform data
+            $transformedData = $uniqueResults->map(function($row) {
                 $customerNo = $row['attributes']['customerNo'] ?? null;
                 $companyName = $row['attributes']['companyName'] ?? null;
                 
@@ -202,8 +303,7 @@ class CustomerController extends Controller
                 'total' => $transformedData->count()
             ]);
 
-        } 
-        catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
             $responseBody = $e->getResponse()->getBody()->getContents();
             $responseJson = json_decode($responseBody, true);
             return response()->json([
