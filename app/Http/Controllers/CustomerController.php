@@ -213,105 +213,230 @@ class CustomerController extends Controller
     //     }
     // }
 
-    public function autocomplete(Request $request)
-    {
-        try {
-            $query = $request->input('query', '');
+    // public function autocomplete(Request $request)
+    // {
+    //     try {
+    //         $query = $request->input('query', '');
             
-            if (strlen($query) < 2) {
-                return response()->json([
-                    'data' => [],
-                    'message' => 'Query too short'
-                ]);
-            }
+    //         if (strlen($query) < 2) {
+    //             return response()->json([
+    //                 'data' => [],
+    //                 'message' => 'Query too short'
+    //             ]);
+    //         }
 
-            $client = new Client();
-            $apiUrl = env('TRANSPORT_API_URL'); 
-            $apiKey = env('TRANSPORT_API_KEY');
+    //         $client = new Client();
+    //         $apiUrl = env('TRANSPORT_API_URL'); 
+    //         $apiKey = env('TRANSPORT_API_KEY');
 
-            // Create SMART patterns that actually work
-            $words = explode(' ', trim($query));
-            $patterns = [];
+    //         // Create SMART patterns that actually work
+    //         $words = explode(' ', trim($query));
+    //         $patterns = [];
             
-            // Add original query
-            $patterns[] = $query;
+    //         // Add original query
+    //         $patterns[] = $query;
             
-            // Add version without spaces
-            $patterns[] = str_replace(' ', '', $query);
+    //         // Add version without spaces
+    //         $patterns[] = str_replace(' ', '', $query);
             
-            // Add version with different separators
-            $patterns[] = str_replace(' ', '-', $query);
-            $patterns[] = str_replace(' ', '_', $query);
+    //         // Add version with different separators
+    //         $patterns[] = str_replace(' ', '-', $query);
+    //         $patterns[] = str_replace(' ', '_', $query);
             
-            // For each word, also add spaced version (only for short words)
-            foreach ($words as $word) {
-                if (strlen(trim($word)) >= 2 && strlen(trim($word)) <= 4) {
-                    $spacedWord = implode(' ', str_split(trim($word)));
-                    $patterns[] = str_replace($word, $spacedWord, $query);
-                }
-            }
+    //         // For each word, also add spaced version (only for short words)
+    //         foreach ($words as $word) {
+    //             if (strlen(trim($word)) >= 2 && strlen(trim($word)) <= 4) {
+    //                 $spacedWord = implode(' ', str_split(trim($word)));
+    //                 $patterns[] = str_replace($word, $spacedWord, $query);
+    //             }
+    //         }
             
-            // Remove duplicates and empty patterns
-            $patterns = array_unique(array_filter($patterns));
+    //         // Remove duplicates and empty patterns
+    //         $patterns = array_unique(array_filter($patterns));
             
-            $allResults = collect();
+    //         $allResults = collect();
             
-            foreach ($patterns as $pattern) {
-                $apiQuery = [
-                    'filter[companyName]' => '%' . $pattern . '%',
-                ];
+    //         foreach ($patterns as $pattern) {
+    //             $apiQuery = [
+    //                 'filter[companyName]' => '%' . $pattern . '%',
+    //             ];
 
-                try {
-                    $response = $client->get($apiUrl . 'customers', [
-                        'headers' => [
-                            'Authorization' => 'Basic ' . $apiKey,
-                            'Content-Type'  => 'application/json',
-                            'Accept'        => 'application/json',
-                        ],
-                        'query' => $apiQuery,
-                    ]);
+    //             try {
+    //                 $response = $client->get($apiUrl . 'customers', [
+    //                     'headers' => [
+    //                         'Authorization' => 'Basic ' . $apiKey,
+    //                         'Content-Type'  => 'application/json',
+    //                         'Accept'        => 'application/json',
+    //                     ],
+    //                     'query' => $apiQuery,
+    //                 ]);
 
-                    $res = json_decode($response->getBody()->getContents(), true);
-                    $customers = collect($res['data'] ?? []);
-                    $allResults = $allResults->merge($customers);
-                } catch (\Exception $e) {
-                    // Continue with other patterns if one fails
-                    continue;
-                }
-            }
+    //                 $res = json_decode($response->getBody()->getContents(), true);
+    //                 $customers = collect($res['data'] ?? []);
+    //                 $allResults = $allResults->merge($customers);
+    //             } catch (\Exception $e) {
+    //                 // Continue with other patterns if one fails
+    //                 continue;
+    //             }
+    //         }
 
-            // Remove duplicates by ID
-            $uniqueResults = $allResults->unique('id');
+    //         // Remove duplicates by ID
+    //         $uniqueResults = $allResults->unique('id');
             
-            // Transform data
-            $transformedData = $uniqueResults->map(function($row) {
-                $customerNo = $row['attributes']['customerNo'] ?? null;
-                $companyName = $row['attributes']['companyName'] ?? null;
+    //         // Transform data
+    //         $transformedData = $uniqueResults->map(function($row) {
+    //             $customerNo = $row['attributes']['customerNo'] ?? null;
+    //             $companyName = $row['attributes']['companyName'] ?? null;
                 
-                return [
-                    'id' => $row['id'] ?? null,
-                    'customerNo' => $customerNo,
-                    'companyName' => $companyName,
-                    'displayText' => $companyName ?: $customerNo
-                ];
-            })->filter(function($item) {
-                return $item['customerNo'] || $item['companyName'];
-            });
+    //             return [
+    //                 'id' => $row['id'] ?? null,
+    //                 'customerNo' => $customerNo,
+    //                 'companyName' => $companyName,
+    //                 'displayText' => $companyName ?: $customerNo
+    //             ];
+    //         })->filter(function($item) {
+    //             return $item['customerNo'] || $item['companyName'];
+    //         });
 
-            return response()->json([
-                'data' => $transformedData->values()->toArray(),
-                'total' => $transformedData->count()
-            ]);
+    //         return response()->json([
+    //             'data' => $transformedData->values()->toArray(),
+    //             'total' => $transformedData->count()
+    //         ]);
 
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $responseBody = $e->getResponse()->getBody()->getContents();
-            $responseJson = json_decode($responseBody, true);
+    //     } catch (\GuzzleHttp\Exception\ClientException $e) {
+    //         $responseBody = $e->getResponse()->getBody()->getContents();
+    //         $responseJson = json_decode($responseBody, true);
+    //         return response()->json([
+    //             'data' => [],
+    //             'error' => $responseJson['message']
+    //         ]);
+    //     }
+    // }
+
+public function autocomplete(Request $request)
+{
+    try {
+        $query = $request->input('query', '');
+        
+        if (strlen($query) < 2) {
             return response()->json([
                 'data' => [],
-                'error' => $responseJson['message']
+                'message' => 'Query too short'
             ]);
         }
+
+        $client = new Client();
+        $apiUrl = env('TRANSPORT_API_URL'); 
+        $apiKey = env('TRANSPORT_API_KEY');
+
+        // Create BIDIRECTIONAL patterns (both ways)
+        $patterns = [];
+        
+        // Add original query
+        $patterns[] = $query;
+        
+        // Add version without spaces
+        $patterns[] = str_replace(' ', '', $query);
+        
+        // Add version with different separators
+        $patterns[] = str_replace(' ', '-', $query);
+        $patterns[] = str_replace(' ', '_', $query);
+        
+        // BIDIRECTIONAL LOGIC: Handle both directions
+        $words = explode(' ', trim($query));
+        
+        foreach ($words as $word) {
+            $cleanWord = trim($word);
+            
+            if (strlen($cleanWord) >= 2 && strlen($cleanWord) <= 4) {
+                // If word has spaces, create without spaces version
+                if (strpos($cleanWord, ' ') !== false) {
+                    $withoutSpaces = str_replace(' ', '', $cleanWord);
+                    $patterns[] = str_replace($cleanWord, $withoutSpaces, $query);
+                } else {
+                    // If word has no spaces, create spaced version
+                    $spacedWord = implode(' ', str_split($cleanWord));
+                    $patterns[] = str_replace($cleanWord, $spacedWord, $query);
+                }
+            }
+        }
+        
+        // ADDITIONAL: Handle the entire query transformation (FIXED)
+        // If query has spaces between single letters, also try without spaces
+        if (preg_match('/\b\w\s+\w\b/', $query)) {
+            $compactQuery = preg_replace('/\b(\w)\s+(\w)\b/', '$1$2', $query);
+            $patterns[] = $compactQuery;
+        }
+        
+        // If query has compact letters, also try with spaces (FIXED)
+        $expandedQuery = preg_replace_callback('/\b(\w{2,4})\b/', function($matches) {
+            return implode(' ', str_split($matches[1]));
+        }, $query);
+        
+        if ($expandedQuery !== $query) {
+            $patterns[] = $expandedQuery;
+        }
+        
+        // Remove duplicates and empty patterns
+        $patterns = array_unique(array_filter($patterns));
+        
+        $allResults = collect();
+        
+        foreach ($patterns as $pattern) {
+            $apiQuery = [
+                'filter[companyName]' => '%' . $pattern . '%',
+            ];
+
+            try {
+                $response = $client->get($apiUrl . 'customers', [
+                    'headers' => [
+                        'Authorization' => 'Basic ' . $apiKey,
+                        'Content-Type'  => 'application/json',
+                        'Accept'        => 'application/json',
+                    ],
+                    'query' => $apiQuery,
+                ]);
+
+                $res = json_decode($response->getBody()->getContents(), true);
+                $customers = collect($res['data'] ?? []);
+                $allResults = $allResults->merge($customers);
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        // Remove duplicates by ID
+        $uniqueResults = $allResults->unique('id');
+        
+        // Transform data
+        $transformedData = $uniqueResults->map(function($row) {
+            $customerNo = $row['attributes']['customerNo'] ?? null;
+            $companyName = $row['attributes']['companyName'] ?? null;
+            
+            return [
+                'id' => $row['id'] ?? null,
+                'customerNo' => $customerNo,
+                'companyName' => $companyName,
+                'displayText' => $companyName ?: $customerNo
+            ];
+        })->filter(function($item) {
+            return $item['customerNo'] || $item['companyName'];
+        });
+
+        return response()->json([
+            'data' => $transformedData->values()->toArray(),
+            'total' => $transformedData->count()
+        ]);
+
+    } catch (\GuzzleHttp\Exception\ClientException $e) {
+        $responseBody = $e->getResponse()->getBody()->getContents();
+        $responseJson = json_decode($responseBody, true);
+        return response()->json([
+            'data' => [],
+            'error' => $responseJson['message']
+        ]);
     }
+}
 
     public function getLastOrder(Request $request)
     {
