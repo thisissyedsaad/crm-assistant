@@ -47,6 +47,26 @@
             </li>
           </ul>
         </li>
+
+        <li class="treeview {{ request()->routeIs('admin.users.*') ? 'menu-open active' : '' }}">
+          <a href="javascript:void(0)" class="">
+            <i class="bx bx-user-circle"></i>
+            <span>Schedular</span>
+            <i class="fa fa-angle-right"></i>
+          </a>
+          <ul class="treeview-menu" style="">
+            <li class="">
+              <a href="" class="">
+                Current Jobs
+              </a>
+            </li>
+            <li class="">
+              <a href="" class="">
+                Completed Jobs
+              </a>
+            </li>
+          </ul>
+        </li>
         @endif
 <!--         
         <li class="treeview">
