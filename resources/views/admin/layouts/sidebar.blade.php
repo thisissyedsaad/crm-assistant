@@ -48,15 +48,15 @@
           </ul>
         </li>
 
-        <li class="treeview {{ request()->routeIs('admin.users.*') ? 'menu-open active' : '' }}">
+        <li class="treeview {{ request()->routeIs('admin.schedular.*') ? 'menu-open active' : '' }}">
           <a href="javascript:void(0)" class="">
             <i class="bx bx-user-circle"></i>
             <span>Schedular</span>
             <i class="fa fa-angle-right"></i>
           </a>
           <ul class="treeview-menu" style="">
-            <li class="">
-              <a href="" class="">
+            <li class="{{ request()->routeIs('admin.schedular.current-jobs.index') ? 'active' : '' }}">
+              <a href="{{ route('admin.schedular.current-jobs.index') }}" class="{{ request()->routeIs('admin.schedular.current-jobs.index') ? 'active' : '' }}">
                 Current Jobs
               </a>
             </li>
@@ -65,45 +65,15 @@
                 Completed Jobs
               </a>
             </li>
+            <li class="">
+              <a href="" class="">
+                Notifications
+              </a>
+            </li>
           </ul>
         </li>
         @endif
-<!--         
-        <li class="treeview">
-          <a href="javascript:void(0)">
-            <i class="bx bx-group"></i>
-            <span>Customers</span>
-            <i class="fa fa-angle-right"></i>
-          </a>
-          <ul class="treeview-menu">
-            <li><a href="{{ route('admin.customers.index') }}">Customer List</a></li>
-          </ul>
-        </li>
-
-        <li class="treeview">
-          <a href="javascript:void(0)">
-            <i class="bx bxs-cart"></i>
-            <span>Orders</span>
-            <i class="fa fa-angle-right"></i>
-          </a>
-          <ul class="treeview-menu">
-            <li><a href="{{ route('admin.orders.index') }}">All Orders</a></li>
-          </ul>
-        </li> -->
-
-        <!-- <li class="menu-header-title">Account</li>
-        <li>
-          <a href="account.html">
-            <i class="bx bx-cog"></i>
-            <span>Account Settings</span>
-          </a>
-        </li>
-        <li>
-          <a href="logout.html">
-            <i class="bx bx-power-off"></i>
-            <span>Logout</span>
-          </a>
-        </li> -->
+        
       </ul>
     </nav>
   </div>
