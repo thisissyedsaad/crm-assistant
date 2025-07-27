@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Schedular;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -27,6 +27,7 @@ class CurrentJobsController extends Controller
         ];
 
         if ($request->ajax()) {
+
             try {
                 $client = new Client();
                 $apiUrl = env('TRANSPORT_API_URL'); 
@@ -42,8 +43,8 @@ class CurrentJobsController extends Controller
                 $orderColumn = $request->input('order.0.column', 0);
                 $orderDirection = $request->input('order.0.dir', 'desc');
                 
-                // Map column index to field name
-                $columns = ['updatedAt', 'orderNo', 'vehicleTypeName', 'orderPrice', 'orderPurchasePrice', 'status', 'internalNotes'];
+                // Map column index to field name - FIXED FOR 15 COLUMNS
+                $columns = ['updatedAt', 'orderNo', 'customerUserId', 'carrierNo', 'newExisting', 'collectionDate', 'collectionTime', 'departureTime', 'orderPrice', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete'];
                 $sortField = $columns[$orderColumn] ?? 'updatedAt';
 
                 // Build API query
@@ -67,10 +68,6 @@ class CurrentJobsController extends Controller
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
                 } elseif ($sortField === 'status') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-status' : 'status';
-                } else {
-                    // Default sort for fields that don't support API sorting
-                    // $apiQuery['sort'] = '-createdAt';
-                    // $apiQuery['sort'] = '-updatedAt';
                 }
 
                 // Limit to maximum 100 records
@@ -89,17 +86,71 @@ class CurrentJobsController extends Controller
                 $orders = collect($res['data'] ?? []);
                 $meta = $res['meta'] ?? [];
 
-                // Transform data
+                // FIXED Transform data
                 $transformedData = $orders->map(function($row) {
+                    // Get pickup and delivery destinations
+                    $destinations = $row['attributes']['destinations'] ?? [];
+                    $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                    $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
+
+                    // Calculate midpoint check
+                    $midpointCheck = null;
+                    if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
+                        try {
+                            $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                            $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                            
+                            if ($deliveryTime->diffInHours($collectionTime) >= 3) {
+                                $midpointCheck = $collectionTime->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
+                            }
+                        } catch (\Exception $e) {
+                            $midpointCheck = null;
+                        }
+                    }
+
+                    // Format collection date properly
+                    $collectionDate = null;
+                    if (isset($pickup['date'])) {
+                        try {
+                            $collectionDate = \Carbon\Carbon::parse($pickup['date'])->format('d-m-Y');
+                        } catch (\Exception $e) {
+                            $collectionDate = $pickup['date'];
+                        }
+                    }
+
+                    // Get carrier/driver name from carrierNo
+                    $driverName = null;
+                    if (isset($row['attributes']['carrierNo'])) {
+                        $driverName = "Driver #" . $row['attributes']['carrierNo'];
+                    }
+
+                    // Get customer info
+                    $userDisplay = null;
+                    if (isset($row['attributes']['customerUserId'])) {
+                        $userDisplay = "User #" . $row['attributes']['customerUserId'];
+                    }
+
                     return [
                         'id' => $row['id'] ?? null,
-                        'updatedAt' => Carbon::parse($row['updatedAt'])->format('d-m-Y H:i'),
+                        'updatedAt' => isset($row['updatedAt']) ? Carbon::parse($row['updatedAt'])->format('d-m-Y H:i') : null,
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
+                        'customerUserId' => $userDisplay,
+                        'carrierNo' => $driverName,
+                        'newExisting' => "Existing",
+                        'collectionDate' => $collectionDate,
+                        'collectionTime' => $pickup['toTime'] ?? null,
+                        'departureTime' => $pickup['departureTime'] ?? null,
+                        'orderPrice' => $row['attributes']['orderPrice'] ?? null,
+                        'deliveryTime' => $delivery['deliveryTime'] ?? null,
+                        'midpointCheck' => $midpointCheck,
+                        'internalNotes' => $row['attributes']['internalNotes'] ?? null,
+                        // 'collectionCheckIn' => $pickup['departureTime'] ?? null,
+                        // 'driverConfirmedETA' => $delivery['eta'] ?? null,
+                        // 'midpointCheckComplete' => null,
+                        
+                        // Additional fields for search and modal
                         'customerNo' => $row['attributes']['customerNo'] ?? null,
                         'vehicleTypeName' => $row['attributes']['vehicleTypeName'] ?? null,
-                        'orderPrice' => $row['attributes']['orderPrice'] ?? null,
-                        'orderPurchasePrice' => $row['attributes']['orderPurchasePrice'] ?? null,
-                        'internalNotes' => $row['attributes']['internalNotes'] ?? null,
                         'status' => $row['attributes']['status'] ?? null,
                     ];
                 });
@@ -109,19 +160,25 @@ class CurrentJobsController extends Controller
                     $transformedData = $transformedData->filter(function($item) use ($searchValue) {
                         $searchLower = strtolower($searchValue);
                         
-                        return str_contains(strtolower($item['customerNo'] ?? ''), $searchLower) ||
-                            str_contains(strtolower($item['orderNo'] ?? ''), $searchLower) ||
-                            str_contains(strtolower($item['vehicleTypeName'] ?? ''), $searchLower) ||
-                            str_contains(strtolower($item['status'] ?? ''), $searchLower);
+                        return str_contains(strtolower($item['customerUserId'] ?? ''), $searchLower) ||
+                               str_contains(strtolower($item['orderNo'] ?? ''), $searchLower) ||
+                               str_contains(strtolower($item['vehicleTypeName'] ?? ''), $searchLower) ||
+                               str_contains(strtolower($item['status'] ?? ''), $searchLower) ||
+                               str_contains(strtolower($item['carrierNo'] ?? ''), $searchLower) ||
+                               str_contains(strtolower($item['internalNotes'] ?? ''), $searchLower);
                     });
                 }
 
                 // Apply client-side sorting for fields not sortable by API
-                if (in_array($sortField, ['vehicleTypeName', 'orderPrice', 'orderPurchasePrice', 'internalNotes'])) {
+                if (in_array($sortField, ['customerUserId', 'carrierNo', 'newExisting', 'collectionDate', 'collectionTime', 'departureTime', 'orderPrice', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete'])) {
                     $transformedData = $transformedData->sortBy(function($item) use ($sortField) {
                         // For price fields, convert to numeric for proper sorting
-                        if (in_array($sortField, ['orderPrice', 'orderPurchasePrice'])) {
+                        if (in_array($sortField, ['orderPrice'])) {
                             return (float) ($item[$sortField] ?? 0);
+                        }
+                        // For date/time fields
+                        if (in_array($sortField, ['collectionDate', 'collectionTime', 'departureTime', 'deliveryTime'])) {
+                            return $item[$sortField] ?? '';
                         }
                         // For text fields, convert to lowercase
                         return strtolower($item[$sortField] ?? '');
@@ -278,7 +335,6 @@ class CurrentJobsController extends Controller
                     if (isset($meta['total']) && is_numeric($meta['total'])) {
                         $totalOrders = (int) $meta['total'];
                     }
-                    // $totalOrders = count($ordersData['data'] ?? []);
 
                 } catch (\Exception $e) {
                     \Log::warning('Failed to fetch orders count for customerNo ' . $customerNo . ': ' . $e->getMessage());

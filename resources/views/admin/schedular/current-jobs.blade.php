@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/buttons.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/select.dataTables.min.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         /* Dashboard Cards Styling */
         .dashboard-cards {
@@ -145,43 +147,78 @@
         /* Set minimum widths but allow columns to expand to fill available space */
         #datatable th:nth-child(1), #datatable td:nth-child(1) { 
             min-width: 140px; 
-            width: 12%; /* Flexible width */
-        } /* Order Date/Time */
+            width: 8%; 
+        } /* Date */
         
         #datatable th:nth-child(2), #datatable td:nth-child(2) { 
             min-width: 120px; 
-            width: 10%; /* Flexible width */
+            width: 8%; 
         } /* Order Number */
         
         #datatable th:nth-child(3), #datatable td:nth-child(3) { 
-            min-width: 180px; 
-            width: 18%; /* Flexible width */
-        } /* Company Name */
+            min-width: 120px; 
+            width: 8%; 
+        } /* User */
         
         #datatable th:nth-child(4), #datatable td:nth-child(4) { 
             min-width: 130px; 
-            width: 13%; /* Flexible width */
-        } /* Carrier/Vehicle */
+            width: 8%; 
+        } /* Drivers Name */
         
         #datatable th:nth-child(5), #datatable td:nth-child(5) { 
             min-width: 100px; 
-            width: 10%; /* Flexible width */
-        } /* Sale Price */
+            width: 6%; 
+        } /* New/Existing */
         
         #datatable th:nth-child(6), #datatable td:nth-child(6) { 
-            min-width: 100px; 
-            width: 10%; /* Flexible width */
-        } /* Purchase */
+            min-width: 120px; 
+            width: 8%; 
+        } /* Collection Date */
         
         #datatable th:nth-child(7), #datatable td:nth-child(7) { 
-            min-width: 150px; 
-            width: 15%; /* Flexible width */
-        } /* Internal Comments */
+            min-width: 120px; 
+            width: 7%; 
+        } /* Collection Time */
         
         #datatable th:nth-child(8), #datatable td:nth-child(8) { 
+            min-width: 140px; 
+            width: 8%; 
+        } /* Driver Loaded Time */
+        
+        #datatable th:nth-child(9), #datatable td:nth-child(9) { 
+            min-width: 100px; 
+            width: 6%; 
+        } /* Sale Price */
+        
+        #datatable th:nth-child(10), #datatable td:nth-child(10) { 
             min-width: 120px; 
-            width: 12%; /* Flexible width */
-        } /* Order Status */
+            width: 7%; 
+        } /* ETA Delivery */
+        
+        #datatable th:nth-child(11), #datatable td:nth-child(11) { 
+            min-width: 120px; 
+            width: 7%; 
+        } /* Mid-Point Check */
+        
+        #datatable th:nth-child(12), #datatable td:nth-child(12) { 
+            min-width: 100px; 
+            width: 6%; 
+        } /* Notes */
+        
+        #datatable th:nth-child(13), #datatable td:nth-child(13) { 
+            min-width: 140px; 
+            width: 8%; 
+        } /* Collection Check-In */
+        
+        #datatable th:nth-child(14), #datatable td:nth-child(14) { 
+            min-width: 140px; 
+            width: 8%; 
+        } /* Driver Confirmed ETA */
+        
+        #datatable th:nth-child(15), #datatable td:nth-child(15) { 
+            min-width: 160px; 
+            width: 9%; 
+        } /* Mid-Point Check Complete */
         
         /* Most columns should not wrap by default */
         #datatable th,
@@ -443,13 +480,21 @@
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap data-table-area">
                                     <thead>
                                         <tr>
-                                            <th>Order Created</th>
+                                            <th>Date</th>
                                             <th>Order Number</th>
-                                            <th>Carrier/Vehicle</th>
+                                            <th>User</th>
+                                            <th>Drivers Name</th>
+                                            <th>New/Existing</th>
+                                            <th>Collection Date</th>
+                                            <th>Collection Time</th>
+                                            <th>Driver Loaded (Time)</th>
                                             <th>Sale Price</th>
-                                            <th>Drivers Cost</th>
-                                            <th>Order Status</th>
-                                            <th>Details</th>
+                                            <th>ETA Delivery</th>
+                                            <th>Mid-Point Check</th>
+                                            <th>Notes</th>
+                                            <th>Collection Check-In</th>
+                                            <th>Driver Confirmed ETA</th>
+                                            <th>Mid-Point Check Complete</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -535,7 +580,6 @@
             if ($.fn.DataTable.isDataTable('#datatable')) {
                 $('#datatable').DataTable().destroy();
             }
-
             var table = $('#datatable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -543,40 +587,93 @@
                 scrollCollapse: false,
                 autoWidth: true,
                 responsive: false,
-                ordering: true, // Enable column sorting
-                order: [[0, 'desc']], // Default sort by first column (Order Created) descending
+                ordering: true,
+                order: [[0, 'desc']], // Default sort by first column (Date) descending
                 ajax: {
-                    url: "{{ route('admin.orders.index') }}",
+                    url: "{{ route('admin.schedular.current-jobs.index') }}",
                     data: function (d) {
                         d.fromDate = $('#fromDate').val();
                         d.toDate = $('#toDate').val();
                     }
                 },
-                pageLength: 25, // 25 records per page
-                lengthMenu: [[25, 50, 100], [25, 50, 100]], // Limit options to max 100
+                pageLength: 25,
+                lengthMenu: [[25, 50, 100], [25, 50, 100]],
                 columns: [
                     { 
                         data: 'updatedAt', 
                         name: 'updatedAt',
                         className: 'text-nowrap',
-                        orderable: true
+                        orderable: true,
+                        title: 'Date'
                     },
                     { 
                         data: 'orderNo', 
                         name: 'orderNo',
                         className: 'text-nowrap',
                         orderable: true,
+                        title: 'Order Number',
                         render: function(data, type, row) {
-                            return `<a href="/admin/orders/${row.id}">${data ?? '-'}</a>`; 
+                            return data ? `<a href="/admin/orders/${row.id}">${data}</a>` : '-'; 
                         }
                     },
                     { 
-                        data: 'vehicleTypeName', 
-                        name: 'vehicleTypeName',
+                        data: 'customerUserId', 
+                        name: 'customerUserId',
                         className: 'text-nowrap',
                         orderable: true,
+                        title: 'User',
                         render: function(data, type, row) {
                             return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'carrierNo', 
+                        name: 'carrierNo',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Drivers Name',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'newExisting', 
+                        name: 'newExisting',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'New/Existing',
+                        render: function(data, type, row) {
+                            return data ? `<span class="badge bg-info">${data}</span>` : '-';
+                        }
+                    },
+                    { 
+                        data: 'collectionDate', 
+                        name: 'collectionDate',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Collection Date',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'collectionTime', 
+                        name: 'collectionTime',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Collection Time',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'departureTime', 
+                        name: 'departureTime',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Driver Loaded (Time)',
+                        render: function(data, type, row) {
+                            return data ? data : '<span class="text-muted">Pending</span>';
                         }
                     },
                     { 
@@ -584,82 +681,96 @@
                         name: 'orderPrice',
                         className: 'text-nowrap text-end',
                         orderable: true,
+                        title: 'Sale Price',
                         render: function(data, type, row) {
-                            return data ? '£' + data : '-';
+                            return data ? '£' + parseFloat(data).toFixed(2) : '-';
                         }
                     },
                     { 
-                        data: 'orderPurchasePrice', 
-                        name: 'orderPurchasePrice',
-                        className: 'text-nowrap text-end',
-                        orderable: true,
-                        render: function(data, type, row) {
-                            return data ? '£' + data : '-';
-                        }
-                    },
-                    { 
-                        data: 'status', 
-                        name: 'status',
+                        data: 'deliveryTime', 
+                        name: 'deliveryTime',
                         className: 'text-nowrap',
                         orderable: true,
+                        title: 'ETA Delivery',
                         render: function(data, type, row) {
-                            if (!data) return '-';
-                            
-                            // Capitalize first letter of each word in status
-                            const capitalizedStatus = data.split(' ')
-                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                .join(' ');
-                            
-                            // Status color mapping
-                            let statusClass = 'badge ';
-                            const status = data.toLowerCase().replace(/[^a-z0-9]/g, ''); // Clean status name
-                            
-                            switch(status) {
-                                case 'quote':
-                                    statusClass += 'status-quote';
-                                    break;
-                                case 'open':
-                                    statusClass += 'status-open';
-                                    break;
-                                case 'mainopen':
-                                    statusClass += 'status-mainopen';
-                                    break;
-                                case 'planned':
-                                    statusClass += 'status-planned';
-                                    break;
-                                case 'signedoff':
-                                    statusClass += 'status-signed-off';
-                                    break;
-                                case 'checked':
-                                    statusClass += 'status-checked';
-                                    break;
-                                case 'invoiced':
-                                    statusClass += 'status-invoiced';
-                                    break;
-                                default:
-                                    statusClass += 'bg-secondary';
-                            }
-                            
-                            return `<span class="badge ${statusClass}">${capitalizedStatus}</span>`;
+                            return data ? data : '-';
                         }
                     },
                     { 
-                        data: null,
-                        name: 'internalNotes', 
-                        className: 'text-center',
+                        data: 'midpointCheck', 
+                        name: 'midpointCheck',
+                        className: 'text-nowrap',
                         orderable: true,
-                        searchable: false,
+                        title: 'Mid-Point Check',
                         render: function(data, type, row) {
-                            // Get the actual notes from the row
-                            const notes = row.internalNotes;
-                            
-                            if (notes && notes.trim() !== '') {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'internalNotes', 
+                        name: 'internalNotes',
+                        className: 'text-wrap',
+                        orderable: true,
+                        title: 'Notes',
+                        render: function(data, type, row) {
+                            if (data && data.trim() !== '') {
                                 return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
-                                               onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${notes.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">
-                                            <i class="fas fa-eye me-1"></i>View More
+                                               onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">
+                                            <i class="fas fa-eye me-1"></i>View
                                         </button>`;
                             } else {
                                 return '<span class="text-muted">-</span>';
+                            }
+                        }
+                    },
+                    { 
+                        data: 'collectionCheckIn', 
+                        name: 'collectionCheckIn',
+                        className: 'text-nowrap text-center',
+                        orderable: false,
+                        title: 'Collection Check-In',
+                        render: function(data, type, row) {
+                            if (data) {
+                                return `<span class="badge bg-success"><i class="fas fa-check"></i> Checked</span>`;
+                            } else {
+                                return `<button type="button" class="btn btn-sm btn-outline-primary" 
+                                            onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
+                                            <i class="fas fa-clipboard-check"></i> Check-In
+                                        </button>`;
+                            }
+                        }
+                    },
+                    { 
+                        data: 'driverConfirmedETA', 
+                        name: 'driverConfirmedETA',
+                        className: 'text-nowrap text-center',
+                        orderable: false,
+                        title: 'Driver Confirmed ETA',
+                        render: function(data, type, row) {
+                            if (data) {
+                                return `<span class="badge bg-success"><i class="fas fa-clock"></i> ${data}</span>`;
+                            } else {
+                                return `<button type="button" class="btn btn-sm btn-outline-info" 
+                                            onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
+                                            <i class="fas fa-truck"></i> Confirm ETA
+                                        </button>`;
+                            }
+                        }
+                    },
+                    { 
+                        data: 'midpointCheckComplete', 
+                        name: 'midpointCheckComplete',
+                        className: 'text-nowrap text-center',
+                        orderable: false,
+                        title: 'Mid-Point Check Complete',
+                        render: function(data, type, row) {
+                            if (data) {
+                                return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
+                            } else {
+                                return `<button type="button" class="btn btn-sm btn-outline-warning" 
+                                            onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
+                                            <i class="fas fa-map-marker-alt"></i> Mark Complete
+                                        </button>`;
                             }
                         }
                     }
@@ -670,7 +781,6 @@
                     });
                 },
                 drawCallback: function(settings) {
-                    // Ensure proper styling after each draw
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
@@ -749,7 +859,7 @@
                             currentRequest = null;
                         }
                     });
-                }, 300); // Reduced to 300ms for faster response
+                }, 300);
             });
 
             // Handle autocomplete item click
@@ -855,6 +965,36 @@
             } else {
                 $('#modalCompanyName').text('-');
             }
+        }
+
+        function confirmAction(actionName, orderId, actionType) {
+            Swal.fire({
+                title: 'Confirm Action',
+                text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, mark complete!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // User confirmed
+                    Swal.fire({
+                        title: 'Success!',
+                        text: `${actionName} marked as complete for Order #${orderId}!`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // TODO: Add your AJAX call here
+                    // updateOrderStatus(orderId, actionType);
+                    
+                    // Refresh table
+                    table.ajax.reload(null, false);
+                }
+            });
         }
     </script>
 @endpush
