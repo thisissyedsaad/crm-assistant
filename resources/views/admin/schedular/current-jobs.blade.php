@@ -451,18 +451,18 @@
                 </div>
 
                 <div class="row g-4">
-                    <div class="col-12">
+                    <!-- <div class="col-12">
                         <div class="card">
                             <div class="card-body card-breadcrumb">
 
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <div class="row mb-3">
+                                <!-- <div class="row mb-3">
                                     <div class="col-md-3">
                                         <label for="fromDate" class="form-label">From Date</label>
                                         <input type="date" id="fromDate" class="form-control">
@@ -475,7 +475,7 @@
                                         <button id="filterBtn" class="btn btn-primary">Filter</button>
                                         <button id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
                                     </div>
-                                </div>
+                                </div> -->
 
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap data-table-area">
                                     <thead>
