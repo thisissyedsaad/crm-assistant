@@ -71,7 +71,7 @@ class CurrentJobsController extends Controller
                 }
 
                 // Limit to maximum 100 records
-                $apiQuery['limit'] = 100;
+                $apiQuery['filter[date]'] = $today = date('Y-m-d');
 
                 $response = $client->get($apiUrl . 'orders', [
                     'headers' => [
@@ -126,9 +126,12 @@ class CurrentJobsController extends Controller
 
                     // Get customer info
                     $userDisplay = null;
-                    if (isset($row['attributes']['customerUserId'])) {
-                        $userDisplay = "User #" . $row['attributes']['customerUserId'];
+                    if (isset($row['attributes']['usernameCreated'])) {
+                        $userDisplay = $row['attributes']['usernameCreated'] ?? '-';
                     }
+
+                    // $orderCount = $this->getOrderCount($row['attributes']['customerNo']);
+                    // $carrierName = $this->getCarrierName($row['attributes']['carrierNo']);
 
                     return [
                         'id' => $row['id'] ?? null,
@@ -136,7 +139,7 @@ class CurrentJobsController extends Controller
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
                         'customerUserId' => $userDisplay,
                         'carrierNo' => $driverName,
-                        'newExisting' => "Existing",
+                        // 'newExisting' => $orderCount > 1 ? "Existing" : "New",
                         'collectionDate' => $collectionDate,
                         'collectionTime' => $pickup['toTime'] ?? null,
                         'departureTime' => $pickup['departureTime'] ?? null,
@@ -144,9 +147,6 @@ class CurrentJobsController extends Controller
                         'deliveryTime' => $delivery['deliveryTime'] ?? null,
                         'midpointCheck' => $midpointCheck,
                         'internalNotes' => $row['attributes']['internalNotes'] ?? null,
-                        // 'collectionCheckIn' => $pickup['departureTime'] ?? null,
-                        // 'driverConfirmedETA' => $delivery['eta'] ?? null,
-                        // 'midpointCheckComplete' => null,
                         
                         // Additional fields for search and modal
                         'customerNo' => $row['attributes']['customerNo'] ?? null,
@@ -422,6 +422,86 @@ class CurrentJobsController extends Controller
                 'data' => [],
                 'error' => $responseJson['message']
             ]);
+        }
+    }
+
+    public function getOrderCount($customer_no)
+    {
+        try {
+            $customerNo = $customer_no;
+            
+            if (!$customerNo) {
+                return response()->json([
+                    'error' => 'Customer Number required'
+                ], 400);
+            }
+
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            $response = $client->get($apiUrl . 'orders', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => [
+                    'filter[customerNo]' => $customerNo,
+                ],
+            ]);
+
+            $res = json_decode($response->getBody()->getContents(), true);
+            $orders = $res['meta'] ?? [];
+            $totalOrders = $orders['total'];
+
+            return $totalOrders;
+
+        } catch (\Exception $e) {
+            Log::error("Error fetching order count for customer {$customerNo}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Could not fetch order count'
+            ], 500);
+        }
+    }
+
+    public function getCarrierName($carrier_no)
+    {
+        try {
+            $carrierNo = $carrier_no;
+            
+            if (!$carrierNo) {
+                return response()->json([
+                    'error' => 'Carrier Number required'
+                ], 400);
+            }
+
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            $response = $client->get($apiUrl . 'carriers', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => [
+                    'filter[carrierNo]' => $carrierNo,
+                ],
+            ]);
+
+            $res = json_decode($response->getBody()->getContents(), true);
+            $carrierName = $res['data']['attributes']['name'] ?? "-";
+            return $carrierName;
+
+        } catch (\Exception $e) {
+            Log::error("Error fetching order count for customer {$customerNo}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Could not fetch order count'
+            ], 500);
         }
     }
 }

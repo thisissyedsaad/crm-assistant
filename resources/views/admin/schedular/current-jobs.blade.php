@@ -484,7 +484,7 @@
                                             <th>Order Number</th>
                                             <th>User</th>
                                             <th>Drivers Name</th>
-                                            <th>New/Existing</th>
+                                            <!-- <th>New/Existing</th> -->
                                             <th>Collection Date</th>
                                             <th>Collection Time</th>
                                             <th>Driver Loaded (Time)</th>
@@ -636,16 +636,16 @@
                             return data ? data : '-';
                         }
                     },
-                    { 
-                        data: 'newExisting', 
-                        name: 'newExisting',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'New/Existing',
-                        render: function(data, type, row) {
-                            return data ? `<span class="badge bg-info">${data}</span>` : '-';
-                        }
-                    },
+                    // { 
+                    //     data: 'newExisting', 
+                    //     name: 'newExisting',
+                    //     className: 'text-nowrap',
+                    //     orderable: true,
+                    //     title: 'New/Existing',
+                    //     render: function(data, type, row) {
+                    //         return data ? `<span class="badge bg-info">${data}</span>` : '-';
+                    //     }
+                    // },
                     { 
                         data: 'collectionDate', 
                         name: 'collectionDate',
