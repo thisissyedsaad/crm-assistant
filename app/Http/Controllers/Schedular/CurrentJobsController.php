@@ -121,7 +121,7 @@ class CurrentJobsController extends Controller
                     // Get carrier/driver name from carrierNo
                     $driverName = null;
                     if (isset($row['attributes']['carrierNo'])) {
-                        $driverName = "Driver #" . $row['attributes']['carrierNo'];
+                        $driverName = $row['attributes']['carrierNo'];
                     }
 
                     // Get customer info
@@ -224,7 +224,9 @@ class CurrentJobsController extends Controller
     {
         try {
             $customerNo = $request->input('customerNo');
-            
+            $carrierNo = $request->input('carrierNo');
+            $carrierName = "-";
+
             $client = new Client();
             $apiUrl = env('TRANSPORT_API_URL');
             $apiKey = env('TRANSPORT_API_KEY');
@@ -240,9 +242,44 @@ class CurrentJobsController extends Controller
             $customerData = json_decode($response->getBody()->getContents(), true);
             $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
 
+            // For getting total Order Counts
+            $response3 = $client->get($apiUrl . 'orders', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => [
+                    'filter[customerNo]' => $customerNo,
+                ],
+            ]);
+
+            $res = json_decode($response3->getBody()->getContents(), true);
+            $orders = $res['meta'] ?? [];
+            $totalOrders = $orders['total'];
+            
+            // For getting carrier/driver name
+            if(!empty($carrierNo)){
+                $response2 = $client->get($apiUrl . 'carriers', [
+                    'headers' => [
+                        'Authorization' => 'Basic ' . $apiKey,
+                        'Content-Type'  => 'application/json',
+                        'Accept'        => 'application/json',
+                    ],
+                    'query' => [
+                        'filter[carrierNo]' => $carrierNo,
+                    ],
+                ]);
+
+                $carrierData = json_decode($response2->getBody()->getContents(), true);
+                $carrierName = $carrierData['data'][0]['attributes']['name'] ?? "-";
+            }
+
             return response()->json([
                 'success' => true,
-                'companyName' => $companyName
+                'companyName' => $companyName,
+                'carrierName' => $carrierName,
+                'newExist'    => $totalOrders > 1 ? 'Existing' : 'New'
             ]);
 
         } catch (\Exception $e) {
@@ -369,62 +406,6 @@ class CurrentJobsController extends Controller
         }
     }
 
-    public function autocomplete(Request $request)
-    {
-        try {
-            $query = $request->get('query');
-            
-            if (strlen($query) < 2) {
-                return response()->json(['data' => []]);
-            }
-
-            $client = new Client();
-            $apiUrl = env('TRANSPORT_API_URL');
-            $apiKey = env('TRANSPORT_API_KEY');
-
-            $apiQuery = [
-                'filter[orderNo]' => $query // Direct filter on orderNo
-            ];
-
-            $response = $client->get($apiUrl . 'orders', [
-                'headers' => [
-                    'Authorization' => 'Basic ' . $apiKey,
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
-                ],
-                'query' => $apiQuery
-            ]);
-
-            $ordersData = json_decode($response->getBody()->getContents(), true);
-            $orders = collect($ordersData['data'] ?? []);
-
-            $results = $orders->take(15)->map(function($order) {
-                $orderNo = $order['attributes']['orderNo'] ?? 'N/A';
-                $createdDate = isset($order['createdAt']) ? 
-                    \Carbon\Carbon::parse($order['createdAt'])->format('d/m/Y') : 'N/A';
-
-                return [
-                    'id' => $order['id'],
-                    'orderNo' => $orderNo,
-                    'createdDate' => $createdDate
-                ];
-            });
-
-            return response()->json([
-                'data' => $results->values()->toArray()
-            ]);
-
-        }
-        catch (\GuzzleHttp\Exception\ClientException $e) {
-            $responseBody = $e->getResponse()->getBody()->getContents();
-            $responseJson = json_decode($responseBody, true);
-            return response()->json([
-                'data' => [],
-                'error' => $responseJson['message']
-            ]);
-        }
-    }
-
     public function getOrderCount($customer_no)
     {
         try {
@@ -456,45 +437,6 @@ class CurrentJobsController extends Controller
             $totalOrders = $orders['total'];
 
             return $totalOrders;
-
-        } catch (\Exception $e) {
-            Log::error("Error fetching order count for customer {$customerNo}: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => 'Could not fetch order count'
-            ], 500);
-        }
-    }
-
-    public function getCarrierName($carrier_no)
-    {
-        try {
-            $carrierNo = $carrier_no;
-            
-            if (!$carrierNo) {
-                return response()->json([
-                    'error' => 'Carrier Number required'
-                ], 400);
-            }
-
-            $client = new Client();
-            $apiUrl = env('TRANSPORT_API_URL'); 
-            $apiKey = env('TRANSPORT_API_KEY');
-
-            $response = $client->get($apiUrl . 'carriers', [
-                'headers' => [
-                    'Authorization' => 'Basic ' . $apiKey,
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
-                ],
-                'query' => [
-                    'filter[carrierNo]' => $carrierNo,
-                ],
-            ]);
-
-            $res = json_decode($response->getBody()->getContents(), true);
-            $carrierName = $res['data']['attributes']['name'] ?? "-";
-            return $carrierName;
 
         } catch (\Exception $e) {
             Log::error("Error fetching order count for customer {$customerNo}: " . $e->getMessage());

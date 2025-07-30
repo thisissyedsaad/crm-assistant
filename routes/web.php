@@ -54,6 +54,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/admin/customers/ordercount', [CustomerController::class, 'getOrderCount'])->name('customers.ordercount');
 
     Route::prefix('schedular')->name('schedular.')->group(function () {
+        Route::post('get-customer', [CurrentJobsController::class, 'getCustomer'])->name('getCustomer');
         Route::resource('current-jobs', CurrentJobsController::class);
     });
 

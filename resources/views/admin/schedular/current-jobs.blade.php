@@ -483,7 +483,7 @@
                                             <th>Date</th>
                                             <th>Order Number</th>
                                             <th>User</th>
-                                            <th>Drivers Name</th>
+                                            <!-- <th>Drivers Name</th> -->
                                             <!-- <th>New/Existing</th> -->
                                             <th>Collection Date</th>
                                             <th>Collection Time</th>
@@ -540,6 +540,28 @@
                    </div>
                    <div class="col-sm-8">
                        <span id="modalCompanyName" class="text-muted">-</span>
+                   </div>
+               </div>
+               <div class="row mb-3">
+                   <div class="col-sm-4">
+                       <div class="d-flex align-items-center">
+                           <i class="bx bx-buildings text-primary me-2"></i>
+                           <strong>Driver Name:</strong>
+                       </div>
+                   </div>
+                   <div class="col-sm-8">
+                       <span id="modalCarrierName" class="text-muted">-</span>
+                   </div>
+               </div>
+               <div class="row mb-3">
+                   <div class="col-sm-4">
+                       <div class="d-flex align-items-center">
+                           <i class="bx bx-buildings text-primary me-2"></i>
+                           <strong>New/Existing:</strong>
+                       </div>
+                   </div>
+                   <div class="col-sm-8">
+                       <span id="modalNewExist" class="text-muted">-</span>
                    </div>
                </div>
                <div class="mb-3">
@@ -626,16 +648,16 @@
                             return data ? data : '-';
                         }
                     },
-                    { 
-                        data: 'carrierNo', 
-                        name: 'carrierNo',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'Drivers Name',
-                        render: function(data, type, row) {
-                            return data ? data : '-';
-                        }
-                    },
+                    // { 
+                    //     data: 'carrierNo', 
+                    //     name: 'carrierNo',
+                    //     className: 'text-nowrap',
+                    //     orderable: true,
+                    //     title: 'Drivers Name',
+                    //     render: function(data, type, row) {
+                    //         return data ? data : '-';
+                    //     }
+                    // },
                     // { 
                     //     data: 'newExisting', 
                     //     name: 'newExisting',
@@ -713,14 +735,14 @@
                         orderable: true,
                         title: 'Notes',
                         render: function(data, type, row) {
-                            if (data && data.trim() !== '') {
+                            // if (data && data.trim() !== '') {
                                 return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
-                                               onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">
+                                               onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
                                             <i class="fas fa-eye me-1"></i>View
                                         </button>`;
-                            } else {
-                                return '<span class="text-muted">-</span>';
-                            }
+                            // } else {
+                            //     return '<span class="text-muted">-</span>';
+                            // }
                         }
                     },
                     { 
@@ -798,151 +820,35 @@
                 table.draw();
             });
 
-            // Autocomplete Search Functionality for Orders
-            let searchTimeout;
-            let currentRequest;
-
-            $('#orderSearch').on('input', function() {
-                const query = $(this).val().trim();
-                const resultsContainer = $('#autocompleteResults');
-
-                // Clear previous timeout
-                clearTimeout(searchTimeout);
-
-                // Cancel previous request if still pending
-                if (currentRequest) {
-                    currentRequest.abort();
-                }
-
-                if (query.length < 2) {
-                    resultsContainer.hide().empty();
-                    return;
-                }
-
-                // Show loading state immediately
-                resultsContainer.html('<div class="autocomplete-loading">Searching orders...</div>').show();
-
-                // Debounce search - wait 300ms after user stops typing
-                searchTimeout = setTimeout(function() {
-                    currentRequest = $.ajax({
-                        url: "{{ route('admin.orders.autocomplete') }}",
-                        method: 'GET',
-                        data: {
-                            query: query
-                        },
-                        success: function(response) {
-                            resultsContainer.empty();
-
-                            if (response.data && response.data.length > 0) {
-                                response.data.forEach(function(order) {
-                                    const item = $(`
-                                        <div class="autocomplete-item" data-id="${order.id}">
-                                            <div class="order-info">Order: ${order.orderNo}</div>
-                                            <div class="order-details">Created: ${order.createdDate}</div>
-                                        </div>
-                                    `);
-
-                                    resultsContainer.append(item);
-                                });
-                            } else {
-                                resultsContainer.html('<div class="autocomplete-no-results">No orders found</div>');
-                            }
-
-                            resultsContainer.show();
-                        },
-                        error: function(xhr) {
-                            if (xhr.statusText !== 'abort') {
-                                resultsContainer.html('<div class="autocomplete-no-results">Error searching orders</div>');
-                            }
-                        },
-                        complete: function() {
-                            currentRequest = null;
-                        }
-                    });
-                }, 300);
-            });
-
-            // Handle autocomplete item click
-            $(document).on('click', '.autocomplete-item', function(e) {
-                const orderId = $(this).data('id');
-                const orderInfo = $(this).find('.order-info').text();
-                
-                $('#orderSearch').val(orderInfo);
-                $('#autocompleteResults').hide();
-                
-                // Redirect to order detail page
-                window.location.href = `/admin/orders/${orderId}`;
-            });
-
-            // Handle keyboard navigation
-            $(document).on('keydown', '#orderSearch', function(e) {
-                const resultsContainer = $('#autocompleteResults');
-                const items = resultsContainer.find('.autocomplete-item');
-                const activeItem = items.filter('.active');
-
-                if (e.keyCode === 40) { // Down arrow
-                    e.preventDefault();
-                    if (activeItem.length === 0) {
-                        items.first().addClass('active');
-                    } else {
-                        activeItem.removeClass('active');
-                        const next = activeItem.next('.autocomplete-item');
-                        if (next.length > 0) {
-                            next.addClass('active');
-                        } else {
-                            items.first().addClass('active');
-                        }
-                    }
-                } else if (e.keyCode === 38) { // Up arrow
-                    e.preventDefault();
-                    if (activeItem.length === 0) {
-                        items.last().addClass('active');
-                    } else {
-                        activeItem.removeClass('active');
-                        const prev = activeItem.prev('.autocomplete-item');
-                        if (prev.length > 0) {
-                            prev.addClass('active');
-                        } else {
-                            items.last().addClass('active');
-                        }
-                    }
-                } else if (e.keyCode === 13) { // Enter
-                    e.preventDefault();
-                    if (activeItem.length > 0) {
-                        activeItem.click();
-                    }
-                } else if (e.keyCode === 27) { // Escape
-                    resultsContainer.hide();
-                }
-            });
-
-            // Hide results when clicking outside
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('.autocomplete-container').length) {
-                    $('#autocompleteResults').hide();
-                }
-            });
         });
 
-        function showActualModal(orderNo, customerNo, comments) {
+        function showActualModal(orderNo, customerNo, comments, carrierNo) {
             // Show modal immediately with available data
             $('#modalOrderNumber').text(orderNo || '-');
             $('#modalCompanyName').text('Loading...');
+            $('#modalCarrierName').text('Loading...');
+            $('#modalNewExist').text('Loading...');
+            
             $('#modalCommentsContent').text(comments || 'No comments available');
             $('#commentsModal').modal('show');
                     
             // API call for company name
             if (customerNo) {
                 $.ajax({
-                    url: '{{ route("admin.getCustomer") }}',
+                    url: '{{ route("admin.schedular.getCustomer") }}',
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        customerNo: customerNo
+                        customerNo: customerNo,
+                        carrierNo: carrierNo
                     },
                     success: function(response) {
+                            console.log("test");
+                            console.log(response);
                         if (response.success) {
                             $('#modalCompanyName').text(response.companyName);
+                            $('#modalCarrierName').text(response.carrierName);
+                            $('#modalNewExist').text(response.newExist);
 
                             // Make company name clickable
                             $('#modalCompanyName').off('click').on('click', function() {
