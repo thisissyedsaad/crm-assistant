@@ -161,61 +161,51 @@
         } /* User */
         
         #datatable th:nth-child(4), #datatable td:nth-child(4) { 
-            min-width: 130px; 
-            width: 8%; 
-        } /* Drivers Name */
-        
-        #datatable th:nth-child(5), #datatable td:nth-child(5) { 
-            min-width: 100px; 
-            width: 6%; 
-        } /* New/Existing */
-        
-        #datatable th:nth-child(6), #datatable td:nth-child(6) { 
             min-width: 120px; 
             width: 8%; 
         } /* Collection Date */
         
-        #datatable th:nth-child(7), #datatable td:nth-child(7) { 
+        #datatable th:nth-child(5), #datatable td:nth-child(5) { 
             min-width: 120px; 
             width: 7%; 
         } /* Collection Time */
         
-        #datatable th:nth-child(8), #datatable td:nth-child(8) { 
+        #datatable th:nth-child(6), #datatable td:nth-child(6) { 
             min-width: 140px; 
             width: 8%; 
         } /* Driver Loaded Time */
         
-        #datatable th:nth-child(9), #datatable td:nth-child(9) { 
+        #datatable th:nth-child(7), #datatable td:nth-child(7) { 
             min-width: 100px; 
             width: 6%; 
         } /* Sale Price */
         
-        #datatable th:nth-child(10), #datatable td:nth-child(10) { 
+        #datatable th:nth-child(8), #datatable td:nth-child(8) { 
             min-width: 120px; 
             width: 7%; 
         } /* ETA Delivery */
         
-        #datatable th:nth-child(11), #datatable td:nth-child(11) { 
+        #datatable th:nth-child(9), #datatable td:nth-child(9) { 
             min-width: 120px; 
             width: 7%; 
         } /* Mid-Point Check */
         
-        #datatable th:nth-child(12), #datatable td:nth-child(12) { 
+        #datatable th:nth-child(10), #datatable td:nth-child(10) { 
             min-width: 100px; 
             width: 6%; 
         } /* Notes */
         
-        #datatable th:nth-child(13), #datatable td:nth-child(13) { 
+        #datatable th:nth-child(11), #datatable td:nth-child(11) { 
             min-width: 140px; 
             width: 8%; 
         } /* Collection Check-In */
         
-        #datatable th:nth-child(14), #datatable td:nth-child(14) { 
+        #datatable th:nth-child(12), #datatable td:nth-child(12) { 
             min-width: 140px; 
             width: 8%; 
         } /* Driver Confirmed ETA */
         
-        #datatable th:nth-child(15), #datatable td:nth-child(15) { 
+        #datatable th:nth-child(13), #datatable td:nth-child(13) { 
             min-width: 160px; 
             width: 9%; 
         } /* Mid-Point Check Complete */
@@ -451,40 +441,15 @@
                 </div>
 
                 <div class="row g-4">
-                    <!-- <div class="col-12">
-                        <div class="card">
-                            <div class="card-body card-breadcrumb">
-
-                            </div>
-                        </div>
-                    </div> -->
-
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <!-- <div class="row mb-3">
-                                    <div class="col-md-3">
-                                        <label for="fromDate" class="form-label">From Date</label>
-                                        <input type="date" id="fromDate" class="form-control">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="toDate" class="form-label">To Date</label>
-                                        <input type="date" id="toDate" class="form-control">
-                                    </div>
-                                    <div class="col-md-3 d-flex align-items-end date-btn-filter">
-                                        <button id="filterBtn" class="btn btn-primary">Filter</button>
-                                        <button id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
-                                    </div>
-                                </div> -->
-
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap data-table-area">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
                                             <th>Order Number</th>
                                             <th>User</th>
-                                            <!-- <th>Drivers Name</th> -->
-                                            <!-- <th>New/Existing</th> -->
                                             <th>Collection Date</th>
                                             <th>Collection Time</th>
                                             <th>Driver Loaded (Time)</th>
@@ -648,26 +613,6 @@
                             return data ? data : '-';
                         }
                     },
-                    // { 
-                    //     data: 'carrierNo', 
-                    //     name: 'carrierNo',
-                    //     className: 'text-nowrap',
-                    //     orderable: true,
-                    //     title: 'Drivers Name',
-                    //     render: function(data, type, row) {
-                    //         return data ? data : '-';
-                    //     }
-                    // },
-                    // { 
-                    //     data: 'newExisting', 
-                    //     name: 'newExisting',
-                    //     className: 'text-nowrap',
-                    //     orderable: true,
-                    //     title: 'New/Existing',
-                    //     render: function(data, type, row) {
-                    //         return data ? `<span class="badge bg-info">${data}</span>` : '-';
-                    //     }
-                    // },
                     { 
                         data: 'collectionDate', 
                         name: 'collectionDate',
@@ -735,14 +680,10 @@
                         orderable: true,
                         title: 'Notes',
                         render: function(data, type, row) {
-                            // if (data && data.trim() !== '') {
-                                return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
-                                               onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
-                                            <i class="fas fa-eye me-1"></i>View
-                                        </button>`;
-                            // } else {
-                            //     return '<span class="text-muted">-</span>';
-                            // }
+                            return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
+                                           onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>`;
                         }
                     },
                     { 
@@ -752,11 +693,11 @@
                         orderable: false,
                         title: 'Collection Check-In',
                         render: function(data, type, row) {
-                            if (data) {
-                                return `<span class="badge bg-success"><i class="fas fa-check"></i> Checked</span>`;
+                            if (data === true || data === 1) {
+                                return `<span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>`;
                             } else {
                                 return `<button type="button" class="btn btn-sm btn-outline-primary" 
-                                            onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
+                                               onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
                                             <i class="fas fa-clipboard-check"></i> Check-In
                                         </button>`;
                             }
@@ -769,11 +710,11 @@
                         orderable: false,
                         title: 'Driver Confirmed ETA',
                         render: function(data, type, row) {
-                            if (data) {
-                                return `<span class="badge bg-success"><i class="fas fa-clock"></i> ${data}</span>`;
+                            if (data === true || data === 1) {
+                                return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
                             } else {
                                 return `<button type="button" class="btn btn-sm btn-outline-info" 
-                                            onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
+                                               onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
                                             <i class="fas fa-truck"></i> Confirm ETA
                                         </button>`;
                             }
@@ -786,11 +727,11 @@
                         orderable: false,
                         title: 'Mid-Point Check Complete',
                         render: function(data, type, row) {
-                            if (data) {
+                            if (data === true || data === 1) {
                                 return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
                             } else {
                                 return `<button type="button" class="btn btn-sm btn-outline-warning" 
-                                            onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
+                                               onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
                                             <i class="fas fa-map-marker-alt"></i> Mark Complete
                                         </button>`;
                             }
@@ -843,8 +784,6 @@
                         carrierNo: carrierNo
                     },
                     success: function(response) {
-                            console.log("test");
-                            console.log(response);
                         if (response.success) {
                             $('#modalCompanyName').text(response.companyName);
                             $('#modalCarrierName').text(response.carrierName);
@@ -873,6 +812,84 @@
             }
         }
 
+        // function confirmAction(actionName, orderId, actionType) {
+        //     Swal.fire({
+        //         title: 'Confirm Action',
+        //         text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
+        //         icon: 'question',
+        //         showCancelButton: true,
+        //         confirmButtonColor: '#3085d6',
+        //         cancelButtonColor: '#d33',
+        //         confirmButtonText: 'Yes, mark complete!',
+        //         cancelButtonText: 'Cancel'
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             // Show loading
+        //             Swal.fire({
+        //                 title: 'Processing...',
+        //                 text: 'Updating job status',
+        //                 icon: 'info',
+        //                 allowOutsideClick: false,
+        //                 showConfirmButton: false,
+        //                 willOpen: () => {
+        //                     Swal.showLoading();
+        //                 }
+        //             });
+
+        //             // Make AJAX call to save in local database
+        //             $.ajax({
+        //                 url: '{{ route("admin.schedular.current-jobs.update-status") }}',
+        //                 method: 'POST',
+        //                 data: {
+        //                     _token: '{{ csrf_token() }}',
+        //                     orderId: orderId,
+        //                     actionType: actionType
+        //                 },
+        //                 success: function(response) {
+        //                     if (response.success) {
+        //                         if (response.completed) {
+        //                             // Job is completed - show special message
+        //                             Swal.fire({
+        //                                 title: 'Job Completed!',
+        //                                 text: response.message,
+        //                                 icon: 'success',
+        //                                 timer: 3000,
+        //                                 showConfirmButton: false
+        //                             });
+        //                         } else {
+        //                             // Just marked one step
+        //                             Swal.fire({
+        //                                 title: 'Success!',
+        //                                 text: response.message,
+        //                                 icon: 'success',
+        //                                 timer: 2000,
+        //                                 showConfirmButton: false
+        //                             });
+        //                         }
+                                
+        //                         // Refresh table to show updated status
+        //                         table.ajax.reload(null, false);
+        //                     } else {
+        //                         Swal.fire({
+        //                             title: 'Error!',
+        //                             text: response.message,
+        //                             icon: 'error'
+        //                         });
+        //                     }
+        //                 },
+        //                 error: function(xhr) {
+        //                     console.error('AJAX Error:', xhr.responseText);
+        //                     Swal.fire({
+        //                         title: 'Error!',
+        //                         text: 'Error occurred while updating status. Please try again.',
+        //                         icon: 'error'
+        //                     });
+        //                 }
+        //             });
+        //         }
+        //     });
+        // }
+
         function confirmAction(actionName, orderId, actionType) {
             Swal.fire({
                 title: 'Confirm Action',
@@ -885,20 +902,67 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // User confirmed
+                    
+                    // Show loading
                     Swal.fire({
-                        title: 'Success!',
-                        text: `${actionName} marked as complete for Order #${orderId}!`,
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
+                        title: 'Processing...',
+                        text: 'Updating job status',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
-                    
-                    // TODO: Add your AJAX call here
-                    // updateOrderStatus(orderId, actionType);
-                    
-                    // Refresh table
-                    table.ajax.reload(null, false);
+
+                    // Make AJAX call
+                    $.ajax({
+                        url: '{{ route("admin.schedular.current-jobs.update-status") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            orderId: orderId,
+                            actionType: actionType
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                
+                                // Show success message
+                                let message = response.message;
+                                if (response.completed) {
+                                    message += ' - Job will be removed from the list!';
+                                }
+                                
+                                Swal.fire({
+                                    title: response.completed ? 'Job Completed!' : 'Success!',
+                                    text: message,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                
+                                // GUARANTEED FIX - Reload entire page
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2200);
+                                
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: response.message,
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('AJAX Error:', xhr.responseText);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Error occurred while updating status. Please try again.',
+                                icon: 'error'
+                            });
+                        }
+                    });
                 }
             });
         }

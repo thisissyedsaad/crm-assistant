@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Log;
+use App\Models\CurrentJobsTracking;
 
 class CurrentJobsController extends Controller
 {
@@ -43,8 +44,8 @@ class CurrentJobsController extends Controller
                 $orderColumn = $request->input('order.0.column', 0);
                 $orderDirection = $request->input('order.0.dir', 'desc');
                 
-                // Map column index to field name - FIXED FOR 15 COLUMNS
-                $columns = ['updatedAt', 'orderNo', 'customerUserId', 'carrierNo', 'newExisting', 'collectionDate', 'collectionTime', 'departureTime', 'orderPrice', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete'];
+                // Map column index to field name - FIXED FOR 13 COLUMNS (removed 2 columns)
+                $columns = ['updatedAt', 'orderNo', 'customerUserId', 'collectionDate', 'collectionTime', 'departureTime', 'orderPrice', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete'];
                 $sortField = $columns[$orderColumn] ?? 'updatedAt';
 
                 // Build API query
@@ -86,7 +87,7 @@ class CurrentJobsController extends Controller
                 $orders = collect($res['data'] ?? []);
                 $meta = $res['meta'] ?? [];
 
-                // FIXED Transform data
+                // Transform data with tracking integration
                 $transformedData = $orders->map(function($row) {
                     // Get pickup and delivery destinations
                     $destinations = $row['attributes']['destinations'] ?? [];
@@ -130,8 +131,9 @@ class CurrentJobsController extends Controller
                         $userDisplay = $row['attributes']['usernameCreated'] ?? '-';
                     }
 
-                    // $orderCount = $this->getOrderCount($row['attributes']['customerNo']);
-                    // $carrierName = $this->getCarrierName($row['attributes']['carrierNo']);
+                    // NEW: Check local tracking for this order
+                    $orderId = $row['id'];
+                    $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
 
                     return [
                         'id' => $row['id'] ?? null,
@@ -139,7 +141,6 @@ class CurrentJobsController extends Controller
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
                         'customerUserId' => $userDisplay,
                         'carrierNo' => $driverName,
-                        // 'newExisting' => $orderCount > 1 ? "Existing" : "New",
                         'collectionDate' => $collectionDate,
                         'collectionTime' => $pickup['toTime'] ?? null,
                         'departureTime' => $pickup['departureTime'] ?? null,
@@ -152,7 +153,18 @@ class CurrentJobsController extends Controller
                         'customerNo' => $row['attributes']['customerNo'] ?? null,
                         'vehicleTypeName' => $row['attributes']['vehicleTypeName'] ?? null,
                         'status' => $row['attributes']['status'] ?? null,
+
+                        // NEW: Add tracking status for buttons
+                        'collectionCheckIn' => $tracking ? $tracking->collection_checked_in : false,
+                        'driverConfirmedETA' => $tracking ? $tracking->driver_eta_confirmed : false,
+                        'midpointCheckComplete' => $tracking ? $tracking->midpoint_check_completed : false,
                     ];
+                })
+                // NEW: Filter out completed jobs
+                ->filter(function($item) {
+                    $tracking = CurrentJobsTracking::where('order_id', $item['id'])->first();
+                    // Only show if not completed or no tracking record exists
+                    return !$tracking || $tracking->status !== 'completed';
                 });
 
                 // Apply search filter if provided
@@ -218,6 +230,73 @@ class CurrentJobsController extends Controller
         }
 
         return view('admin.schedular.current-jobs', compact('countData'));
+    }
+
+    // NEW: Handle confirmation actions
+    public function updateOrderStatus(Request $request)
+    {
+        try {
+            $orderId = $request->input('orderId');
+            $actionType = $request->input('actionType');
+
+            // Get the full order data from third-party API to store
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL');
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            $response = $client->get($apiUrl . 'orders/' . $orderId, [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+            ]);
+
+            $orderData = json_decode($response->getBody()->getContents(), true);
+            
+            // Get or create tracking record
+            $tracking = CurrentJobsTracking::getOrCreateForOrder($orderId, $orderData);
+
+            // Update based on action type
+            switch ($actionType) {
+                case 'collection-checkin':
+                    $tracking->markCollectionCheckedIn();
+                    $message = 'Collection check-in marked as complete';
+                    break;
+                    
+                case 'driver-eta':
+                    $tracking->markDriverETAConfirmed();
+                    $message = 'Driver ETA confirmed';
+                    break;
+                    
+                case 'midpoint-check':
+                    $tracking->markMidpointCheckCompleted();
+                    $message = 'Mid-point check marked as complete';
+                    break;
+                    
+                default:
+                    return response()->json(['success' => false, 'message' => 'Invalid action type']);
+            }
+
+            // Check if job is now completed
+            $jobCompleted = $tracking->isCompleted();
+            if ($jobCompleted) {
+                $message .= ' - Job completed and removed from current jobs!';
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => $message,
+                'completed' => $jobCompleted
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Update order status error: " . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getCustomer(Request $request)
