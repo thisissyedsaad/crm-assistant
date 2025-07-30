@@ -762,134 +762,8 @@
             });
 
         });
-
-        function showActualModal(orderNo, customerNo, comments, carrierNo) {
-            // Show modal immediately with available data
-            $('#modalOrderNumber').text(orderNo || '-');
-            $('#modalCompanyName').text('Loading...');
-            $('#modalCarrierName').text('Loading...');
-            $('#modalNewExist').text('Loading...');
-            
-            $('#modalCommentsContent').text(comments || 'No comments available');
-            $('#commentsModal').modal('show');
-                    
-            // API call for company name
-            if (customerNo) {
-                $.ajax({
-                    url: '{{ route("admin.schedular.getCustomer") }}',
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        customerNo: customerNo,
-                        carrierNo: carrierNo
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#modalCompanyName').text(response.companyName);
-                            $('#modalCarrierName').text(response.carrierName);
-                            $('#modalNewExist').text(response.newExist);
-
-                            // Make company name clickable
-                            $('#modalCompanyName').off('click').on('click', function() {
-                                // Redirect to customer details page
-                                window.location.href = `/admin/customers/${customerNo}`;
-                            });
-
-                            $('#modalCompanyName').css({
-                                'cursor': 'pointer',
-                            });
-
-                        } else {
-                            $('#modalCompanyName').text('Customer #' + customerNo);
-                        }
-                    },
-                    error: function() {
-                        $('#modalCompanyName').text('Customer #' + customerNo);
-                    }
-                });
-            } else {
-                $('#modalCompanyName').text('-');
-            }
-        }
-
-        // function confirmAction(actionName, orderId, actionType) {
-        //     Swal.fire({
-        //         title: 'Confirm Action',
-        //         text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
-        //         icon: 'question',
-        //         showCancelButton: true,
-        //         confirmButtonColor: '#3085d6',
-        //         cancelButtonColor: '#d33',
-        //         confirmButtonText: 'Yes, mark complete!',
-        //         cancelButtonText: 'Cancel'
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             // Show loading
-        //             Swal.fire({
-        //                 title: 'Processing...',
-        //                 text: 'Updating job status',
-        //                 icon: 'info',
-        //                 allowOutsideClick: false,
-        //                 showConfirmButton: false,
-        //                 willOpen: () => {
-        //                     Swal.showLoading();
-        //                 }
-        //             });
-
-        //             // Make AJAX call to save in local database
-        //             $.ajax({
-        //                 url: '{{ route("admin.schedular.current-jobs.update-status") }}',
-        //                 method: 'POST',
-        //                 data: {
-        //                     _token: '{{ csrf_token() }}',
-        //                     orderId: orderId,
-        //                     actionType: actionType
-        //                 },
-        //                 success: function(response) {
-        //                     if (response.success) {
-        //                         if (response.completed) {
-        //                             // Job is completed - show special message
-        //                             Swal.fire({
-        //                                 title: 'Job Completed!',
-        //                                 text: response.message,
-        //                                 icon: 'success',
-        //                                 timer: 3000,
-        //                                 showConfirmButton: false
-        //                             });
-        //                         } else {
-        //                             // Just marked one step
-        //                             Swal.fire({
-        //                                 title: 'Success!',
-        //                                 text: response.message,
-        //                                 icon: 'success',
-        //                                 timer: 2000,
-        //                                 showConfirmButton: false
-        //                             });
-        //                         }
-                                
-        //                         // Refresh table to show updated status
-        //                         table.ajax.reload(null, false);
-        //                     } else {
-        //                         Swal.fire({
-        //                             title: 'Error!',
-        //                             text: response.message,
-        //                             icon: 'error'
-        //                         });
-        //                     }
-        //                 },
-        //                 error: function(xhr) {
-        //                     console.error('AJAX Error:', xhr.responseText);
-        //                     Swal.fire({
-        //                         title: 'Error!',
-        //                         text: 'Error occurred while updating status. Please try again.',
-        //                         icon: 'error'
-        //                     });
-        //                 }
-        //             });
-        //         }
-        //     });
-        // }
-
+        
+        // Page Refresh
         function confirmAction(actionName, orderId, actionType) {
             Swal.fire({
                 title: 'Confirm Action',
@@ -966,5 +840,529 @@
                 }
             });
         }
+
+        function showActualModal(orderNo, customerNo, comments, carrierNo) {
+            // Show modal immediately with available data
+            $('#modalOrderNumber').text(orderNo || '-');
+            $('#modalCompanyName').text('Loading...');
+            $('#modalCarrierName').text('Loading...');
+            $('#modalNewExist').text('Loading...');
+            
+            $('#modalCommentsContent').text(comments || 'No comments available');
+            $('#commentsModal').modal('show');
+                    
+            // API call for company name
+            if (customerNo) {
+                $.ajax({
+                    url: '{{ route("admin.schedular.getCustomer") }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        customerNo: customerNo,
+                        carrierNo: carrierNo
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#modalCompanyName').text(response.companyName);
+                            $('#modalCarrierName').text(response.carrierName);
+                            $('#modalNewExist').text(response.newExist);
+
+                            // Make company name clickable
+                            $('#modalCompanyName').off('click').on('click', function() {
+                                // Redirect to customer details page
+                                window.location.href = `/admin/customers/${customerNo}`;
+                            });
+
+                            $('#modalCompanyName').css({
+                                'cursor': 'pointer',
+                            });
+
+                        } else {
+                            $('#modalCompanyName').text('Customer #' + customerNo);
+                        }
+                    },
+                    error: function() {
+                        $('#modalCompanyName').text('Customer #' + customerNo);
+                    }
+                });
+            } else {
+                $('#modalCompanyName').text('-');
+            }
+        }
+
+        // var table; // Global variable
+        // $(function () {
+        //     // Initialize DataTable and assign to global variable
+        //     if ($.fn.DataTable.isDataTable('#datatable')) {
+        //         $('#datatable').DataTable().destroy();
+        //     }
+            
+        //     table = $('#datatable').DataTable({
+        //         processing: true,
+        //         serverSide: true,
+        //         scrollX: true,
+        //         scrollCollapse: false,
+        //         autoWidth: true,
+        //         responsive: false,
+        //         ordering: true,
+        //         order: [[0, 'desc']],
+        //         ajax: {
+        //             url: "{{ route('admin.schedular.current-jobs.index') }}",
+        //             data: function (d) {
+        //                 d.fromDate = $('#fromDate').val();
+        //                 d.toDate = $('#toDate').val();
+        //                 d._t = new Date().getTime(); // Cache buster
+        //             }
+        //         },
+        //         pageLength: 25,
+        //         lengthMenu: [[25, 50, 100], [25, 50, 100]],
+        //         columns: [
+        //             // ... your complete columns config (copy from your existing)
+        //             { 
+        //                 data: 'updatedAt', 
+        //                 name: 'updatedAt',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Date'
+        //             },
+        //             { 
+        //                 data: 'orderNo', 
+        //                 name: 'orderNo',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Order Number',
+        //                 render: function(data, type, row) {
+        //                     return data ? `<a href="/admin/orders/${row.id}">${data}</a>` : '-'; 
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'customerUserId', 
+        //                 name: 'customerUserId',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'User',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'collectionDate', 
+        //                 name: 'collectionDate',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Collection Date',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'collectionTime', 
+        //                 name: 'collectionTime',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Collection Time',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'departureTime', 
+        //                 name: 'departureTime',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Driver Loaded (Time)',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '<span class="text-muted">Pending</span>';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'orderPrice', 
+        //                 name: 'orderPrice',
+        //                 className: 'text-nowrap text-end',
+        //                 orderable: true,
+        //                 title: 'Sale Price',
+        //                 render: function(data, type, row) {
+        //                     return data ? '£' + parseFloat(data).toFixed(2) : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'deliveryTime', 
+        //                 name: 'deliveryTime',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'ETA Delivery',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'midpointCheck', 
+        //                 name: 'midpointCheck',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Mid-Point Check',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'internalNotes', 
+        //                 name: 'internalNotes',
+        //                 className: 'text-wrap',
+        //                 orderable: true,
+        //                 title: 'Notes',
+        //                 render: function(data, type, row) {
+        //                     return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
+        //                                 onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
+        //                                 <i class="fas fa-eye me-1"></i>View
+        //                             </button>`;
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'collectionCheckIn', 
+        //                 name: 'collectionCheckIn',
+        //                 className: 'text-nowrap text-center',
+        //                 orderable: false,
+        //                 title: 'Collection Check-In',
+        //                 render: function(data, type, row) {
+        //                     if (data === true || data === 1) {
+        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>`;
+        //                     } else {
+        //                         return `<button type="button" class="btn btn-sm btn-outline-primary" 
+        //                                     onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
+        //                                     <i class="fas fa-clipboard-check"></i> Check-In
+        //                                 </button>`;
+        //                     }
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'driverConfirmedETA', 
+        //                 name: 'driverConfirmedETA',
+        //                 className: 'text-nowrap text-center',
+        //                 orderable: false,
+        //                 title: 'Driver Confirmed ETA',
+        //                 render: function(data, type, row) {
+        //                     if (data === true || data === 1) {
+        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
+        //                     } else {
+        //                         return `<button type="button" class="btn btn-sm btn-outline-info" 
+        //                                     onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
+        //                                     <i class="fas fa-truck"></i> Confirm ETA
+        //                                 </button>`;
+        //                     }
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'midpointCheckComplete', 
+        //                 name: 'midpointCheckComplete',
+        //                 className: 'text-nowrap text-center',
+        //                 orderable: false,
+        //                 title: 'Mid-Point Check Complete',
+        //                 render: function(data, type, row) {
+        //                     if (data === true || data === 1) {
+        //                         return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
+        //                     } else {
+        //                         return `<button type="button" class="btn btn-sm btn-outline-warning" 
+        //                                     onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
+        //                                     <i class="fas fa-map-marker-alt"></i> Mark Complete
+        //                                 </button>`;
+        //                     }
+        //                 }
+        //             }
+        //         ],
+        //         initComplete: function() {
+        //             $('.dataTables_wrapper').css({
+        //                 'width': '100%'
+        //             });
+        //         },
+        //         drawCallback: function(settings) {
+        //             $('.dataTables_wrapper').css({
+        //                 'width': '100%'
+        //             });
+        //         }
+        //     });
+
+        //     // DataTable filter functionality
+        //     $('#filterBtn').on('click', function () {
+        //         table.draw();
+        //     });
+
+        //     $('#resetBtn').on('click', function () {
+        //         $('#fromDate').val('');
+        //         $('#toDate').val('');
+        //         table.draw();
+        //     });
+        // });
+
+        // // FIXED refreshDataTable function
+        // function refreshDataTable() {
+        //     console.log('🔄 Refreshing DataTable...');
+            
+        //     // Destroy existing DataTable if it exists
+        //     if ($.fn.DataTable.isDataTable('#datatable')) {
+        //         $('#datatable').DataTable().destroy();
+        //         console.log('🗑️ Old DataTable destroyed');
+        //     }
+            
+        //     // Recreate DataTable
+        //     table = $('#datatable').DataTable({
+        //         processing: true,
+        //         serverSide: true,
+        //         scrollX: true,
+        //         scrollCollapse: false,
+        //         autoWidth: true,
+        //         responsive: false,
+        //         ordering: true,
+        //         order: [[0, 'desc']],
+        //         ajax: {
+        //             url: "{{ route('admin.schedular.current-jobs.index') }}",
+        //             data: function (d) {
+        //                 d.fromDate = $('#fromDate').val();
+        //                 d.toDate = $('#toDate').val();
+        //                 d._t = new Date().getTime(); // Cache buster
+        //             }
+        //         },
+        //         pageLength: 25,
+        //         lengthMenu: [[25, 50, 100], [25, 50, 100]],
+        //         columns: [
+        //             // Copy the same columns config from above
+        //             { 
+        //                 data: 'updatedAt', 
+        //                 name: 'updatedAt',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Date'
+        //             },
+        //             { 
+        //                 data: 'orderNo', 
+        //                 name: 'orderNo',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Order Number',
+        //                 render: function(data, type, row) {
+        //                     return data ? `<a href="/admin/orders/${row.id}">${data}</a>` : '-'; 
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'customerUserId', 
+        //                 name: 'customerUserId',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'User',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'collectionDate', 
+        //                 name: 'collectionDate',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Collection Date',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'collectionTime', 
+        //                 name: 'collectionTime',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Collection Time',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'departureTime', 
+        //                 name: 'departureTime',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Driver Loaded (Time)',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '<span class="text-muted">Pending</span>';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'orderPrice', 
+        //                 name: 'orderPrice',
+        //                 className: 'text-nowrap text-end',
+        //                 orderable: true,
+        //                 title: 'Sale Price',
+        //                 render: function(data, type, row) {
+        //                     return data ? '£' + parseFloat(data).toFixed(2) : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'deliveryTime', 
+        //                 name: 'deliveryTime',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'ETA Delivery',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'midpointCheck', 
+        //                 name: 'midpointCheck',
+        //                 className: 'text-nowrap',
+        //                 orderable: true,
+        //                 title: 'Mid-Point Check',
+        //                 render: function(data, type, row) {
+        //                     return data ? data : '-';
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'internalNotes', 
+        //                 name: 'internalNotes',
+        //                 className: 'text-wrap',
+        //                 orderable: true,
+        //                 title: 'Notes',
+        //                 render: function(data, type, row) {
+        //                     return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
+        //                                 onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
+        //                                 <i class="fas fa-eye me-1"></i>View
+        //                             </button>`;
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'collectionCheckIn', 
+        //                 name: 'collectionCheckIn',
+        //                 className: 'text-nowrap text-center',
+        //                 orderable: false,
+        //                 title: 'Collection Check-In',
+        //                 render: function(data, type, row) {
+        //                     if (data === true || data === 1) {
+        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>`;
+        //                     } else {
+        //                         return `<button type="button" class="btn btn-sm btn-outline-primary" 
+        //                                     onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
+        //                                     <i class="fas fa-clipboard-check"></i> Check-In
+        //                                 </button>`;
+        //                     }
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'driverConfirmedETA', 
+        //                 name: 'driverConfirmedETA',
+        //                 className: 'text-nowrap text-center',
+        //                 orderable: false,
+        //                 title: 'Driver Confirmed ETA',
+        //                 render: function(data, type, row) {
+        //                     if (data === true || data === 1) {
+        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
+        //                     } else {
+        //                         return `<button type="button" class="btn btn-sm btn-outline-info" 
+        //                                     onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
+        //                                     <i class="fas fa-truck"></i> Confirm ETA
+        //                                 </button>`;
+        //                     }
+        //                 }
+        //             },
+        //             { 
+        //                 data: 'midpointCheckComplete', 
+        //                 name: 'midpointCheckComplete',
+        //                 className: 'text-nowrap text-center',
+        //                 orderable: false,
+        //                 title: 'Mid-Point Check Complete',
+        //                 render: function(data, type, row) {
+        //                     if (data === true || data === 1) {
+        //                         return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
+        //                     } else {
+        //                         return `<button type="button" class="btn btn-sm btn-outline-warning" 
+        //                                     onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
+        //                                     <i class="fas fa-map-marker-alt"></i> Mark Complete
+        //                                 </button>`;
+        //                     }
+        //                 }
+        //             }
+        //         ],
+        //         initComplete: function() {
+        //             $('.dataTables_wrapper').css({
+        //                 'width': '100%'
+        //             });
+        //             console.log('✅ Fresh DataTable created successfully!');
+        //         },
+        //         drawCallback: function(settings) {
+        //             $('.dataTables_wrapper').css({
+        //                 'width': '100%'
+        //             });
+        //         }
+        //     });
+        // }
+
+        // // FIXED confirmAction function
+        // function confirmAction(actionName, orderId, actionType) {
+        //     Swal.fire({
+        //         title: 'Confirm Action',
+        //         text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
+        //         icon: 'question',
+        //         showCancelButton: true,
+        //         confirmButtonColor: '#3085d6',
+        //         cancelButtonColor: '#d33',
+        //         confirmButtonText: 'Yes, mark complete!',
+        //         cancelButtonText: 'Cancel'
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+                    
+        //             // Show loading
+        //             Swal.fire({
+        //                 title: 'Processing...',
+        //                 text: 'Updating job status',
+        //                 icon: 'info',
+        //                 allowOutsideClick: false,
+        //                 showConfirmButton: false,
+        //                 willOpen: () => {
+        //                     Swal.showLoading();
+        //                 }
+        //             });
+
+        //             $.ajax({
+        //                 url: '{{ route("admin.schedular.current-jobs.update-status") }}',
+        //                 method: 'POST',
+        //                 data: {
+        //                     _token: '{{ csrf_token() }}',
+        //                     orderId: orderId,
+        //                     actionType: actionType
+        //                 },
+        //                 success: function(response) {
+        //                     if (response.success) {
+                                
+        //                         Swal.fire({
+        //                             title: response.completed ? 'Job Completed!' : 'Success!',
+        //                             text: response.message,
+        //                             icon: 'success',
+        //                             timer: 1500,
+        //                             showConfirmButton: false
+        //                         });
+                                
+        //                         // NUCLEAR REFRESH - Now it will work!
+        //                         setTimeout(() => {
+        //                             refreshDataTable();
+        //                         }, 800);
+                                
+        //                     } else {
+        //                         Swal.fire({
+        //                             title: 'Error!',
+        //                             text: response.message,
+        //                             icon: 'error'
+        //                         });
+        //                     }
+        //                 },
+        //                 error: function(xhr) {
+        //                     console.error('AJAX Error:', xhr.responseText);
+        //                     Swal.fire({
+        //                         title: 'Error!',
+        //                         text: 'Error occurred while updating status. Please try again.',
+        //                         icon: 'error'
+        //                     });
+        //                 }
+        //             });
+        //         }
+        //     });
+        // }
+
+        
     </script>
 @endpush
