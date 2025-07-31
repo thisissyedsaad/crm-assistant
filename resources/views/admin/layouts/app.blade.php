@@ -114,6 +114,49 @@
           color: #fff;
           font-size: 20px;
       }
+
+      /* Enhanced Profile Dropdown Styles */
+      .dropdown-menu.profile {
+        min-width: 250px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+      }
+
+      .dropdown-menu.profile .dropdown-item {
+        transition: all 0.2s ease;
+        border-radius: 6px;
+        margin: 2px 10px;
+      }
+
+      .dropdown-menu.profile .dropdown-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+      }
+
+      .dropdown-menu.profile .dropdown-item.text-danger:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545 !important;
+      }
+
+      .user-info-section {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white !important;
+      }
+
+      .user-info-section h6,
+      .user-info-section p {
+        color: white !important;
+      }
+
+      /* Mobile responsive */
+      @media (max-width: 767px) {
+        .dropdown-menu.profile {
+          min-width: 220px;
+          right: 10px !important;
+        }
+      }
     </style>
     
     @stack('links')
@@ -207,7 +250,85 @@
 
             <!-- Top Bar Nav -->
             <ul class="right-side-content d-flex align-items-center">
-              <strong class="user-style">{{ Auth::user()->name }} ({{ Auth::user()->role }})</strong>
+              <li class="nav-item dropdown">
+                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="bx bx-bell bx-tada"></i>
+                  <span class="active-status"></span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <div class="top-notifications-area">
+                    <div class="notifications-heading">
+                      <div class="heading-title">
+                        <h6>Notifications</h6>
+                      </div>
+                      <span>11</span>
+                    </div>
+
+                    <div class="notifications-box" id="notificationsBox">
+                      <a href="#" class="dropdown-item">
+                        <i class="bx bx-shopping-bag"></i>
+                        <div>
+                          <span>Your order is placed</span>
+                          <p class="mb-0 font-12">
+                            Consectetur adipisicing elit. Ipsa, porro!
+                          </p>
+                        </div>
+                      </a>
+
+                      <a href="#" class="dropdown-item">
+                        <i class="bx bx-wallet-alt"></i>
+                        <div>
+                          <span>Haslina Obeta</span>
+                          <p class="mb-0 font-12">
+                            Consectetur adipisicing elit. Ipsa, porro!
+                          </p>
+                        </div>
+                      </a>
+
+                      <a href="#" class="dropdown-item">
+                        <i class="bx bx-dollar-circle"></i>
+                        <div>
+                          <span>Your order is Dollar</span>
+                          <p class="mb-0 font-12">
+                            Consectetur adipisicing elit. Ipsa, porro!
+                          </p>
+                        </div>
+                      </a>
+
+                      <a href="#" class="dropdown-item">
+                        <i class="bx bx-wallet-alt"></i>
+                        <div>
+                          <span>Haslina Obeta</span>
+                          <p class="mb-0 font-12">
+                            Consectetur adipisicing elit. Ipsa, porro!
+                          </p>
+                        </div>
+                      </a>
+
+                      <a href="#" class="dropdown-item">
+                        <i class="bx bx-border-all"></i>
+                        <div>
+                          <span>Your order is placed</span>
+                          <p class="mb-0 font-12">
+                            Consectetur adipisicing elit. Ipsa, porro!
+                          </p>
+                        </div>
+                      </a>
+                      
+                      <a href="#" class="dropdown-item">
+                        <i class="bx bx-wallet-alt"></i>
+                        <div>
+                          <span>Haslina Obeta</span>
+                          <p class="mb-0 font-12">
+                            Consectetur adipisicing elit. Ipsa, porro!
+                          </p>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </li>
+
               <li class="nav-item dropdown">
                 <button
                   type="button"
@@ -219,16 +340,44 @@
                   <img src="{{ asset('assets/admin/img/bg-img/person_1.jpg' ) }}" alt="" />
                 </button>
                 <div class="dropdown-menu profile dropdown-menu-right">
-
                   <div class="user-profile-area">
-                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
+                    <!-- User Info Section -->
+                    <div class="user-info-section" style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: center;">
+                      <div class="user-avatar" style="margin-bottom: 10px;">
+                        <img src="{{ asset('assets/admin/img/bg-img/person_1.jpg' ) }}" 
+                            alt="User Avatar" 
+                            style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #007bff;">
+                      </div>
+                      <h6 style="margin: 0; font-weight: 600; color: #333; font-size: 16px;">
+                        {{ Auth::user()->name }}
+                      </h6>
+                      <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 13px; text-transform: capitalize;">
+                        {{ Auth::user()->role }}
+                      </p>
+                    </div>
+
+                    <!-- Menu Items -->
+                    <div class="dropdown-menu-items" style="padding: 10px 0;">
+                      <!-- <a href="#" class="dropdown-item" style="padding: 8px 20px; display: flex; align-items: center;">
+                        <i class="bx bx-user me-2" style="font-size: 16px; color: #6c757d;"></i> 
+                        Profile
+                      </a>
+                      <a href="#" class="dropdown-item" style="padding: 8px 20px; display: flex; align-items: center;">
+                        <i class="bx bx-cog me-2" style="font-size: 16px; color: #6c757d;"></i> 
+                        Settings
+                      </a> -->
+                      <div class="dropdown-divider" style="margin: 5px 0;"></div>
+                      <form method="POST" action="{{ route('logout') }}" id="logout-form">
                         @csrf
                         <a href="{{ route('logout') }}" 
                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                          class="dropdown-item text-danger">
-                            <i class="bx bx-power-off me-2"></i> Logout
+                          class="dropdown-item text-danger"
+                          style="padding: 8px 20px; display: flex; align-items: center;">
+                          <i class="bx bx-power-off me-2" style="font-size: 16px;"></i> 
+                          Logout
                         </a>
-                    </form>
+                      </form>
+                    </div>
                   </div>
                 </div>
               </li>
