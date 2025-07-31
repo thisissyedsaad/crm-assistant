@@ -369,6 +369,9 @@
             font-size: 15px;
             text-decoration: none !important;
         }
+        .order-num > a{
+            color: #fff !important;
+        }
     </style>
 @endpush
 
@@ -600,7 +603,7 @@
                         orderable: true,
                         title: 'Order Number',
                         render: function(data, type, row) {
-                            return data ? `<a href="/admin/orders/${row.id}">${data}</a>` : '-'; 
+                            return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
                         }
                     },
                     { 

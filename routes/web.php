@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Schedular\CurrentJobsController;
+use App\Http\Controllers\Schedular\CompletedJobsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,9 +57,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::prefix('schedular')->name('schedular.')->group(function () {
         // Route::post('get-customer', [CurrentJobsController::class, 'getCustomer'])->name('getCustomer');
         Route::resource('current-jobs', CurrentJobsController::class);
-
         Route::post('current-jobs/update-status', [CurrentJobsController::class, 'updateOrderStatus'])->name('current-jobs.update-status');
         Route::post('current-jobs/get-customer', [CurrentJobsController::class, 'getCustomer'])->name('getCustomer');
+
+        Route::resource('completed-jobs', CompletedJobsController::class);
+        Route::post('completed-jobs/get-customer', [CompletedJobsController::class, 'getCustomer'])->name('getCustomer');
     });
 
 });
