@@ -15,18 +15,6 @@ class CurrentJobsController extends Controller
 
     public function index(Request $request)
     {
-        $totalJobs = 44;
-        $collectionsOverdue = 12;
-        $deliveriesOverdue = 23;
-        $delivered = 13;
-
-        $countData = [
-            'totalJobs' => $totalJobs,
-            'collectionsOverdue' => $collectionsOverdue,
-            'deliveriesOverdue' => $deliveriesOverdue,
-            'delivered' => $delivered,
-        ];
-
         if ($request->ajax()) {
 
             try {
@@ -137,14 +125,14 @@ class CurrentJobsController extends Controller
 
                     return [
                         'id' => $row['id'] ?? null,
-                        'updatedAt' => isset($row['updatedAt']) ? Carbon::parse($row['updatedAt'])->format('d-m-Y H:i') : null,
+                        // 'updatedAt' => isset($row['updatedAt']) ? Carbon::parse($row['updatedAt'])->format('d-m-Y H:i') : null,
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
-                        'customerUserId' => $userDisplay,
+                        // 'customerUserId' => $userDisplay,
                         'carrierNo' => $driverName,
-                        'collectionDate' => $collectionDate,
+                        // 'collectionDate' => $collectionDate,
                         'collectionTime' => $pickup['toTime'] ?? null,
                         'departureTime' => $pickup['departureTime'] ?? null,
-                        'orderPrice' => $row['attributes']['orderPrice'] ?? null,
+                        // 'orderPrice' => $row['attributes']['orderPrice'] ?? null,
                         'deliveryTime' => $delivery['deliveryTime'] ?? null,
                         'midpointCheck' => $midpointCheck,
                         'internalNotes' => $row['attributes']['internalNotes'] ?? null,
@@ -158,6 +146,7 @@ class CurrentJobsController extends Controller
                         'collectionCheckIn' => $tracking ? $tracking->collection_checked_in : false,
                         'driverConfirmedETA' => $tracking ? $tracking->driver_eta_confirmed : false,
                         'midpointCheckComplete' => $tracking ? $tracking->midpoint_check_completed : false,
+                        'delivered' => $tracking ? $tracking->delivered : null, // NEW: Add delivered status
                     ];
                 })
                 // NEW: Filter out completed jobs
@@ -229,75 +218,262 @@ class CurrentJobsController extends Controller
             }
         }
 
+        // Calculate dynamic dashboard counters
+        $countData = $this->calculateDashboardCounters();
+
         return view('admin.schedular.current-jobs', compact('countData'));
     }
 
-    // NEW: Handle confirmation actions
-    public function updateOrderStatus(Request $request)
-    {
-        try {
-            $orderId = $request->input('orderId');
-            $actionType = $request->input('actionType');
+private function calculateDashboardCounters()
+{
+    try {
+        $client = new Client();
+        $apiUrl = env('TRANSPORT_API_URL'); 
+        $apiKey = env('TRANSPORT_API_KEY');
+        
+        // Get today's orders
+        $apiQuery = [
+            'filter[date]' => date('Y-m-d'),
+        ];
 
-            // Get the full order data from third-party API to store
-            $client = new Client();
-            $apiUrl = env('TRANSPORT_API_URL');
-            $apiKey = env('TRANSPORT_API_KEY');
+        $response = $client->get($apiUrl . 'orders', [
+            'headers' => [
+                'Authorization' => 'Basic ' . $apiKey,
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+            ],
+            'query' => $apiQuery,
+        ]);
 
-            $response = $client->get($apiUrl . 'orders/' . $orderId, [
-                'headers' => [
-                    'Authorization' => 'Basic ' . $apiKey,
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
-                ],
-            ]);
+        $res = json_decode($response->getBody()->getContents(), true);
+        $orders = collect($res['data'] ?? []);
+        
+        $currentTime = Carbon::now();
+        $currentDate = $currentTime->format('Y-m-d');
+        
+        // Initialize counters
+        $totalJobs = $res['meta']['total'];
+        $collectionsOverdue = 0;
+        $deliveriesOverdue = 0;
+        $midPointCheckInOverdue = 0;
 
-            $orderData = json_decode($response->getBody()->getContents(), true);
-            
-            // Get or create tracking record
-            $tracking = CurrentJobsTracking::getOrCreateForOrder($orderId, $orderData);
+        foreach ($orders as $order) {
+            $destinations = $order['attributes']['destinations'] ?? [];
+            $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+            $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
 
-            // Update based on action type
-            switch ($actionType) {
-                case 'collection-checkin':
-                    $tracking->markCollectionCheckedIn();
-                    $message = 'Collection check-in marked as complete';
-                    break;
-                    
-                case 'driver-eta':
-                    $tracking->markDriverETAConfirmed();
-                    $message = 'Driver ETA confirmed';
-                    break;
-                    
-                case 'midpoint-check':
-                    $tracking->markMidpointCheckCompleted();
-                    $message = 'Mid-point check marked as complete';
-                    break;
-                    
-                default:
-                    return response()->json(['success' => false, 'message' => 'Invalid action type']);
+            // Filter out completed jobs
+            $tracking = CurrentJobsTracking::where('order_id', $order['id'])->first();
+            if ($tracking && $tracking->status === 'completed') {
+                continue;
             }
 
-            // Check if job is now completed
-            $jobCompleted = $tracking->isCompleted();
-            if ($jobCompleted) {
-                $message .= ' - Job completed and removed from current jobs!';
+            // $totalJobs++;
+
+            // Check collections overdue
+            if ($pickup && isset($pickup['departureTime']) && $pickup['date'] === $currentDate) {
+                try {
+                    $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
+                    if ($currentTime->greaterThan($departureDateTime)) {
+                        $collectionsOverdue++;
+                    }
+                } catch (\Exception $e) {
+                    // Skip if date/time parsing fails
+                }
             }
 
-            return response()->json([
-                'success' => true, 
-                'message' => $message,
-                'completed' => $jobCompleted
-            ]);
+            // Check deliveries overdue
+            if ($delivery && isset($delivery['toTime']) && $delivery['date'] === $currentDate) {
+                try {
+                    $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
+                    if ($currentTime->greaterThan($deliveryDateTime)) {
+                        $deliveriesOverdue++;
+                    }
+                } catch (\Exception $e) {
+                    // Skip if date/time parsing fails
+                }
+            }
 
-        } catch (\Exception $e) {
-            Log::error("Update order status error: " . $e->getMessage());
-            return response()->json([
-                'success' => false, 
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            // Check midpoint check overdue
+            if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
+                try {
+                    $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                    $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                    
+                    if ($deliveryTime->diffInHours($collectionTime) >= 3) {
+                        $midPointCheckInOverdue++;
+                    }
+                } catch (\Exception $e) {
+                }
+            }
         }
+
+        return [
+            'totalJobs' => $totalJobs,
+            'collectionsOverdue' => $collectionsOverdue,
+            'deliveriesOverdue' => $deliveriesOverdue,
+            'midPointCheckInOverdue' => $midPointCheckInOverdue,
+            'delivered' => 20, // Hard coded as requested
+        ];
+
+    } catch (\Exception $e) {
+        Log::error("Dashboard counters calculation error: " . $e->getMessage());
+        
+        // Return default values on error
+        return [
+            'totalJobs' => 0,
+            'collectionsOverdue' => 0,
+            'deliveriesOverdue' => 0,
+            'midPointCheckInOverdue' => 0,
+            'delivered' => 20,
+        ];
     }
+}    
+
+    // NEW: Handle confirmation actions
+    // public function updateOrderStatus(Request $request)
+    // {
+    //     try {
+    //         $orderId = $request->input('orderId');
+    //         $actionType = $request->input('actionType');
+
+    //         // Get the full order data from third-party API to store
+    //         $client = new Client();
+    //         $apiUrl = env('TRANSPORT_API_URL');
+    //         $apiKey = env('TRANSPORT_API_KEY');
+
+    //         $response = $client->get($apiUrl . 'orders/' . $orderId, [
+    //             'headers' => [
+    //                 'Authorization' => 'Basic ' . $apiKey,
+    //                 'Content-Type'  => 'application/json',
+    //                 'Accept'        => 'application/json',
+    //             ],
+    //         ]);
+
+    //         $orderData = json_decode($response->getBody()->getContents(), true);
+            
+    //         // Get or create tracking record
+    //         $tracking = CurrentJobsTracking::getOrCreateForOrder($orderId, $orderData);
+
+    //         // Update based on action type
+    //         switch ($actionType) {
+    //             case 'collection-checkin':
+    //                 $tracking->markCollectionCheckedIn();
+    //                 $message = 'Collection check-in marked as complete';
+    //                 break;
+                    
+    //             case 'driver-eta':
+    //                 $tracking->markDriverETAConfirmed();
+    //                 $message = 'Driver ETA confirmed';
+    //                 break;
+                    
+    //             case 'midpoint-check':
+    //                 $tracking->markMidpointCheckCompleted();
+    //                 $message = 'Mid-point check marked as complete';
+    //                 break;
+                    
+    //             default:
+    //                 return response()->json(['success' => false, 'message' => 'Invalid action type']);
+    //         }
+
+    //         // Check if job is now completed
+    //         $jobCompleted = $tracking->isCompleted();
+    //         if ($jobCompleted) {
+    //             $message .= ' - Job completed and removed from current jobs!';
+    //         }
+
+    //         return response()->json([
+    //             'success' => true, 
+    //             'message' => $message,
+    //             'completed' => $jobCompleted
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         Log::error("Update order status error: " . $e->getMessage());
+    //         return response()->json([
+    //             'success' => false, 
+    //             'message' => 'Error: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+
+public function updateOrderStatus(Request $request)
+{
+    try {
+        $orderId = $request->input('orderId');
+        $actionType = $request->input('actionType');
+        $deliveredStatus = $request->input('deliveredStatus'); // NEW: For delivery status
+
+        // Get the full order data from third-party API to store
+        $client = new Client();
+        $apiUrl = env('TRANSPORT_API_URL');
+        $apiKey = env('TRANSPORT_API_KEY');
+
+        $response = $client->get($apiUrl . 'orders/' . $orderId, [
+            'headers' => [
+                'Authorization' => 'Basic ' . $apiKey,
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+            ],
+        ]);
+
+        $orderData = json_decode($response->getBody()->getContents(), true);
+        
+        // Get or create tracking record
+        $tracking = CurrentJobsTracking::getOrCreateForOrder($orderId, $orderData);
+
+        // Update based on action type
+        switch ($actionType) {
+            case 'collection-checkin':
+                $tracking->markCollectionCheckedIn();
+                $message = 'Collection check-in marked as complete';
+                break;
+                
+            case 'driver-eta':
+                $tracking->markDriverETAConfirmed();
+                $message = 'Driver ETA confirmed';
+                break;
+                
+            case 'midpoint-check':
+                $tracking->markMidpointCheckCompleted();
+                $message = 'Mid-point check marked as complete';
+                break;
+                
+            case 'delivered':
+                // NEW: Handle delivery status
+                $tracking->markDelivered($deliveredStatus);
+                if ($deliveredStatus == 1) {
+                    $message = 'Delivery marked as "Not Required"';
+                } else {
+                    $message = 'Delivery marked as "No"';
+                }
+                break;
+                
+            default:
+                return response()->json(['success' => false, 'message' => 'Invalid action type']);
+        }
+
+        // Check if job is now completed
+        $jobCompleted = $tracking->isCompleted();
+        if ($jobCompleted) {
+            $message .= ' - Job completed and removed from current jobs!';
+        }
+
+        return response()->json([
+            'success' => true, 
+            'message' => $message,
+            'completed' => $jobCompleted
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error("Update order status error: " . $e->getMessage());
+        return response()->json([
+            'success' => false, 
+            'message' => 'Error: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
     public function getCustomer(Request $request)
     {

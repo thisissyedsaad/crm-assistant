@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('collection_checked_in')->default(false);
             $table->boolean('driver_eta_confirmed')->default(false);
             $table->boolean('midpoint_check_completed')->default(false);
+            $table->integer('delivered')->nullable();
             
             // Status: pending or completed
             $table->enum('status', ['pending', 'completed'])->default('pending');

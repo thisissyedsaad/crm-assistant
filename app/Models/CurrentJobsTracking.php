@@ -16,6 +16,7 @@ class CurrentJobsTracking extends Model
         'collection_checked_in',
         'driver_eta_confirmed',
         'midpoint_check_completed',
+        'delivered',
         'status',
         'order_data'
     ];
@@ -24,6 +25,7 @@ class CurrentJobsTracking extends Model
         'collection_checked_in' => 'boolean',
         'driver_eta_confirmed' => 'boolean',
         'midpoint_check_completed' => 'boolean',
+        'delivered' => 'integer',
         'order_data' => 'array',
     ];
 
@@ -77,5 +79,12 @@ class CurrentJobsTracking extends Model
     public function isCompleted()
     {
         return $this->status === 'completed';
+    }
+
+    public function markDelivered($status)
+    {
+        $this->delivered = (int) $status; // Cast to integer
+        $this->save();
+        return $this;
     }
 }

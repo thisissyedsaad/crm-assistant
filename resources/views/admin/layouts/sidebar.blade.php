@@ -60,11 +60,11 @@
                 Current Jobs
               </a>
             </li>
-            <li class="{{ request()->routeIs('admin.schedular.completed-jobs.index') ? 'active' : '' }}">
+            <!-- <li class="{{ request()->routeIs('admin.schedular.completed-jobs.index') ? 'active' : '' }}">
               <a href="{{ route('admin.schedular.completed-jobs.index') }}" class="{{ request()->routeIs('admin.schedular.completed-jobs.index') ? 'active' : '' }}">
                 Completed Jobs
               </a>
-            </li>
+            </li> -->
             <li class="">
               <a href="" class="">
                 Notifications
