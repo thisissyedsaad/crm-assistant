@@ -846,8 +846,8 @@
                 showCancelButton: true,
                 showDenyButton: true,
                 confirmButtonText: 'Not Required',
-                denyButtonText: 'No',
-                cancelButtonText: 'Cancel',
+                // denyButtonText: 'No',
+                cancelButtonText: 'No',
                 confirmButtonColor: '#28a745',
                 denyButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
@@ -856,10 +856,11 @@
                 if (result.isConfirmed) {
                     // "Not Required" - Set delivered = 1
                     processAction(orderId, 'delivered', { deliveredStatus: 1 });
-                } else if (result.isDenied) {
-                    // "No" - Set delivered = 0
-                    processAction(orderId, 'delivered', { deliveredStatus: 0 });
-                }
+                } 
+                // else if (result.isDenied) {
+                //     // "No" - Set delivered = 0
+                //     processAction(orderId, 'delivered', { deliveredStatus: 0 });
+                // }
                 // If cancelled, do nothing
             });
         }
