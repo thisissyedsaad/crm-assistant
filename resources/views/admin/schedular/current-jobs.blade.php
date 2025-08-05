@@ -627,8 +627,8 @@
                         d.toDate = $('#toDate').val();
                     }
                 },
-                pageLength: 25,
-                lengthMenu: [[25, 50, 100], [25, 50, 100]],
+                pageLength: 10,
+                lengthMenu: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
                 columns: [
                     { 
                         data: 'orderNo', 
@@ -844,13 +844,14 @@
                 text: 'Is the Mid-Point Check Complete?',
                 icon: 'question',
                 showCancelButton: true,
-                showDenyButton: true,
+                // showDenyButton: true,
                 confirmButtonText: 'Not Required',
                 // denyButtonText: 'No',
                 cancelButtonText: 'No',
                 confirmButtonColor: '#28a745',
-                denyButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
+                // denyButtonColor: '#dc3545',
+                // cancelButtonColor: '#6c757d',
+                cancelButtonColor: '#dc3545',
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
