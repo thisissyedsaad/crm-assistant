@@ -495,6 +495,7 @@
                                     <thead>
                                         <tr>
                                             <th>Order Number</th>
+                                            <th>Collection Date</th>
                                             <th>Collection Time</th>
                                             <th>Driver Loaded (Time)</th>
                                             <th>ETA Delivery</th>
@@ -638,6 +639,16 @@
                         title: 'Order Number',
                         render: function(data, type, row) {
                             return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
+                        }
+                    },
+                    { 
+                        data: 'collectionDate', 
+                        name: 'collectionDate',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Collection Date',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
                         }
                     },
                     { 

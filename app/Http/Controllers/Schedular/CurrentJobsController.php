@@ -56,7 +56,8 @@ class CurrentJobsController extends Controller
                 }
 
                 // Limit to maximum 100 records
-                $apiQuery['filter[date]'] = $today = date('Y-m-d');
+                $today = date('Y-m-d');
+                // $apiQuery['filter[date]'] = $today;
 
                 $response = $client->get($apiUrl . 'orders', [
                     'headers' => [
@@ -68,9 +69,24 @@ class CurrentJobsController extends Controller
                 ]);
 
                 $res = json_decode($response->getBody()->getContents(), true);
-                $orders = collect($res['data'] ?? []);
-                $meta = $res['meta'] ?? [];
+                $records = collect($res['data'] ?? []);
 
+
+                $orders = $records->filter(function($order) use ($today) {
+                    $destinations = $order['attributes']['destinations'] ?? [];
+                    $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                    $status = $order['attributes']['status'] ?? '';
+                    
+                    // Only include orders where:
+                    // 1. pickup date is today
+                    // 2. status is NOT "pending-acceptation" or "quote"
+                    return $pickup && 
+                        isset($pickup['date']) && 
+                        $pickup['date'] === $today &&
+                        !in_array($status, ['pending-acceptation', 'quote']);
+                });
+                $meta = $res['meta'] ?? [];
+                
                 // Transform data with tracking integration
                 $transformedData = $orders->map(function($row) {
                     // Get pickup and delivery destinations
@@ -113,6 +129,7 @@ class CurrentJobsController extends Controller
                         'id' => $row['id'] ?? null,
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
                         'carrierNo' => $driverName,
+                        'collectionDate' => $pickup['date'] ?? null,
                         'collectionTime' => $pickup['toTime'] ?? null,
                         'departureTime' => $pickup['departureTime'] ?? null,
                         'deliveryTime' => $delivery['deliveryTime'] ?? null,
@@ -228,13 +245,28 @@ class CurrentJobsController extends Controller
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);
-            $orders = collect($res['data'] ?? []);
+            $result = collect($res['data'] ?? []);
+            $today = date('Y-m-d');
+
+            $orders = $result->filter(function($order) use ($today) {
+                $destinations = $order['attributes']['destinations'] ?? [];
+                $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                $status = $order['attributes']['status'] ?? '';
+                
+                // Only include orders where:
+                // 1. pickup date is today
+                // 2. status is NOT "pending-acceptation" or "quote"
+                return $pickup && 
+                    isset($pickup['date']) && 
+                    $pickup['date'] === $today &&
+                    !in_array($status, ['pending-acceptation', 'quote']);
+            });
             
             $currentTime = Carbon::now();
             $currentDate = $currentTime->format('Y-m-d');
             
             // Initialize counters
-            $totalJobs = $res['meta']['total'];
+            $totalJobs = count($orders);
             $collectionsOverdue = 0;
             $deliveriesOverdue = 0;
             $midPointCheckInOverdue = 0;
@@ -297,8 +329,9 @@ class CurrentJobsController extends Controller
                 }
             }
 
+            $updatedTotalJobs = $totalJobs - $deliveredCount;
             return [
-                'totalJobs' => $totalJobs,
+                'totalJobs' => $updatedTotalJobs,
                 'collectionsOverdue' => $collectionsOverdue,
                 'deliveriesOverdue' => $deliveriesOverdue,
                 'midPointCheckInOverdue' => $midPointCheckInOverdue,
