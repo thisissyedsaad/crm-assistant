@@ -150,69 +150,54 @@
         
         /* Set minimum widths but allow columns to expand to fill available space */
         #datatable th:nth-child(1), #datatable td:nth-child(1) { 
-            min-width: 140px; 
-            width: 8%; 
-        } /* Date */
+            min-width: 120px; 
+            width: 10%; 
+        } /* Order Number */
         
         #datatable th:nth-child(2), #datatable td:nth-child(2) { 
             min-width: 120px; 
             width: 8%; 
-        } /* Order Number */
+        } /* Collection Time */
         
         #datatable th:nth-child(3), #datatable td:nth-child(3) { 
-            min-width: 120px; 
-            width: 8%; 
-        } /* User */
+            min-width: 140px; 
+            width: 10%; 
+        } /* Driver Loaded Time */
         
         #datatable th:nth-child(4), #datatable td:nth-child(4) { 
             min-width: 120px; 
             width: 8%; 
-        } /* Collection Date */
+        } /* ETA Delivery */
         
         #datatable th:nth-child(5), #datatable td:nth-child(5) { 
             min-width: 120px; 
-            width: 7%; 
-        } /* Collection Time */
-        
-        #datatable th:nth-child(6), #datatable td:nth-child(6) { 
-            min-width: 140px; 
             width: 8%; 
-        } /* Driver Loaded Time */
-        
-        #datatable th:nth-child(7), #datatable td:nth-child(7) { 
-            min-width: 100px; 
-            width: 6%; 
-        } /* Sale Price */
-        
-        #datatable th:nth-child(8), #datatable td:nth-child(8) { 
-            min-width: 120px; 
-            width: 7%; 
-        } /* ETA Delivery */
-        
-        #datatable th:nth-child(9), #datatable td:nth-child(9) { 
-            min-width: 120px; 
-            width: 7%; 
         } /* Mid-Point Check */
         
-        #datatable th:nth-child(10), #datatable td:nth-child(10) { 
+        #datatable th:nth-child(6), #datatable td:nth-child(6) { 
             min-width: 100px; 
             width: 6%; 
         } /* Notes */
         
-        #datatable th:nth-child(11), #datatable td:nth-child(11) { 
+        #datatable th:nth-child(7), #datatable td:nth-child(7) { 
             min-width: 140px; 
-            width: 8%; 
+            width: 12%; 
         } /* Collection Check-In */
         
-        #datatable th:nth-child(12), #datatable td:nth-child(12) { 
+        #datatable th:nth-child(8), #datatable td:nth-child(8) { 
             min-width: 140px; 
-            width: 8%; 
+            width: 12%; 
         } /* Driver Confirmed ETA */
         
-        #datatable th:nth-child(13), #datatable td:nth-child(13) { 
+        #datatable th:nth-child(9), #datatable td:nth-child(9) { 
             min-width: 160px; 
-            width: 9%; 
+            width: 12%; 
         } /* Mid-Point Check Complete */
+        
+        #datatable th:nth-child(10), #datatable td:nth-child(10) { 
+            min-width: 120px; 
+            width: 12%; 
+        } /* Delivered */
         
         /* Most columns should not wrap by default */
         #datatable th,
@@ -377,6 +362,13 @@
             color: #fff !important;
         }
 
+        /* Button disabled styling */
+        .btn:disabled {
+            opacity: 0.4 !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+
 @media (min-width: 1400px) {
     .col-xxl {
         flex: 0 0 auto;
@@ -418,8 +410,8 @@
         <div class="data-table-area">
             <div class="container-fluid">
                 <!-- Dashboard Cards Row -->
-                <!-- <div class="row g-4 dashboard-cards">
-                    <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="row g-4 dashboard-cards">
+                    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
                         <div class="card stats-card total-jobs">
                             <div class="card-content">
                                 <div class="card-title">Total Jobs</div>
@@ -434,7 +426,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6 col-md-6">
+                    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
                         <div class="card stats-card collections-overdue">
                             <div class="card-content">
                                 <div class="card-title">Collections Overdue</div>
@@ -449,7 +441,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6 col-md-6">
+                    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
                         <div class="card stats-card deliveries-overdue">
                             <div class="card-content">
                                 <div class="card-title">Deliveries Overdue</div>
@@ -464,22 +456,22 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6 col-md-6">
-                        <div class="card stats-card delivered">
+                    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
+                        <div class="card stats-card midpoint-check">
                             <div class="card-content">
                                 <div class="card-title">Mid-Point Check In Overdue</div>
-                                <div class="card-value" id="delivered">
+                                <div class="card-value" id="midPointOverdue">
                                     {{ $countData['midPointCheckInOverdue'] }}
                                 </div>
-                                <div class="card-subtitle">Completed Today</div>
+                                <div class="card-subtitle">Overdue Check-ins</div>
                             </div>
                             <div class="card-icon">
-                                <i class="bx bx-check-circle"></i>
+                                <i class="bx bx-clipboard"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6 col-md-6">
+                    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
                         <div class="card stats-card delivered">
                             <div class="card-content">
                                 <div class="card-title">Delivered</div>
@@ -493,84 +485,7 @@
                             </div>
                         </div>
                     </div>
-                </div> -->
-
-<div class="row g-4 dashboard-cards">
-    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-        <div class="card stats-card total-jobs">
-            <div class="card-content">
-                <div class="card-title">Total Jobs</div>
-                <div class="card-value" id="totalJobs">
-                    {{ $countData['totalJobs'] }}
-                </div>
-                <div class="card-subtitle">Active Jobs</div>
-            </div>
-            <div class="card-icon">
-                <i class="bx bx-briefcase"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-        <div class="card stats-card collections-overdue">
-            <div class="card-content">
-                <div class="card-title">Collections Overdue</div>
-                <div class="card-value" id="collectionsOverdue">
-                    {{ $countData['collectionsOverdue'] }}
-                </div>
-                <div class="card-subtitle">Pending Collections</div>
-            </div>
-            <div class="card-icon">
-                <i class="bx bx-time-five"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-        <div class="card stats-card deliveries-overdue">
-            <div class="card-content">
-                <div class="card-title">Deliveries Overdue</div>
-                <div class="card-value" id="deliveriesOverdue">
-                    {{ $countData['deliveriesOverdue'] }}
-                </div>
-                <div class="card-subtitle">Pending Deliveries</div>
-            </div>
-            <div class="card-icon">
-                <i class="bx bx-truck"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-        <div class="card stats-card midpoint-check">
-            <div class="card-content">
-                <div class="card-title">Mid-Point Check In Overdue</div>
-                <div class="card-value" id="midPointOverdue">
-                    {{ $countData['midPointCheckInOverdue'] }}
-                </div>
-                <div class="card-subtitle">Overdue Check-ins</div>
-            </div>
-            <div class="card-icon">
-                <i class="bx bx-clipboard"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-        <div class="card stats-card delivered">
-            <div class="card-content">
-                <div class="card-title">Delivered</div>
-                <div class="card-value" id="delivered">
-                    {{ $countData['delivered'] }}
-                </div>
-                <div class="card-subtitle">Completed Today</div>
-            </div>
-            <div class="card-icon">
-                <i class="bx bx-check-circle"></i>
-            </div>
-        </div>
-    </div>
-</div>                
+                </div>                
 
                 <div class="row g-4">
                     <div class="col-12">
@@ -579,13 +494,9 @@
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap data-table-area">
                                     <thead>
                                         <tr>
-                                            <!-- <th>Date</th> -->
                                             <th>Order Number</th>
-                                            <!-- <th>User</th> -->
-                                            <!-- <th>Collection Date</th> -->
                                             <th>Collection Time</th>
                                             <th>Driver Loaded (Time)</th>
-                                            <!-- <th>Sale Price</th> -->
                                             <th>ETA Delivery</th>
                                             <th>Mid-Point Check</th>
                                             <th>Notes</th>
@@ -708,7 +619,7 @@
                 autoWidth: true,
                 responsive: false,
                 ordering: true,
-                order: [[0, 'desc']], // Default sort by first column (Date) descending
+                order: [[0, 'desc']], // Default sort by first column descending
                 ajax: {
                     url: "{{ route('admin.schedular.current-jobs.index') }}",
                     data: function (d) {
@@ -719,13 +630,6 @@
                 pageLength: 25,
                 lengthMenu: [[25, 50, 100], [25, 50, 100]],
                 columns: [
-                    // { 
-                    //     data: 'updatedAt', 
-                    //     name: 'updatedAt',
-                    //     className: 'text-nowrap',
-                    //     orderable: true,
-                    //     title: 'Date'
-                    // },
                     { 
                         data: 'orderNo', 
                         name: 'orderNo',
@@ -736,26 +640,6 @@
                             return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
                         }
                     },
-                    // { 
-                    //     data: 'customerUserId', 
-                    //     name: 'customerUserId',
-                    //     className: 'text-nowrap',
-                    //     orderable: true,
-                    //     title: 'User',
-                    //     render: function(data, type, row) {
-                    //         return data ? data : '-';
-                    //     }
-                    // },
-                    // { 
-                    //     data: 'collectionDate', 
-                    //     name: 'collectionDate',
-                    //     className: 'text-nowrap',
-                    //     orderable: true,
-                    //     title: 'Collection Date',
-                    //     render: function(data, type, row) {
-                    //         return data ? data : '-';
-                    //     }
-                    // },
                     { 
                         data: 'collectionTime', 
                         name: 'collectionTime',
@@ -776,16 +660,6 @@
                             return data ? data : '<span class="text-muted">Pending</span>';
                         }
                     },
-                    // { 
-                    //     data: 'orderPrice', 
-                    //     name: 'orderPrice',
-                    //     className: 'text-nowrap text-end',
-                    //     orderable: true,
-                    //     title: 'Sale Price',
-                    //     render: function(data, type, row) {
-                    //         return data ? '£' + parseFloat(data).toFixed(2) : '-';
-                    //     }
-                    // },
                     { 
                         data: 'deliveryTime', 
                         name: 'deliveryTime',
@@ -846,7 +720,12 @@
                             if (data === true || data === 1) {
                                 return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
                             } else {
-                                return `<button type="button" class="btn btn-sm btn-outline-info" 
+                                // Check if collection check-in is completed
+                                let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
+                                let disabledAttr = isDisabled ? 'disabled' : '';
+                                let disabledClass = isDisabled ? 'btn-secondary' : 'btn-outline-info';
+                                
+                                return `<button type="button" class="btn btn-sm ${disabledClass}" ${disabledAttr}
                                                onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
                                             <i class="fas fa-truck"></i> Confirm ETA
                                         </button>`;
@@ -863,7 +742,12 @@
                             if (data === true || data === 1) {
                                 return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
                             } else {
-                                return `<button type="button" class="btn btn-sm btn-outline-warning" 
+                                // Check if driver ETA is confirmed
+                                let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                                let disabledAttr = isDisabled ? 'disabled' : '';
+                                let disabledClass = isDisabled ? 'btn-secondary' : 'btn-outline-warning';
+                                
+                                return `<button type="button" class="btn btn-sm ${disabledClass}" ${disabledAttr}
                                                onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
                                             <i class="fas fa-map-marker-alt"></i> Mark Complete
                                         </button>`;
@@ -877,9 +761,6 @@
                         orderable: false,
                         title: 'Delivered',
                         render: function(data, type, row) {
-                            // Debug: Log the data to see what we're getting
-                            console.log('Delivered data for order', row.id, ':', data, 'Type:', typeof data);
-                            
                             // Convert to number for proper comparison
                             const deliveredStatus = parseInt(data);
                             
@@ -889,8 +770,12 @@
                             } else if (deliveredStatus === 0) {
                                 return `<span class="badge bg-warning"><i class="fas fa-times-circle"></i> No</span>`;
                             } else if (data === null || data === undefined || data === '' || isNaN(deliveredStatus)) {
-                                // Not set yet - show button
-                                return `<button type="button" class="btn btn-sm btn-outline-primary" 
+                                // Check if driver ETA is confirmed to enable button
+                                let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                                let disabledAttr = isDisabled ? 'disabled' : '';
+                                let disabledClass = isDisabled ? 'btn-secondary' : 'btn-outline-primary';
+                                
+                                return `<button type="button" class="btn btn-sm ${disabledClass}" ${disabledAttr}
                                             onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')">
                                             <i class="fas fa-truck"></i> Mark Delivered
                                         </button>`;
@@ -925,205 +810,127 @@
             });
 
         });
-        
-        // function confirmAction(actionName, orderId, actionType) {
-        //     Swal.fire({
-        //         title: 'Confirm Action',
-        //         text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
-        //         icon: 'question',
-        //         showCancelButton: true,
-        //         confirmButtonColor: '#3085d6',
-        //         cancelButtonColor: '#d33',
-        //         confirmButtonText: 'Yes, mark complete!',
-        //         cancelButtonText: 'Cancel'
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-                    
-        //             // Show loading
-        //             Swal.fire({
-        //                 title: 'Processing...',
-        //                 text: 'Updating job status',
-        //                 icon: 'info',
-        //                 allowOutsideClick: false,
-        //                 showConfirmButton: false,
-        //                 willOpen: () => {
-        //                     Swal.showLoading();
-        //                 }
-        //             });
 
-        //             // Make AJAX call
-        //             $.ajax({
-        //                 url: '{{ route("admin.schedular.current-jobs.update-status") }}',
-        //                 method: 'POST',
-        //                 data: {
-        //                     _token: '{{ csrf_token() }}',
-        //                     orderId: orderId,
-        //                     actionType: actionType
-        //                 },
-        //                 success: function(response) {
-        //                     if (response.success) {
-                                
-        //                         // Show success message
-        //                         let message = response.message;
-        //                         if (response.completed) {
-        //                             message += ' - Job will be removed from the list!';
-        //                         }
-                                
-        //                         Swal.fire({
-        //                             title: response.completed ? 'Job Completed!' : 'Success!',
-        //                             text: message,
-        //                             icon: 'success',
-        //                             timer: 2000,
-        //                             showConfirmButton: false
-        //                         });
-                                
-        //                         // GUARANTEED FIX - Reload entire page
-        //                         setTimeout(() => {
-        //                             window.location.reload();
-        //                         }, 2200);
-                                
-        //                     } else {
-        //                         Swal.fire({
-        //                             title: 'Error!',
-        //                             text: response.message,
-        //                             icon: 'error'
-        //                         });
-        //                     }
-        //                 },
-        //                 error: function(xhr) {
-        //                     console.error('AJAX Error:', xhr.responseText);
-        //                     Swal.fire({
-        //                         title: 'Error!',
-        //                         text: 'Error occurred while updating status. Please try again.',
-        //                         icon: 'error'
-        //                     });
-        //                 }
-        //             });
-        //         }
-        //     });
-        // }
-
-// Updated confirmAction function with special delivery handling
-function confirmAction(actionName, orderId, actionType) {
-    
-    // Special handling for delivery action
-    if (actionType === 'delivered') {
-        showDeliveryPopup(orderId);
-        return;
-    }
-    
-    // Regular confirmation for other actions
-    Swal.fire({
-        title: 'Confirm Action',
-        text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, mark complete!',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            processAction(orderId, actionType);
-        }
-    });
-}
-
-// Special popup for delivery with 3 options
-function showDeliveryPopup(orderId) {
-    Swal.fire({
-        title: 'Delivery Status',
-        text: 'Is the Mid-Point Check Complete?',
-        icon: 'question',
-        showCancelButton: true,
-        showDenyButton: true,
-        confirmButtonText: 'Not Required',
-        denyButtonText: 'No',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#28a745',
-        denyButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // "Not Required" - Set delivered = 1
-            processAction(orderId, 'delivered', { deliveredStatus: 1 });
-        } else if (result.isDenied) {
-            // "No" - Set delivered = 0
-            processAction(orderId, 'delivered', { deliveredStatus: 0 });
-        }
-        // If cancelled, do nothing
-    });
-}
-
-// Process the action with AJAX
-function processAction(orderId, actionType, extraData = {}) {
-    // Show loading
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Updating job status',
-        icon: 'info',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        willOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    // Prepare data
-    let requestData = {
-        _token: '{{ csrf_token() }}',
-        orderId: orderId,
-        actionType: actionType,
-        ...extraData // Merge any extra data (like deliveredStatus)
-    };
-
-    // Make AJAX call
-    $.ajax({
-        url: '{{ route("admin.schedular.current-jobs.update-status") }}',
-        method: 'POST',
-        data: requestData,
-        success: function(response) {
-            if (response.success) {
-                
-                // Show success message
-                let message = response.message;
-                if (response.completed) {
-                    message += ' - Job will be removed from the list!';
-                }
-                
-                Swal.fire({
-                    title: response.completed ? 'Job Completed!' : 'Success!',
-                    text: message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                
-                // GUARANTEED FIX - Reload entire page
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2200);
-                
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: response.message,
-                    icon: 'error'
-                });
+        // Updated confirmAction function with special delivery handling
+        function confirmAction(actionName, orderId, actionType) {
+            
+            // Special handling for delivery action
+            if (actionType === 'delivered') {
+                showDeliveryPopup(orderId);
+                return;
             }
-        },
-        error: function(xhr) {
-            console.error('AJAX Error:', xhr.responseText);
+            
+            // Regular confirmation for other actions
             Swal.fire({
-                title: 'Error!',
-                text: 'Error occurred while updating status. Please try again.',
-                icon: 'error'
+                title: 'Confirm Action',
+                text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, mark complete!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processAction(orderId, actionType);
+                }
             });
         }
-    });
-}
 
+        // Special popup for delivery with 3 options
+        function showDeliveryPopup(orderId) {
+            Swal.fire({
+                title: 'Delivery Status',
+                text: 'Is the Mid-Point Check Complete?',
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: 'Not Required',
+                denyButtonText: 'No',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                denyButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // "Not Required" - Set delivered = 1
+                    processAction(orderId, 'delivered', { deliveredStatus: 1 });
+                } else if (result.isDenied) {
+                    // "No" - Set delivered = 0
+                    processAction(orderId, 'delivered', { deliveredStatus: 0 });
+                }
+                // If cancelled, do nothing
+            });
+        }
+
+        // Process the action with AJAX
+        function processAction(orderId, actionType, extraData = {}) {
+            // Show loading
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Updating job status',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Prepare data
+            let requestData = {
+                _token: '{{ csrf_token() }}',
+                orderId: orderId,
+                actionType: actionType,
+                ...extraData // Merge any extra data (like deliveredStatus)
+            };
+
+            // Make AJAX call
+            $.ajax({
+                url: '{{ route("admin.schedular.current-jobs.update-status") }}',
+                method: 'POST',
+                data: requestData,
+                success: function(response) {
+                    if (response.success) {
+                        
+                        // Show success message
+                        let message = response.message;
+                        if (response.completed) {
+                            message += ' - Job will be removed from the list!';
+                        }
+                        
+                        Swal.fire({
+                            title: response.completed ? 'Job Completed!' : 'Success!',
+                            text: message,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        // GUARANTEED FIX - Reload entire page
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2200);
+                        
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('AJAX Error:', xhr.responseText);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Error occurred while updating status. Please try again.',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
 
         function showActualModal(orderNo, customerNo, comments, carrierNo) {
             // Show modal immediately with available data
@@ -1173,480 +980,5 @@ function processAction(orderId, actionType, extraData = {}) {
                 $('#modalCompanyName').text('-');
             }
         }
-
-        // var table; // Global variable
-        // $(function () {
-        //     // Initialize DataTable and assign to global variable
-        //     if ($.fn.DataTable.isDataTable('#datatable')) {
-        //         $('#datatable').DataTable().destroy();
-        //     }
-            
-        //     table = $('#datatable').DataTable({
-        //         processing: true,
-        //         serverSide: true,
-        //         scrollX: true,
-        //         scrollCollapse: false,
-        //         autoWidth: true,
-        //         responsive: false,
-        //         ordering: true,
-        //         order: [[0, 'desc']],
-        //         ajax: {
-        //             url: "{{ route('admin.schedular.current-jobs.index') }}",
-        //             data: function (d) {
-        //                 d.fromDate = $('#fromDate').val();
-        //                 d.toDate = $('#toDate').val();
-        //                 d._t = new Date().getTime(); // Cache buster
-        //             }
-        //         },
-        //         pageLength: 25,
-        //         lengthMenu: [[25, 50, 100], [25, 50, 100]],
-        //         columns: [
-        //             // ... your complete columns config (copy from your existing)
-        //             { 
-        //                 data: 'updatedAt', 
-        //                 name: 'updatedAt',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Date'
-        //             },
-        //             { 
-        //                 data: 'orderNo', 
-        //                 name: 'orderNo',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Order Number',
-        //                 render: function(data, type, row) {
-        //                     return data ? `<a href="/admin/orders/${row.id}">${data}</a>` : '-'; 
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'customerUserId', 
-        //                 name: 'customerUserId',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'User',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'collectionDate', 
-        //                 name: 'collectionDate',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Collection Date',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'collectionTime', 
-        //                 name: 'collectionTime',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Collection Time',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'departureTime', 
-        //                 name: 'departureTime',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Driver Loaded (Time)',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '<span class="text-muted">Pending</span>';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'orderPrice', 
-        //                 name: 'orderPrice',
-        //                 className: 'text-nowrap text-end',
-        //                 orderable: true,
-        //                 title: 'Sale Price',
-        //                 render: function(data, type, row) {
-        //                     return data ? '£' + parseFloat(data).toFixed(2) : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'deliveryTime', 
-        //                 name: 'deliveryTime',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'ETA Delivery',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'midpointCheck', 
-        //                 name: 'midpointCheck',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Mid-Point Check',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'internalNotes', 
-        //                 name: 'internalNotes',
-        //                 className: 'text-wrap',
-        //                 orderable: true,
-        //                 title: 'Notes',
-        //                 render: function(data, type, row) {
-        //                     return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
-        //                                 onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
-        //                                 <i class="fas fa-eye me-1"></i>View
-        //                             </button>`;
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'collectionCheckIn', 
-        //                 name: 'collectionCheckIn',
-        //                 className: 'text-nowrap text-center',
-        //                 orderable: false,
-        //                 title: 'Collection Check-In',
-        //                 render: function(data, type, row) {
-        //                     if (data === true || data === 1) {
-        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>`;
-        //                     } else {
-        //                         return `<button type="button" class="btn btn-sm btn-outline-primary" 
-        //                                     onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
-        //                                     <i class="fas fa-clipboard-check"></i> Check-In
-        //                                 </button>`;
-        //                     }
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'driverConfirmedETA', 
-        //                 name: 'driverConfirmedETA',
-        //                 className: 'text-nowrap text-center',
-        //                 orderable: false,
-        //                 title: 'Driver Confirmed ETA',
-        //                 render: function(data, type, row) {
-        //                     if (data === true || data === 1) {
-        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
-        //                     } else {
-        //                         return `<button type="button" class="btn btn-sm btn-outline-info" 
-        //                                     onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
-        //                                     <i class="fas fa-truck"></i> Confirm ETA
-        //                                 </button>`;
-        //                     }
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'midpointCheckComplete', 
-        //                 name: 'midpointCheckComplete',
-        //                 className: 'text-nowrap text-center',
-        //                 orderable: false,
-        //                 title: 'Mid-Point Check Complete',
-        //                 render: function(data, type, row) {
-        //                     if (data === true || data === 1) {
-        //                         return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
-        //                     } else {
-        //                         return `<button type="button" class="btn btn-sm btn-outline-warning" 
-        //                                     onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
-        //                                     <i class="fas fa-map-marker-alt"></i> Mark Complete
-        //                                 </button>`;
-        //                     }
-        //                 }
-        //             }
-        //         ],
-        //         initComplete: function() {
-        //             $('.dataTables_wrapper').css({
-        //                 'width': '100%'
-        //             });
-        //         },
-        //         drawCallback: function(settings) {
-        //             $('.dataTables_wrapper').css({
-        //                 'width': '100%'
-        //             });
-        //         }
-        //     });
-
-        //     // DataTable filter functionality
-        //     $('#filterBtn').on('click', function () {
-        //         table.draw();
-        //     });
-
-        //     $('#resetBtn').on('click', function () {
-        //         $('#fromDate').val('');
-        //         $('#toDate').val('');
-        //         table.draw();
-        //     });
-        // });
-
-        // // FIXED refreshDataTable function
-        // function refreshDataTable() {
-        //     console.log('🔄 Refreshing DataTable...');
-            
-        //     // Destroy existing DataTable if it exists
-        //     if ($.fn.DataTable.isDataTable('#datatable')) {
-        //         $('#datatable').DataTable().destroy();
-        //         console.log('🗑️ Old DataTable destroyed');
-        //     }
-            
-        //     // Recreate DataTable
-        //     table = $('#datatable').DataTable({
-        //         processing: true,
-        //         serverSide: true,
-        //         scrollX: true,
-        //         scrollCollapse: false,
-        //         autoWidth: true,
-        //         responsive: false,
-        //         ordering: true,
-        //         order: [[0, 'desc']],
-        //         ajax: {
-        //             url: "{{ route('admin.schedular.current-jobs.index') }}",
-        //             data: function (d) {
-        //                 d.fromDate = $('#fromDate').val();
-        //                 d.toDate = $('#toDate').val();
-        //                 d._t = new Date().getTime(); // Cache buster
-        //             }
-        //         },
-        //         pageLength: 25,
-        //         lengthMenu: [[25, 50, 100], [25, 50, 100]],
-        //         columns: [
-        //             // Copy the same columns config from above
-        //             { 
-        //                 data: 'updatedAt', 
-        //                 name: 'updatedAt',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Date'
-        //             },
-        //             { 
-        //                 data: 'orderNo', 
-        //                 name: 'orderNo',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Order Number',
-        //                 render: function(data, type, row) {
-        //                     return data ? `<a href="/admin/orders/${row.id}">${data}</a>` : '-'; 
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'customerUserId', 
-        //                 name: 'customerUserId',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'User',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'collectionDate', 
-        //                 name: 'collectionDate',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Collection Date',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'collectionTime', 
-        //                 name: 'collectionTime',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Collection Time',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'departureTime', 
-        //                 name: 'departureTime',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Driver Loaded (Time)',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '<span class="text-muted">Pending</span>';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'orderPrice', 
-        //                 name: 'orderPrice',
-        //                 className: 'text-nowrap text-end',
-        //                 orderable: true,
-        //                 title: 'Sale Price',
-        //                 render: function(data, type, row) {
-        //                     return data ? '£' + parseFloat(data).toFixed(2) : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'deliveryTime', 
-        //                 name: 'deliveryTime',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'ETA Delivery',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'midpointCheck', 
-        //                 name: 'midpointCheck',
-        //                 className: 'text-nowrap',
-        //                 orderable: true,
-        //                 title: 'Mid-Point Check',
-        //                 render: function(data, type, row) {
-        //                     return data ? data : '-';
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'internalNotes', 
-        //                 name: 'internalNotes',
-        //                 className: 'text-wrap',
-        //                 orderable: true,
-        //                 title: 'Notes',
-        //                 render: function(data, type, row) {
-        //                     return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
-        //                                 onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
-        //                                 <i class="fas fa-eye me-1"></i>View
-        //                             </button>`;
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'collectionCheckIn', 
-        //                 name: 'collectionCheckIn',
-        //                 className: 'text-nowrap text-center',
-        //                 orderable: false,
-        //                 title: 'Collection Check-In',
-        //                 render: function(data, type, row) {
-        //                     if (data === true || data === 1) {
-        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>`;
-        //                     } else {
-        //                         return `<button type="button" class="btn btn-sm btn-outline-primary" 
-        //                                     onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
-        //                                     <i class="fas fa-clipboard-check"></i> Check-In
-        //                                 </button>`;
-        //                     }
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'driverConfirmedETA', 
-        //                 name: 'driverConfirmedETA',
-        //                 className: 'text-nowrap text-center',
-        //                 orderable: false,
-        //                 title: 'Driver Confirmed ETA',
-        //                 render: function(data, type, row) {
-        //                     if (data === true || data === 1) {
-        //                         return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
-        //                     } else {
-        //                         return `<button type="button" class="btn btn-sm btn-outline-info" 
-        //                                     onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
-        //                                     <i class="fas fa-truck"></i> Confirm ETA
-        //                                 </button>`;
-        //                     }
-        //                 }
-        //             },
-        //             { 
-        //                 data: 'midpointCheckComplete', 
-        //                 name: 'midpointCheckComplete',
-        //                 className: 'text-nowrap text-center',
-        //                 orderable: false,
-        //                 title: 'Mid-Point Check Complete',
-        //                 render: function(data, type, row) {
-        //                     if (data === true || data === 1) {
-        //                         return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
-        //                     } else {
-        //                         return `<button type="button" class="btn btn-sm btn-outline-warning" 
-        //                                     onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
-        //                                     <i class="fas fa-map-marker-alt"></i> Mark Complete
-        //                                 </button>`;
-        //                     }
-        //                 }
-        //             }
-        //         ],
-        //         initComplete: function() {
-        //             $('.dataTables_wrapper').css({
-        //                 'width': '100%'
-        //             });
-        //             console.log('✅ Fresh DataTable created successfully!');
-        //         },
-        //         drawCallback: function(settings) {
-        //             $('.dataTables_wrapper').css({
-        //                 'width': '100%'
-        //             });
-        //         }
-        //     });
-        // }
-
-        // // FIXED confirmAction function
-        // function confirmAction(actionName, orderId, actionType) {
-        //     Swal.fire({
-        //         title: 'Confirm Action',
-        //         text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
-        //         icon: 'question',
-        //         showCancelButton: true,
-        //         confirmButtonColor: '#3085d6',
-        //         cancelButtonColor: '#d33',
-        //         confirmButtonText: 'Yes, mark complete!',
-        //         cancelButtonText: 'Cancel'
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-                    
-        //             // Show loading
-        //             Swal.fire({
-        //                 title: 'Processing...',
-        //                 text: 'Updating job status',
-        //                 icon: 'info',
-        //                 allowOutsideClick: false,
-        //                 showConfirmButton: false,
-        //                 willOpen: () => {
-        //                     Swal.showLoading();
-        //                 }
-        //             });
-
-        //             $.ajax({
-        //                 url: '{{ route("admin.schedular.current-jobs.update-status") }}',
-        //                 method: 'POST',
-        //                 data: {
-        //                     _token: '{{ csrf_token() }}',
-        //                     orderId: orderId,
-        //                     actionType: actionType
-        //                 },
-        //                 success: function(response) {
-        //                     if (response.success) {
-                                
-        //                         Swal.fire({
-        //                             title: response.completed ? 'Job Completed!' : 'Success!',
-        //                             text: response.message,
-        //                             icon: 'success',
-        //                             timer: 1500,
-        //                             showConfirmButton: false
-        //                         });
-                                
-        //                         // NUCLEAR REFRESH - Now it will work!
-        //                         setTimeout(() => {
-        //                             refreshDataTable();
-        //                         }, 800);
-                                
-        //                     } else {
-        //                         Swal.fire({
-        //                             title: 'Error!',
-        //                             text: response.message,
-        //                             icon: 'error'
-        //                         });
-        //                     }
-        //                 },
-        //                 error: function(xhr) {
-        //                     console.error('AJAX Error:', xhr.responseText);
-        //                     Swal.fire({
-        //                         title: 'Error!',
-        //                         text: 'Error occurred while updating status. Please try again.',
-        //                         icon: 'error'
-        //                     });
-        //                 }
-        //             });
-        //         }
-        //     });
-        // }
-
-        
     </script>
 @endpush

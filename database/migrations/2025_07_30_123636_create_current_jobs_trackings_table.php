@@ -21,11 +21,14 @@ return new class extends Migration
             $table->boolean('midpoint_check_completed')->default(false);
             $table->integer('delivered')->nullable();
             
-            // Status: pending or completed
-            $table->enum('status', ['pending', 'completed'])->default('pending');
+            // Status: active or completed
+            $table->enum('status', ['active', 'completed'])->default('active');
             
             // Store full third-party order data as JSON
             $table->json('order_data')->nullable();
+            
+            // Add completed_at timestamp
+            $table->timestamp('completed_at')->nullable();
             
             $table->timestamps();
             
