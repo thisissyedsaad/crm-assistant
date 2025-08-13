@@ -101,7 +101,7 @@ class CurrentJobsController extends Controller
                             $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
                             $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                             
-                            if ($deliveryTime->diffInHours($collectionTime) >= 3) {
+                            if ($deliveryTime->diffInHours($collectionTime) >=2) {
                                 $midpointCheck = $collectionTime->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
                             }
                         } catch (\Exception $e) {
@@ -313,7 +313,7 @@ class CurrentJobsController extends Controller
                         $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
                         $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         
-                        if ($deliveryTime->diffInHours($collectionTime) >= 3) {
+                        if ($deliveryTime->diffInHours($collectionTime) >=2) {
                             $midPointCheckInOverdue++;
                         }
                     } catch (\Exception $e) {
