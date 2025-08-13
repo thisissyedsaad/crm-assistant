@@ -801,9 +801,9 @@
                         title: 'Collection Check-In',
                         render: function(data, type, row) {
                             if (data === true || data === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons">`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Collection Completed">`;
                             } else {
-                                return `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" class="row-icons">`;
+                                return `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" title="Collection Check-In" class="row-icons">`;
                             }
                         }
                     },
@@ -815,14 +815,14 @@
                         title: 'Driver Confirmed',
                         render: function(data, type, row) {
                             if (data === true || data === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons">`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Driver Confirmed">`;
                             } else {
                                 // Check if collection check-in is completed
                                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
                                 
-                                return `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" title="Driver Confirmed ETA" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
                         }
                     },
@@ -834,14 +834,14 @@
                         title: 'Mid-Point Check',
                         render: function(data, type, row) {
                             if (data === true || data === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Complete" class="row-icons">`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Complete" class="row-icons" title="Mid-Point Check Completed">`;
                             } else {
                                 // Check if driver ETA is confirmed
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
                                 
-                                return `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" title="Mid-Point Check" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
                         }
                     },
@@ -857,14 +857,14 @@
                             
                             // Check if delivered is set
                             if (deliveredStatus === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Not Required" class="row-icons">`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" title="Delivered">`;
                             } else if (data === null || data === undefined || data === '' || isNaN(deliveredStatus)) {
                                 // Check if driver ETA is confirmed to enable button
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')"`;
                                 
-                                return `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" title="Mark Delivered" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             } else {
                                 // Fallback for unexpected values
                                 return `<span class="badge bg-secondary">Unknown (${data})</span>`;
