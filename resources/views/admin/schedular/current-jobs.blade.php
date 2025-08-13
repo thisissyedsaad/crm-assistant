@@ -24,6 +24,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer; /* Add cursor pointer for clickable cards */
         }
         
         .stats-card::before {
@@ -45,6 +46,13 @@
         .stats-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Active card styling */
+        .stats-card.active {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
         .stats-card.total-jobs {
@@ -432,7 +440,25 @@
     background-color: #e3f2fd !important; /* Same color as row */
 }
 
+/* Filter status indicator */
+.filter-status {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    border-radius: 4px;
+    display: none;
+}
 
+.filter-status.active {
+    display: block;
+}
+
+.clear-filter-btn {
+    margin-left: 10px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
     </style>
 @endpush
 
@@ -444,7 +470,7 @@
                 <!-- Dashboard Cards Row -->
                 <div class="row g-4 dashboard-cards">
                     <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-                        <div class="card stats-card total-jobs">
+                        <div class="card stats-card total-jobs" data-filter="all">
                             <div class="card-content">
                                 <div class="card-title">Total Jobs</div>
                                 <div class="card-value" id="totalJobs">
@@ -459,7 +485,7 @@
                     </div>
 
                     <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-                        <div class="card stats-card collections-overdue">
+                        <div class="card stats-card collections-overdue" data-filter="collections-overdue">
                             <div class="card-content">
                                 <div class="card-title">Collections Overdue</div>
                                 <div class="card-value" id="collectionsOverdue">
@@ -474,7 +500,7 @@
                     </div>
 
                     <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-                        <div class="card stats-card deliveries-overdue">
+                        <div class="card stats-card deliveries-overdue" data-filter="deliveries-overdue">
                             <div class="card-content">
                                 <div class="card-title">Deliveries Overdue</div>
                                 <div class="card-value" id="deliveriesOverdue">
@@ -489,7 +515,7 @@
                     </div>
 
                     <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-                        <div class="card stats-card midpoint-check">
+                        <div class="card stats-card midpoint-check" data-filter="midpoint-overdue">
                             <div class="card-content">
                                 <div class="card-title">Mid-Point Overdue</div>
                                 <div class="card-value" id="midPointOverdue">
@@ -504,7 +530,7 @@
                     </div>
 
                     <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
-                        <div class="card stats-card delivered">
+                        <div class="card stats-card delivered" data-filter="delivered">
                             <div class="card-content">
                                 <div class="card-title">Delivered</div>
                                 <div class="card-value" id="delivered">
@@ -518,6 +544,15 @@
                         </div>
                     </div>
                 </div>                
+
+                <!-- Filter Status Indicator -->
+                <div class="filter-status" id="filterStatus">
+                    <i class="bx bx-filter-alt"></i>
+                    <span id="filterText">Showing all jobs</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary clear-filter-btn" onclick="clearFilter()">
+                        <i class="bx bx-x"></i> Clear Filter
+                    </button>
+                </div>
 
                 <div class="row g-4">
                     <div class="col-12">
@@ -639,12 +674,17 @@
     <script src="{{ asset('assets/admin/js/dataTables-custom.js') }}"></script>
 
     <script>
+        // Global variables for filtering
+        window.currentFilter = 'all';
+        let table;
+
         $(function () {
             // Initialize DataTable
             if ($.fn.DataTable.isDataTable('#datatable')) {
                 $('#datatable').DataTable().destroy();
             }
-            var table = $('#datatable').DataTable({
+            
+            table = $('#datatable').DataTable({
                 processing: true,
                 serverSide: true,
                 scrollX: true,
@@ -658,6 +698,7 @@
                     data: function (d) {
                         d.fromDate = $('#fromDate').val();
                         d.toDate = $('#toDate').val();
+                        d.filterType = window.currentFilter; // Add filter parameter
                     }
                 },
                 pageLength: 10,
@@ -841,6 +882,12 @@
                 }
             });
 
+            // Card click event handlers
+            $('.stats-card').on('click', function() {
+                const filterType = $(this).data('filter');
+                filterDataTable(filterType);
+            });
+
             // DataTable filter functionality
             $('#filterBtn').on('click', function () {
                 table.draw();
@@ -851,8 +898,58 @@
                 $('#toDate').val('');
                 table.draw();
             });
-
         });
+
+        // Filter function
+        function filterDataTable(filterType) {
+            // Remove active class from all cards
+            $('.stats-card').removeClass('active');
+            
+            // Add active class to clicked card
+            $(`[data-filter="${filterType}"]`).addClass('active');
+            
+            // Set global filter
+            window.currentFilter = filterType;
+            
+            // Update filter status
+            updateFilterStatus(filterType);
+            
+            // Refresh DataTable
+            table.ajax.reload();
+        }
+
+        // Clear filter function
+        function clearFilter() {
+            // Remove active class from all cards
+            $('.stats-card').removeClass('active');
+            
+            // Reset filter
+            window.currentFilter = 'all';
+            
+            // Hide filter status
+            $('#filterStatus').removeClass('active');
+            
+            // Refresh DataTable
+            table.ajax.reload();
+        }
+
+        // Update filter status indicator
+        function updateFilterStatus(filterType) {
+            const filterTexts = {
+                'all': 'Showing all jobs',
+                'collections-overdue': 'Showing only collections overdue',
+                'deliveries-overdue': 'Showing only deliveries overdue', 
+                'midpoint-overdue': 'Showing only mid-point check overdue',
+                'delivered': 'Showing only delivered jobs'
+            };
+            
+            if (filterType !== 'all') {
+                $('#filterText').text(filterTexts[filterType] || 'Showing filtered jobs');
+                $('#filterStatus').addClass('active');
+            } else {
+                $('#filterStatus').removeClass('active');
+            }
+        }
 
         // Updated confirmAction function with special delivery handling
         function confirmAction(actionName, orderId, actionType) {
@@ -887,13 +984,9 @@
                 text: 'Is the Mid-Point Check Complete?',
                 icon: 'question',
                 showCancelButton: true,
-                // showDenyButton: true,
                 confirmButtonText: 'Not Required',
-                // denyButtonText: 'No',
                 cancelButtonText: 'No',
                 confirmButtonColor: '#28a745',
-                // denyButtonColor: '#dc3545',
-                // cancelButtonColor: '#6c757d',
                 cancelButtonColor: '#dc3545',
                 reverseButtons: true
             }).then((result) => {
@@ -901,11 +994,6 @@
                     // "Not Required" - Set delivered = 1
                     processAction(orderId, 'delivered', { deliveredStatus: 1 });
                 } 
-                // else if (result.isDenied) {
-                //     // "No" - Set delivered = 0
-                //     processAction(orderId, 'delivered', { deliveredStatus: 0 });
-                // }
-                // If cancelled, do nothing
             });
         }
 
