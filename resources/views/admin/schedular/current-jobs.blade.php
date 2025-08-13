@@ -958,7 +958,7 @@
             // API call for company name
             if (customerNo) {
                 $.ajax({
-                    url: '{{ route("admin.schedular.getCustomer") }}',
+                    url: '{{ route("admin.schedular.current.getCustomer") }}',
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
