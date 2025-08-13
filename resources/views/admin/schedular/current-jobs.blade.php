@@ -491,7 +491,7 @@
                     <div class="col-xxl col-xl col-lg-4 col-md-6 col-sm-6">
                         <div class="card stats-card midpoint-check">
                             <div class="card-content">
-                                <div class="card-title">Mid-Point Check In Overdue</div>
+                                <div class="card-title">Mid-Point Overdue</div>
                                 <div class="card-value" id="midPointOverdue">
                                     {{ $countData['midPointCheckInOverdue'] }}
                                 </div>
