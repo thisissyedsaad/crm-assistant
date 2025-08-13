@@ -224,7 +224,7 @@
         
         /* Comments button styling */
         .btn-view-comments {
-            padding: 2px 8px;
+            padding: 1px 3px;
             font-size: 11px;
             border-radius: 3px;
         }
@@ -465,9 +465,16 @@
         font-size: 12px;
     }
     .row-icons {
-        width: 40px; 
-        height: 40px; 
-        margin-right: 5px;
+        width: 30px; 
+        height: 30px; 
+        margin: 0 3px; /* Small margin between icons */
+        display: inline-block;
+    }
+
+    /* Actions column specific styling */
+    td:last-child {
+        white-space: nowrap !important;
+        text-align: center !important;
     }
 
     /* Reduce cell padding */
@@ -485,6 +492,18 @@
     /* Make table more compact overall */
     .dataTables_wrapper table.dataTable {
         margin: 0 !important;
+    }
+    #datatable th,
+    #datatable td {
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    /* If you want to center all DataTables on the page */
+    .dataTables_wrapper table.dataTable th,
+    .dataTables_wrapper table.dataTable td {
+        text-align: center !important;
+        vertical-align: middle !important;
     }
     </style>
 @endpush
@@ -594,10 +613,12 @@
                                             <th>ETA Delivery</th>
                                             <th>Mid-Point Check</th>
                                             <th>Notes</th>
-                                            <th>Collection Check-In</th>
+                                            <th>Actions</th> <!-- Single Actions column -->
+
+                                            <!-- <th>Collection Check-In</th>
                                             <th>Driver Confirmed</th>
                                             <th>Mid-Point Check</th>
-                                            <th>Delivered</th>
+                                            <th>Delivered</th> -->
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -793,82 +814,141 @@
                                     </button>`;
                         }
                     },
+                    // { 
+                    //     data: 'collectionCheckIn', 
+                    //     name: 'collectionCheckIn',
+                    //     className: 'text-nowrap text-center',
+                    //     orderable: false,
+                    //     title: 'Collection Check-In',
+                    //     render: function(data, type, row) {
+                    //         if (data === true || data === 1) {
+                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Collection Completed">`;
+                    //         } else {
+                    //             return `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" title="Collection Check-In" class="row-icons">`;
+                    //         }
+                    //     }
+                    // },
+                    // { 
+                    //     data: 'driverConfirmedETA', 
+                    //     name: 'driverConfirmedETA',
+                    //     className: 'text-nowrap text-center',
+                    //     orderable: false,
+                    //     title: 'Driver Confirmed',
+                    //     render: function(data, type, row) {
+                    //         if (data === true || data === 1) {
+                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Driver Confirmed">`;
+                    //         } else {
+                    //             // Check if collection check-in is completed
+                    //             let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
+                    //             let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                    //             let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
+                                
+                    //             return `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" title="Driver Confirmed ETA" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                    //         }
+                    //     }
+                    // },
+                    // { 
+                    //     data: 'midpointCheckComplete', 
+                    //     name: 'midpointCheckComplete',
+                    //     className: 'text-nowrap text-center',
+                    //     orderable: false,
+                    //     title: 'Mid-Point Check',
+                    //     render: function(data, type, row) {
+                    //         if (data === true || data === 1) {
+                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Complete" class="row-icons" title="Mid-Point Check Completed">`;
+                    //         } else {
+                    //             // Check if driver ETA is confirmed
+                    //             let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                    //             let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                    //             let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
+                                
+                    //             return `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" title="Mid-Point Check" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                    //         }
+                    //     }
+                    // },
+                    // { 
+                    //     data: 'delivered', 
+                    //     name: 'delivered',
+                    //     className: 'text-nowrap text-center',
+                    //     orderable: false,
+                    //     title: 'Delivered',
+                    //     render: function(data, type, row) {
+                    //         // Convert to number for proper comparison
+                    //         const deliveredStatus = parseInt(data);
+                            
+                    //         // Check if delivered is set
+                    //         if (deliveredStatus === 1) {
+                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" title="Delivered">`;
+                    //         } else if (data === null || data === undefined || data === '' || isNaN(deliveredStatus)) {
+                    //             // Check if driver ETA is confirmed to enable button
+                    //             let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                    //             let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                    //             let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')"`;
+                                
+                    //             return `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" title="Mark Delivered" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                    //         } else {
+                    //             // Fallback for unexpected values
+                    //             return `<span class="badge bg-secondary">Unknown (${data})</span>`;
+                    //         }
+                    //     }
+                    // }
                     { 
-                        data: 'collectionCheckIn', 
-                        name: 'collectionCheckIn',
-                        className: 'text-nowrap text-center',
+                        data: null, 
+                        name: 'actions',
+                        className: 'text-center',
                         orderable: false,
-                        title: 'Collection Check-In',
+                        title: 'Actions',
+                        width: '200px', // Adjust width as needed
                         render: function(data, type, row) {
-                            if (data === true || data === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Collection Completed">`;
+                            let actions = '';
+                            
+                            // Collection Check-In
+                            if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Collection Completed" class="row-icons" title="Collection Check-in Completed">`;
                             } else {
-                                return `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" title="Collection Check-In" class="row-icons">`;
+                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" title="Click to perform Collection Check-in" class="row-icons" style="cursor: pointer;">`;
                             }
-                        }
-                    },
-                    { 
-                        data: 'driverConfirmedETA', 
-                        name: 'driverConfirmedETA',
-                        className: 'text-nowrap text-center',
-                        orderable: false,
-                        title: 'Driver Confirmed',
-                        render: function(data, type, row) {
-                            if (data === true || data === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Driver Confirmed">`;
+                            
+                            // Driver Confirmed ETA
+                            if (row.driverConfirmedETA === true || row.driverConfirmedETA === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Driver Confirmed" class="row-icons" title="Driver ETA Confirmed">`;
                             } else {
-                                // Check if collection check-in is completed
                                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
+                                let tooltip = isDisabled ? "Complete Collection Check-in first" : "Click to confirm Driver ETA";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
                                 
-                                return `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" title="Driver Confirmed ETA" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
-                        }
-                    },
-                    { 
-                        data: 'midpointCheckComplete', 
-                        name: 'midpointCheckComplete',
-                        className: 'text-nowrap text-center',
-                        orderable: false,
-                        title: 'Mid-Point Check',
-                        render: function(data, type, row) {
-                            if (data === true || data === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Complete" class="row-icons" title="Mid-Point Check Completed">`;
+                            
+                            // Mid-Point Check
+                            if (row.midpointCheckComplete === true || row.midpointCheckComplete === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Mid-Point Complete" class="row-icons" title="Mid-Point Check Completed">`;
                             } else {
-                                // Check if driver ETA is confirmed
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                                let tooltip = isDisabled ? "Complete Driver ETA first" : "Click to mark Mid-Point Check complete";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
                                 
-                                return `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" title="Mid-Point Check" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
-                        }
-                    },
-                    { 
-                        data: 'delivered', 
-                        name: 'delivered',
-                        className: 'text-nowrap text-center',
-                        orderable: false,
-                        title: 'Delivered',
-                        render: function(data, type, row) {
-                            // Convert to number for proper comparison
-                            const deliveredStatus = parseInt(data);
                             
-                            // Check if delivered is set
+                            // Delivered
+                            const deliveredStatus = parseInt(row.delivered);
                             if (deliveredStatus === 1) {
-                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" title="Delivered">`;
-                            } else if (data === null || data === undefined || data === '' || isNaN(deliveredStatus)) {
-                                // Check if driver ETA is confirmed to enable button
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" title="Delivered">`;
+                            } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                                let tooltip = isDisabled ? "Complete Driver ETA first" : "Click to mark as delivered";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')"`;
                                 
-                                return `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" title="Mark Delivered" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             } else {
-                                // Fallback for unexpected values
-                                return `<span class="badge bg-secondary">Unknown (${data})</span>`;
+                                actions += `<span class="badge bg-secondary">Unknown (${row.delivered})</span>`;
                             }
+                            
+                            return actions;
                         }
                     }
                 ],
