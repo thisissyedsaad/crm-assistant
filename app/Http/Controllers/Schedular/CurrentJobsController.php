@@ -223,17 +223,160 @@ class CurrentJobsController extends Controller
         return view('admin.schedular.current-jobs', compact('countData'));
     }
 
+    // private function calculateDashboardCounters()
+    // {
+    //     try {
+    //         $client = new Client();
+    //         $apiUrl = env('TRANSPORT_API_URL'); 
+    //         $apiKey = env('TRANSPORT_API_KEY');
+            
+    //         // Get today's orders
+    //         $apiQuery = [
+    //             'filter[date]' => date('Y-m-d'),
+    //         ];
+
+    //         $response = $client->get($apiUrl . 'orders', [
+    //             'headers' => [
+    //                 'Authorization' => 'Basic ' . $apiKey,
+    //                 'Content-Type'  => 'application/json',
+    //                 'Accept'        => 'application/json',
+    //             ],
+    //             'query' => $apiQuery,
+    //         ]);
+
+    //         $res = json_decode($response->getBody()->getContents(), true);
+    //         $result = collect($res['data'] ?? []);
+    //         $today = date('Y-m-d');
+
+    //         $orders = $result->filter(function($order) use ($today) {
+    //             $destinations = $order['attributes']['destinations'] ?? [];
+    //             $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+    //             $status = $order['attributes']['status'] ?? '';
+                
+    //             // Only include orders where:
+    //             // 1. pickup date is today
+    //             // 2. status is NOT "pending-acceptation" or "quote"
+    //             return $pickup && 
+    //                 isset($pickup['date']) && 
+    //                 $pickup['date'] === $today &&
+    //                 !in_array($status, ['pending-acceptation', 'quote']);
+    //         });
+            
+    //         $currentTime = Carbon::now();
+    //         $currentDate = $currentTime->format('Y-m-d');
+            
+    //         // Initialize counters
+    //         $totalJobs = count($orders);
+    //         $collectionsOverdue = 0;
+    //         $deliveriesOverdue = 0;
+    //         $midPointCheckInOverdue = 0;
+    //         $deliveredCount = 0;
+
+    //         foreach ($orders as $order) {
+    //             $destinations = $order['attributes']['destinations'] ?? [];
+    //             $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+    //             $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
+
+    //             // Filter out completed jobs
+    //             $tracking = CurrentJobsTracking::where('order_id', $order['id'])->first();
+    //             if ($tracking && $tracking->status === 'completed') {
+    //                 continue;
+    //             }
+
+    //             // Check collections overdue
+    //             if ($pickup && isset($pickup['departureTime']) && $pickup['date'] === $currentDate) {
+    //                 try {
+    //                     $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
+    //                     if ($currentTime->greaterThan($departureDateTime)) {
+    //                         $collectionsOverdue++;
+    //                     }
+    //                 } catch (\Exception $e) {
+    //                     // Skip if date/time parsing fails
+    //                 }
+    //             }
+
+    //             // Check deliveries overdue
+    //             if ($delivery && isset($delivery['toTime']) && $delivery['date'] === $currentDate) {
+    //                 try {
+    //                     $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
+    //                     if ($currentTime->greaterThan($deliveryDateTime)) {
+    //                         $deliveriesOverdue++;
+    //                     }
+    //                 } catch (\Exception $e) {
+    //                     // Skip if date/time parsing fails
+    //                 }
+    //             }
+
+    //             // Check midpoint check overdue
+    //             if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
+    //                 try {
+    //                     $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+    //                     $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                        
+    //                     if ($deliveryTime->diffInHours($collectionTime) >=2) {
+    //                         $midPointCheckInOverdue++;
+    //                     }
+    //                 } catch (\Exception $e) {
+    //                 }
+    //             }
+
+    //             // Get completed jobs count from local tracking table for today
+    //             $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
+    //                 ->whereDate('completed_at', Carbon::today())
+    //                 ->count();
+    //             if($completedJobsToday){
+    //                 $deliveredCount = $completedJobsToday;
+    //             }
+    //         }
+
+    //         $updatedTotalJobs = $totalJobs - $deliveredCount;
+    //         return [
+    //             'totalJobs' => $updatedTotalJobs,
+    //             'collectionsOverdue' => $collectionsOverdue,
+    //             'deliveriesOverdue' => $deliveriesOverdue,
+    //             'midPointCheckInOverdue' => $midPointCheckInOverdue,
+    //             'delivered' => $deliveredCount, // Hard coded as requested
+    //         ];
+
+    //     } catch (\Exception $e) {
+    //         Log::error("Dashboard counters calculation error: " . $e->getMessage());
+            
+    //         // Return default values on error
+    //         return [
+    //             'totalJobs' => 0,
+    //             'collectionsOverdue' => 0,
+    //             'deliveriesOverdue' => 0,
+    //             'midPointCheckInOverdue' => 0,
+    //             'delivered' => 20,
+    //         ];
+    //     }
+    // }  
+    
     private function calculateDashboardCounters()
     {
         try {
             $client = new Client();
             $apiUrl = env('TRANSPORT_API_URL'); 
             $apiKey = env('TRANSPORT_API_KEY');
-            
-            // Get today's orders
-            $apiQuery = [
-                'filter[date]' => date('Y-m-d'),
-            ];
+        
+            // Get sorting parameters
+            $orderColumn = 0;
+            $orderDirection = 'desc';
+
+            // Map column index to field name - FIXED FOR 9 COLUMNS (removed some columns)
+            $columns = ['orderNo', 'collectionTime', 'departureTime', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete', 'delivered'];
+            $sortField = $columns[$orderColumn] ?? 'orderNo';
+
+            // Build API query
+            $apiQuery = [];
+
+            // Set sorting - handle different field mappings for API
+            if ($sortField === 'orderNo') {
+                $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
+            }
+            // Limit to maximum 100 records
+            $today = date('Y-m-d');
+            // $apiQuery['filter[date]'] = $today;
 
             $response = $client->get($apiUrl . 'orders', [
                 'headers' => [
@@ -245,10 +388,10 @@ class CurrentJobsController extends Controller
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);
-            $result = collect($res['data'] ?? []);
-            $today = date('Y-m-d');
+            $records = collect($res['data'] ?? []);
 
-            $orders = $result->filter(function($order) use ($today) {
+
+            $orders = $records->filter(function($order) use ($today) {
                 $destinations = $order['attributes']['destinations'] ?? [];
                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
                 $status = $order['attributes']['status'] ?? '';
@@ -264,24 +407,16 @@ class CurrentJobsController extends Controller
             
             $currentTime = Carbon::now();
             $currentDate = $currentTime->format('Y-m-d');
-            
             // Initialize counters
-            $totalJobs = count($orders);
+            $totalJobs = $orders->count(); // This will match datatable count exactly
             $collectionsOverdue = 0;
             $deliveriesOverdue = 0;
             $midPointCheckInOverdue = 0;
-            $deliveredCount = 0;
 
             foreach ($orders as $order) {
                 $destinations = $order['attributes']['destinations'] ?? [];
                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
                 $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
-
-                // Filter out completed jobs
-                $tracking = CurrentJobsTracking::where('order_id', $order['id'])->first();
-                if ($tracking && $tracking->status === 'completed') {
-                    continue;
-                }
 
                 // Check collections overdue
                 if ($pickup && isset($pickup['departureTime']) && $pickup['date'] === $currentDate) {
@@ -296,7 +431,7 @@ class CurrentJobsController extends Controller
                 }
 
                 // Check deliveries overdue
-                if ($delivery && isset($delivery['toTime']) && $delivery['date'] === $currentDate) {
+                if ($delivery && isset($delivery['toTime']) && isset($delivery['date'])) {
                     try {
                         $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
                         if ($currentTime->greaterThan($deliveryDateTime)) {
@@ -313,29 +448,25 @@ class CurrentJobsController extends Controller
                         $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
                         $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         
-                        if ($deliveryTime->diffInHours($collectionTime) >=2) {
+                        if ($deliveryTime->diffInHours($collectionTime) >= 2) {
                             $midPointCheckInOverdue++;
                         }
                     } catch (\Exception $e) {
                     }
                 }
-
-                // Get completed jobs count from local tracking table for today
-                $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
-                    ->whereDate('completed_at', Carbon::today())
-                    ->count();
-                if($completedJobsToday){
-                    $deliveredCount = $completedJobsToday;
-                }
             }
 
-            $updatedTotalJobs = $totalJobs - $deliveredCount;
+            // Get completed jobs count from local tracking table for today
+            $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
+                ->whereDate('completed_at', Carbon::today())
+                ->count();
+
             return [
-                'totalJobs' => $updatedTotalJobs,
+                'totalJobs' => $totalJobs, // This will now match datatable exactly
                 'collectionsOverdue' => $collectionsOverdue,
                 'deliveriesOverdue' => $deliveriesOverdue,
                 'midPointCheckInOverdue' => $midPointCheckInOverdue,
-                'delivered' => $deliveredCount, // Hard coded as requested
+                'delivered' => $completedJobsToday,
             ];
 
         } catch (\Exception $e) {
@@ -347,10 +478,10 @@ class CurrentJobsController extends Controller
                 'collectionsOverdue' => 0,
                 'deliveriesOverdue' => 0,
                 'midPointCheckInOverdue' => 0,
-                'delivered' => 20,
+                'delivered' => 0,
             ];
         }
-    }    
+    }
 
     public function updateOrderStatus(Request $request)
     {
