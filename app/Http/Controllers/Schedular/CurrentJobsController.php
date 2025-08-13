@@ -13,216 +13,6 @@ use App\Models\CurrentJobsTracking;
 class CurrentJobsController extends Controller
 {
 
-    // public function index(Request $request)
-    // {
-    //     if ($request->ajax()) {
-
-    //         try {
-    //             $client = new Client();
-    //             $apiUrl = env('TRANSPORT_API_URL'); 
-    //             $apiKey = env('TRANSPORT_API_KEY');
-
-    //             // DataTables parameters
-    //             $draw = $request->input('draw', 1);
-    //             $start = $request->input('start', 0);
-    //             $length = $request->input('length', 25);
-    //             $searchValue = $request->input('search.value', '');
-
-    //             // Get sorting parameters
-    //             $orderColumn = $request->input('order.0.column', 0);
-    //             $orderDirection = $request->input('order.0.dir', 'desc');
-                
-    //             // Map column index to field name - FIXED FOR 9 COLUMNS (removed some columns)
-    //             $columns = ['orderNo', 'collectionTime', 'departureTime', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete', 'delivered'];
-    //             $sortField = $columns[$orderColumn] ?? 'orderNo';
-
-    //             // Build API query
-    //             $apiQuery = [];
-
-    //             // Date Range Filtering
-    //             if ($request->filled('fromDate')) {
-    //                 $apiQuery['filter[createdAt][gte]'] = Carbon::parse($request->input('fromDate'))->startOfDay()->format('Y-m-d\TH:i:s');
-    //             }
-    //             if ($request->filled('toDate')) {
-    //                 $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
-    //             }
-    //             if (!$request->filled('fromDate') && !$request->filled('toDate')) {
-    //                 $apiQuery['filter[createdAt][gte]'] = Carbon::now('UTC')->subDays(2)->format('Y-m-d\TH:i:s\Z');
-    //             }
-
-    //             // Set sorting - handle different field mappings for API
-    //             if ($sortField === 'orderNo') {
-    //                 $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
-    //             }
-
-    //             // Limit to maximum 100 records
-    //             $today = date('Y-m-d');
-    //             // $apiQuery['filter[date]'] = $today;
-
-    //             $response = $client->get($apiUrl . 'orders', [
-    //                 'headers' => [
-    //                     'Authorization' => 'Basic ' . $apiKey,
-    //                     'Content-Type'  => 'application/json',
-    //                     'Accept'        => 'application/json',
-    //                 ],
-    //                 'query' => $apiQuery,
-    //             ]);
-
-    //             $res = json_decode($response->getBody()->getContents(), true);
-    //             $records = collect($res['data'] ?? []);
-
-
-    //             $orders = $records->filter(function($order) use ($today) {
-    //                 $destinations = $order['attributes']['destinations'] ?? [];
-    //                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
-    //                 $status = $order['attributes']['status'] ?? '';
-                    
-    //                 // Only include orders where:
-    //                 // 1. pickup date is today
-    //                 // 2. status is NOT "pending-acceptation" or "quote"
-    //                 return $pickup && 
-    //                     isset($pickup['date']) && 
-    //                     $pickup['date'] === $today &&
-    //                     !in_array($status, ['pending-acceptation', 'quote']);
-    //             });
-    //             $meta = $res['meta'] ?? [];
-                
-    //             // Transform data with tracking integration
-    //             $transformedData = $orders->map(function($row) {
-    //                 // Get pickup and delivery destinations
-    //                 $destinations = $row['attributes']['destinations'] ?? [];
-    //                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
-    //                 $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
-
-    //                 // Calculate midpoint check
-    //                 $midpointCheck = null;
-    //                 if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
-    //                     try {
-    //                         $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
-    //                         $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
-                            
-    //                         if ($deliveryTime->diffInHours($collectionTime) >=2) {
-    //                             $midpointCheck = $collectionTime->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
-    //                         }
-    //                     } catch (\Exception $e) {
-    //                         $midpointCheck = null;
-    //                     }
-    //                 }
-
-    //                 // Get carrier/driver name from carrierNo
-    //                 $driverName = null;
-    //                 if (isset($row['attributes']['carrierNo'])) {
-    //                     $driverName = $row['attributes']['carrierNo'];
-    //                 }
-
-    //                 // Get customer info
-    //                 $userDisplay = null;
-    //                 if (isset($row['attributes']['usernameCreated'])) {
-    //                     $userDisplay = $row['attributes']['usernameCreated'] ?? '-';
-    //                 }
-
-    //                 // Check local tracking for this order
-    //                 $orderId = $row['id'];
-    //                 $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-
-    //                 return [
-    //                     'id' => $row['id'] ?? null,
-    //                     'orderNo' => $row['attributes']['orderNo'] ?? null,
-    //                     'carrierNo' => $driverName,
-    //                     'collectionDate' => $pickup['date'] ?? null,
-    //                     'collectionTime' => $pickup['toTime'] ?? null,
-    //                     'departureTime' => $pickup['departureTime'] ?? null,
-    //                     'deliveryTime' => $delivery['deliveryTime'] ?? null,
-    //                     'midpointCheck' => $midpointCheck,
-    //                     'internalNotes' => $row['attributes']['internalNotes'] ?? null,
-                        
-    //                     // Additional fields for search and modal
-    //                     'customerNo' => $row['attributes']['customerNo'] ?? null,
-    //                     'vehicleTypeName' => $row['attributes']['vehicleTypeName'] ?? null,
-    //                     'status' => $row['attributes']['status'] ?? null,
-
-    //                     // Add tracking status for buttons
-    //                     'collectionCheckIn' => $tracking ? $tracking->collection_checked_in : false,
-    //                     'driverConfirmedETA' => $tracking ? $tracking->driver_eta_confirmed : false,
-    //                     'midpointCheckComplete' => $tracking ? $tracking->midpoint_check_completed : false,
-    //                     'delivered' => $tracking ? $tracking->delivered : null,
-    //                 ];
-    //             })
-    //             // Filter out completed jobs
-    //             ->filter(function($item) {
-    //                 $tracking = CurrentJobsTracking::where('order_id', $item['id'])->first();
-    //                 // Only show if not completed or no tracking record exists
-    //                 return !$tracking || $tracking->status !== 'completed';
-    //             });
-
-    //             // Apply search filter if provided
-    //             if (!empty($searchValue)) {
-    //                 $transformedData = $transformedData->filter(function($item) use ($searchValue) {
-    //                     $searchLower = strtolower($searchValue);
-                        
-    //                     return str_contains(strtolower($item['customerUserId'] ?? ''), $searchLower) ||
-    //                            str_contains(strtolower($item['orderNo'] ?? ''), $searchLower) ||
-    //                            str_contains(strtolower($item['vehicleTypeName'] ?? ''), $searchLower) ||
-    //                            str_contains(strtolower($item['status'] ?? ''), $searchLower) ||
-    //                            str_contains(strtolower($item['carrierNo'] ?? ''), $searchLower) ||
-    //                            str_contains(strtolower($item['internalNotes'] ?? ''), $searchLower);
-    //                 });
-    //             }
-
-    //             // Apply client-side sorting for fields not sortable by API
-    //             if (in_array($sortField, ['customerUserId', 'carrierNo', 'newExisting', 'collectionDate', 'collectionTime', 'departureTime', 'orderPrice', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete'])) {
-    //                 $transformedData = $transformedData->sortBy(function($item) use ($sortField) {
-    //                     // For price fields, convert to numeric for proper sorting
-    //                     if (in_array($sortField, ['orderPrice'])) {
-    //                         return (float) ($item[$sortField] ?? 0);
-    //                     }
-    //                     // For date/time fields
-    //                     if (in_array($sortField, ['collectionDate', 'collectionTime', 'departureTime', 'deliveryTime'])) {
-    //                         return $item[$sortField] ?? '';
-    //                     }
-    //                     // For text fields, convert to lowercase
-    //                     return strtolower($item[$sortField] ?? '');
-    //                 });
-                    
-    //                 if ($orderDirection === 'desc') {
-    //                     $transformedData = $transformedData->reverse();
-    //                 }
-                    
-    //                 $transformedData = $transformedData->values(); // Reset keys
-    //             }
-
-    //             // Handle pagination - limit to 100 records total
-    //             $totalRecords = min($transformedData->count(), 100);
-    //             $recordsToTake = min($length, $totalRecords - $start);
-    //             $recordsToTake = max(0, $recordsToTake); // Ensure non-negative
-                
-    //             $paginatedData = $transformedData->slice($start, $recordsToTake)->values();
-
-    //             return response()->json([
-    //                 'draw' => intval($draw),
-    //                 'recordsTotal' => $totalRecords,
-    //                 'recordsFiltered' => $totalRecords,
-    //                 'data' => $paginatedData->toArray()
-    //             ]);
-
-    //         } catch (\Exception $e) {
-    //             Log::error("DataTables error: " . $e->getMessage());
-    //             return response()->json([
-    //                 'draw'            => $request->input('draw', 1),
-    //                 'recordsTotal'    => 0,
-    //                 'recordsFiltered' => 0,
-    //                 'data'            => [],
-    //                 'error'           => 'Something went wrong while fetching data: ' . $e->getMessage()
-    //             ], 500);
-    //         }
-    //     }
-
-    //     // Calculate dynamic dashboard counters
-    //     $countData = $this->calculateDashboardCounters();
-
-    //     return view('admin.schedular.current-jobs', compact('countData'));
-    // }
-
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -338,7 +128,7 @@ class CurrentJobsController extends Controller
                         'id' => $row['id'] ?? null,
                         'orderNo' => $row['attributes']['orderNo'] ?? null,
                         'carrierNo' => $driverName,
-                        'collectionDate' => $pickup['date'] ?? null,
+                        // 'collectionDate' => $pickup['date'] ?? null,
                         'collectionTime' => $pickup['toTime'] ?? null,
                         'departureTime' => $pickup['departureTime'] ?? null,
                         'deliveryTime' => $delivery['deliveryTime'] ?? null,
@@ -697,10 +487,8 @@ class CurrentJobsController extends Controller
                     $tracking->markCompleted(); // Mark job as completed when delivered is set
                     
                     if ($deliveredStatus == 1) {
-                        $message = 'Delivery marked as "Not Required" - Job Completed!';
-                    } else {
-                        $message = 'Delivery marked as "No" - Job Completed!';
-                    }
+                        $message = 'Delivery marked as Completed!';
+                    } 
                     break;
                     
                 default:

@@ -377,88 +377,115 @@
             pointer-events: none !important;
         }
 
-@media (min-width: 1400px) {
-    .col-xxl {
-        flex: 0 0 auto;
-        width: 20%; /* 5 cards = 20% each */
+    @media (min-width: 1400px) {
+        .col-xxl {
+            flex: 0 0 auto;
+            width: 20%; /* 5 cards = 20% each */
+        }
     }
-}
 
-@media (min-width: 1200px) and (max-width: 1399.98px) {
-    .col-xl {
-        flex: 0 0 auto;
-        width: 20%; /* 5 cards = 20% each */
+    @media (min-width: 1200px) and (max-width: 1399.98px) {
+        .col-xl {
+            flex: 0 0 auto;
+            width: 20%; /* 5 cards = 20% each */
+        }
     }
-}
 
-/* For tablets and smaller, keep your existing responsive behavior */
-@media (max-width: 1199.98px) {
-    .dashboard-cards .col-lg-4 {
-        width: 33.333333%; /* 3 cards per row */
+    /* For tablets and smaller, keep your existing responsive behavior */
+    @media (max-width: 1199.98px) {
+        .dashboard-cards .col-lg-4 {
+            width: 33.333333%; /* 3 cards per row */
+        }
     }
-}
 
-@media (max-width: 991.98px) {
-    .dashboard-cards .col-md-6 {
-        width: 50%; /* 2 cards per row */
+    @media (max-width: 991.98px) {
+        .dashboard-cards .col-md-6 {
+            width: 50%; /* 2 cards per row */
+        }
     }
-}
 
-@media (max-width: 575.98px) {
-    .dashboard-cards .col-sm-6 {
-        width: 100%; /* 1 card per row */
+    @media (max-width: 575.98px) {
+        .dashboard-cards .col-sm-6 {
+            width: 100%; /* 1 card per row */
+        }
     }
-}
 
-#datatable thead th:first-child,
-#datatable tbody td:first-child {
-    position: sticky !important;
-    left: 0 !important;
-    z-index: 10 !important;
-    background-color: #fff !important;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
-    border-right: 2px solid #dee2e6 !important;
-}
+    #datatable thead th:first-child,
+    #datatable tbody td:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 10 !important;
+        background-color: #fff !important;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
+        border-right: 2px solid #dee2e6 !important;
+    }
+    #datatable tbody tr:nth-child(even) td:first-child {
+        background-color: #f8f9fa !important; /* Light gray */
+    }
+    #datatable tbody tr:nth-child(odd) td:first-child {
+        background-color: #ffffff !important; /* White */
+    }
+    #datatable tbody tr:nth-child(even) {
+        background-color: #f8f9fa !important; /* Light gray */
+    }
 
-#datatable tbody tr:nth-child(even) {
-    background-color: #f8f9fa !important; /* Light gray */
-}
+    #datatable tbody tr:nth-child(odd) {
+        background-color: #ffffff !important; /* White */
+    }
 
-#datatable tbody tr:nth-child(odd) {
-    background-color: #ffffff !important; /* White */
-}
+    #datatable tbody tr:hover {
+        background-color: #e3f2fd !important; /* Light blue */
+        cursor: pointer;
+        transform: translateY(-1px); /* Slight lift */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Shadow */
+        transition: all 0.2s ease; /* Smooth animation */
+    }
 
-#datatable tbody tr:hover {
-    background-color: #e3f2fd !important; /* Light blue */
-    cursor: pointer;
-    transform: translateY(-1px); /* Slight lift */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Shadow */
-    transition: all 0.2s ease; /* Smooth animation */
-}
+    #datatable tbody tr:hover td:first-child {
+        background-color: #e3f2fd !important; /* Same color as row */
+    }
 
-#datatable tbody tr:hover td:first-child {
-    background-color: #e3f2fd !important; /* Same color as row */
-}
+    /* Filter status indicator */
+    .filter-status {
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        border-radius: 4px;
+        display: none;
+    }
 
-/* Filter status indicator */
-.filter-status {
-    margin-bottom: 15px;
-    padding: 10px 15px;
-    background-color: #e3f2fd;
-    border-left: 4px solid #2196f3;
-    border-radius: 4px;
-    display: none;
-}
+    .filter-status.active {
+        display: block;
+    }
 
-.filter-status.active {
-    display: block;
-}
+    .clear-filter-btn {
+        margin-left: 10px;
+        padding: 2px 8px;
+        font-size: 12px;
+    }
+    .row-icons {
+        width: 40px; 
+        height: 40px; 
+        margin-right: 5px;
+    }
 
-.clear-filter-btn {
-    margin-left: 10px;
-    padding: 2px 8px;
-    font-size: 12px;
-}
+    /* Reduce cell padding */
+    .dataTables_wrapper table.dataTable td,
+    .dataTables_wrapper table.dataTable th {
+        padding: 4px 8px !important; /* Default is usually 8px 10px */
+    }
+
+    /* Or target specific table */
+    #datatable td,
+    #datatable th {
+        padding: 3px 4px !important;
+    }
+
+    /* Make table more compact overall */
+    .dataTables_wrapper table.dataTable {
+        margin: 0 !important;
+    }
     </style>
 @endpush
 
@@ -562,15 +589,14 @@
                                     <thead>
                                         <tr>
                                             <th>Order Number</th>
-                                            <th>Collection Date</th>
                                             <th>Collection Time</th>
-                                            <th>Driver Loaded (Time)</th>
+                                            <th>Driver Loaded</th>
                                             <th>ETA Delivery</th>
                                             <th>Mid-Point Check</th>
                                             <th>Notes</th>
                                             <th>Collection Check-In</th>
-                                            <th>Driver Confirmed ETA</th>
-                                            <th>Mid-Point Check Complete</th>
+                                            <th>Driver Confirmed</th>
+                                            <th>Mid-Point Check</th>
                                             <th>Delivered</th>
                                         </tr>
                                     </thead>
@@ -715,16 +741,6 @@
                         }
                     },
                     { 
-                        data: 'collectionDate', 
-                        name: 'collectionDate',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'Collection Date',
-                        render: function(data, type, row) {
-                            return data ? data : '-';
-                        }
-                    },
-                    { 
                         data: 'collectionTime', 
                         name: 'collectionTime',
                         className: 'text-nowrap',
@@ -739,7 +755,7 @@
                         name: 'departureTime',
                         className: 'text-nowrap',
                         orderable: true,
-                        title: 'Driver Loaded (Time)',
+                        title: 'Driver Loaded',
                         render: function(data, type, row) {
                             return data ? data : '<span class="text-muted">Pending</span>';
                         }
@@ -785,12 +801,9 @@
                         title: 'Collection Check-In',
                         render: function(data, type, row) {
                             if (data === true || data === 1) {
-                                return `<span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons">`;
                             } else {
-                                return `<button type="button" class="btn btn-sm btn-outline-primary" 
-                                               onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')">
-                                            <i class="fas fa-clipboard-check"></i> Check-In
-                                        </button>`;
+                                return `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" class="row-icons">`;
                             }
                         }
                     },
@@ -799,20 +812,17 @@
                         name: 'driverConfirmedETA',
                         className: 'text-nowrap text-center',
                         orderable: false,
-                        title: 'Driver Confirmed ETA',
+                        title: 'Driver Confirmed',
                         render: function(data, type, row) {
                             if (data === true || data === 1) {
-                                return `<span class="badge bg-success"><i class="fas fa-check"></i> Confirmed</span>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons">`;
                             } else {
                                 // Check if collection check-in is completed
                                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
-                                let disabledAttr = isDisabled ? 'disabled' : '';
-                                let disabledClass = isDisabled ? 'btn-secondary' : 'btn-outline-info';
+                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
                                 
-                                return `<button type="button" class="btn btn-sm ${disabledClass}" ${disabledAttr}
-                                               onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')">
-                                            <i class="fas fa-truck"></i> Confirm ETA
-                                        </button>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
                         }
                     },
@@ -821,20 +831,17 @@
                         name: 'midpointCheckComplete',
                         className: 'text-nowrap text-center',
                         orderable: false,
-                        title: 'Mid-Point Check Complete',
+                        title: 'Mid-Point Check',
                         render: function(data, type, row) {
                             if (data === true || data === 1) {
-                                return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Complete</span>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Complete" class="row-icons">`;
                             } else {
                                 // Check if driver ETA is confirmed
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                                let disabledAttr = isDisabled ? 'disabled' : '';
-                                let disabledClass = isDisabled ? 'btn-secondary' : 'btn-outline-warning';
+                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
                                 
-                                return `<button type="button" class="btn btn-sm ${disabledClass}" ${disabledAttr}
-                                               onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')">
-                                            <i class="fas fa-map-marker-alt"></i> Mark Complete
-                                        </button>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
                         }
                     },
@@ -850,19 +857,14 @@
                             
                             // Check if delivered is set
                             if (deliveredStatus === 1) {
-                                return `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Not Required</span>`;
-                            } else if (deliveredStatus === 0) {
-                                return `<span class="badge bg-warning"><i class="fas fa-times-circle"></i> No</span>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Not Required" class="row-icons">`;
                             } else if (data === null || data === undefined || data === '' || isNaN(deliveredStatus)) {
                                 // Check if driver ETA is confirmed to enable button
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                                let disabledAttr = isDisabled ? 'disabled' : '';
-                                let disabledClass = isDisabled ? 'btn-secondary' : 'btn-outline-primary';
+                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')"`;
                                 
-                                return `<button type="button" class="btn btn-sm ${disabledClass}" ${disabledAttr}
-                                            onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')">
-                                            <i class="fas fa-truck"></i> Mark Delivered
-                                        </button>`;
+                                return `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             } else {
                                 // Fallback for unexpected values
                                 return `<span class="badge bg-secondary">Unknown (${data})</span>`;
@@ -981,10 +983,10 @@
         function showDeliveryPopup(orderId) {
             Swal.fire({
                 title: 'Delivery Status',
-                text: 'Is the Mid-Point Check Complete?',
+                text: 'Are you sure the item has been delivered?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Not Required',
+                confirmButtonText: 'Yes',
                 cancelButtonText: 'No',
                 confirmButtonColor: '#28a745',
                 cancelButtonColor: '#dc3545',
