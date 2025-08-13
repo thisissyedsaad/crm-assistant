@@ -401,6 +401,38 @@
         width: 100%; /* 1 card per row */
     }
 }
+
+#datatable thead th:first-child,
+#datatable tbody td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 10 !important;
+    background-color: #fff !important;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
+    border-right: 2px solid #dee2e6 !important;
+}
+
+#datatable tbody tr:nth-child(even) {
+    background-color: #f8f9fa !important; /* Light gray */
+}
+
+#datatable tbody tr:nth-child(odd) {
+    background-color: #ffffff !important; /* White */
+}
+
+#datatable tbody tr:hover {
+    background-color: #e3f2fd !important; /* Light blue */
+    cursor: pointer;
+    transform: translateY(-1px); /* Slight lift */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Shadow */
+    transition: all 0.2s ease; /* Smooth animation */
+}
+
+#datatable tbody tr:hover td:first-child {
+    background-color: #e3f2fd !important; /* Same color as row */
+}
+
+
     </style>
 @endpush
 
