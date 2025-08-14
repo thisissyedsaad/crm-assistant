@@ -710,7 +710,7 @@ function updateNotificationUI(data) {
 
 function buildNotificationItem(notification) {
     return `
-        <a href="#" class="dynamic-notification-item" onclick="goToOrder('${notification.order_id}', '${notification.order_no}'); return false;">
+        <a class="dynamic-notification-item" return false;">
             <div class="dynamic-notification-icon ${notification.color}">
                 <i class="bx ${notification.icon}"></i>
             </div>
@@ -746,32 +746,32 @@ function showNotificationError() {
     `);
 }
 
-function goToOrder(orderId, orderNo) {
-    // Close the dropdown
-    $('.dropdown-toggle').dropdown('hide');
+// function goToOrder(orderId, orderNo) {
+//     // Close the dropdown
+//     $('.dropdown-toggle').dropdown('hide');
     
-    // Show notification that order was selected
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: 'Order Selected',
-            text: `Order #${orderNo} is overdue - check Current Jobs page`,
-            icon: 'warning',
-            timer: 3000,
-            showConfirmButton: true,
-            confirmButtonText: 'Go to Current Jobs',
-            confirmButtonColor: '#007bff'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Redirect to current jobs page
-                window.location.href = '{{ route("admin.schedular.current-jobs.index") }}';
-            }
-        });
-    } else {
-        // Fallback if SweetAlert is not available
-        alert(`Order #${orderNo} is overdue - please check the Current Jobs page`);
-        window.location.href = '{{ route("admin.schedular.current-jobs.index") }}';
-    }
-}
+//     // Show notification that order was selected
+//     if (typeof Swal !== 'undefined') {
+//         Swal.fire({
+//             title: 'Order Selected',
+//             text: `Order #${orderNo} is overdue - check Current Jobs page`,
+//             icon: 'warning',
+//             timer: 3000,
+//             showConfirmButton: true,
+//             confirmButtonText: 'Go to Current Jobs',
+//             confirmButtonColor: '#007bff'
+//         }).then((result) => {
+//             if (result.isConfirmed) {
+//                 // Redirect to current jobs page
+//                 window.location.href = '{{ route("admin.schedular.current-jobs.index") }}';
+//             }
+//         });
+//     } else {
+//         // Fallback if SweetAlert is not available
+//         alert(`Order #${orderNo} is overdue - please check the Current Jobs page`);
+//         window.location.href = '{{ route("admin.schedular.current-jobs.index") }}';
+//     }
+// }
 
 // Clean up interval when page unloads
 window.addEventListener('beforeunload', function() {
