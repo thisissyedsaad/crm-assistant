@@ -467,7 +467,7 @@
     .row-icons {
         width: 30px; 
         height: 30px; 
-        margin: 0 3px; /* Small margin between icons */
+        margin: 0 12px; /* Small margin between icons */
         display: inline-block;
     }
 
