@@ -410,7 +410,7 @@
         }
     }
 
-    #datatable thead th:first-child,
+    /* #datatable thead th:first-child,
     #datatable tbody td:first-child {
         position: sticky !important;
         left: 0 !important;
@@ -420,11 +420,11 @@
         border-right: 2px solid #dee2e6 !important;
     }
     #datatable tbody tr:nth-child(even) td:first-child {
-        background-color: #f8f9fa !important; /* Light gray */
+        background-color: #f8f9fa !important; 
     }
     #datatable tbody tr:nth-child(odd) td:first-child {
-        background-color: #ffffff !important; /* White */
-    }
+        background-color: #ffffff !important; 
+    }      */
     #datatable tbody tr:nth-child(even) {
         background-color: #f8f9fa !important; /* Light gray */
     }
@@ -504,6 +504,103 @@
     .dataTables_wrapper table.dataTable td {
         text-align: center !important;
         vertical-align: middle !important;
+    }
+
+    table.dataTable th, 
+    table.dataTable td {
+        white-space: nowrap;   /* stop text wrapping */
+        padding: 4px 8px !important; /* reduce space */
+    }
+
+    .dataTables_wrapper .dataTables_scrollHeadInner,
+    table.dataTable {
+        width: 100% !important; /* always fit container */
+    }
+
+    /* Fix action column overflow and width */
+    #datatable th:last-child,
+    #datatable td:last-child {
+        min-width: 180px !important;
+        max-width: 180px !important;
+        width: 180px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-align: center !important;
+        padding: 3px 2px !important;
+    }
+
+    /* Make action icons smaller and better spaced */
+    .row-icons {
+        width: 24px !important; 
+        height: 24px !important; 
+        margin: 0 1px !important;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* Reduce column widths more aggressively */
+    #datatable th:nth-child(1), #datatable td:nth-child(1) { 
+        min-width: 90px !important; 
+        max-width: 90px !important;
+        width: 90px !important; 
+    }
+
+    #datatable th:nth-child(2), #datatable td:nth-child(2) { 
+        min-width: 80px !important; 
+        max-width: 80px !important;
+        width: 80px !important; 
+    }
+
+    #datatable th:nth-child(3), #datatable td:nth-child(3) { 
+        min-width: 80px !important; 
+        max-width: 80px !important;
+        width: 80px !important; 
+    }
+
+    #datatable th:nth-child(4), #datatable td:nth-child(4) { 
+        min-width: 80px !important; 
+        max-width: 80px !important;
+        width: 80px !important; 
+    }
+
+    #datatable th:nth-child(5), #datatable td:nth-child(5) { 
+        min-width: 80px !important; 
+        max-width: 80px !important;
+        width: 80px !important; 
+    }
+
+    /* Force table to use exact widths */
+    #datatable {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    /* Reduce cell padding even more */
+    #datatable td,
+    #datatable th {
+        padding: 2px 4px !important;
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Make order number badges smaller */
+    .order-num {
+        font-size: 11px !important;
+        padding: 2px 6px !important;
+    }
+
+    /* Ensure no text wrapping anywhere */
+    #datatable th,
+    #datatable td {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Special handling for action column to prevent overflow */
+    #datatable td:last-child {
+        overflow: visible !important;
+        text-overflow: unset !important;
     }
     </style>
 @endpush
@@ -612,13 +709,7 @@
                                             <th>Driver Loaded</th>
                                             <th>ETA Delivery</th>
                                             <th>Mid-Point Check</th>
-                                            <th>Notes</th>
-                                            <th>Actions</th> <!-- Single Actions column -->
-
-                                            <!-- <th>Collection Check-In</th>
-                                            <th>Driver Confirmed</th>
-                                            <th>Mid-Point Check</th>
-                                            <th>Delivered</th> -->
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -721,6 +812,13 @@
     <script src="{{ asset('assets/admin/js/dataTables-custom.js') }}"></script>
 
     <script>
+
+        $('#datatable').on('draw.dt', function () {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new bootstrap.Tooltip(el);
+            });
+        });
+
         // Global variables for filtering
         window.currentFilter = 'all';
         let table;
@@ -736,10 +834,19 @@
                 serverSide: true,
                 scrollX: true,
                 scrollCollapse: false,
-                autoWidth: true,
+                autoWidth: false,
                 responsive: false,
                 ordering: true,
                 order: [[0, 'desc']], // Default sort by first column descending
+                columnDefs: [
+                    { targets: [0], width: '90px' },
+                    { targets: [1], width: '80px' },
+                    { targets: [2], width: '80px' },
+                    { targets: [3], width: '80px' },
+                    { targets: [4], width: '80px' },
+                    { targets: [5], width: '180px' },
+                    { className: "text-center", targets: "_all" }
+                ],
                 ajax: {
                     url: "{{ route('admin.schedular.current-jobs.index') }}",
                     data: function (d) {
@@ -802,97 +909,6 @@
                         }
                     },
                     { 
-                        data: 'internalNotes', 
-                        name: 'internalNotes',
-                        className: 'text-wrap',
-                        orderable: true,
-                        title: 'Notes',
-                        render: function(data, type, row) {
-                            return `<button type="button" class="btn btn-sm btn-outline-primary btn-view-comments" 
-                                           onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${data.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${row.carrierNo || ''}')">
-                                        <i class="fas fa-eye me-1"></i>View
-                                    </button>`;
-                        }
-                    },
-                    // { 
-                    //     data: 'collectionCheckIn', 
-                    //     name: 'collectionCheckIn',
-                    //     className: 'text-nowrap text-center',
-                    //     orderable: false,
-                    //     title: 'Collection Check-In',
-                    //     render: function(data, type, row) {
-                    //         if (data === true || data === 1) {
-                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Collection Completed">`;
-                    //         } else {
-                    //             return `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" title="Collection Check-In" class="row-icons">`;
-                    //         }
-                    //     }
-                    // },
-                    // { 
-                    //     data: 'driverConfirmedETA', 
-                    //     name: 'driverConfirmedETA',
-                    //     className: 'text-nowrap text-center',
-                    //     orderable: false,
-                    //     title: 'Driver Confirmed',
-                    //     render: function(data, type, row) {
-                    //         if (data === true || data === 1) {
-                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Completed" class="row-icons" title="Driver Confirmed">`;
-                    //         } else {
-                    //             // Check if collection check-in is completed
-                    //             let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
-                    //             let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                    //             let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
-                                
-                    //             return `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" title="Driver Confirmed ETA" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                    //         }
-                    //     }
-                    // },
-                    // { 
-                    //     data: 'midpointCheckComplete', 
-                    //     name: 'midpointCheckComplete',
-                    //     className: 'text-nowrap text-center',
-                    //     orderable: false,
-                    //     title: 'Mid-Point Check',
-                    //     render: function(data, type, row) {
-                    //         if (data === true || data === 1) {
-                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Complete" class="row-icons" title="Mid-Point Check Completed">`;
-                    //         } else {
-                    //             // Check if driver ETA is confirmed
-                    //             let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                    //             let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                    //             let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
-                                
-                    //             return `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" title="Mid-Point Check" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                    //         }
-                    //     }
-                    // },
-                    // { 
-                    //     data: 'delivered', 
-                    //     name: 'delivered',
-                    //     className: 'text-nowrap text-center',
-                    //     orderable: false,
-                    //     title: 'Delivered',
-                    //     render: function(data, type, row) {
-                    //         // Convert to number for proper comparison
-                    //         const deliveredStatus = parseInt(data);
-                            
-                    //         // Check if delivered is set
-                    //         if (deliveredStatus === 1) {
-                    //             return `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" title="Delivered">`;
-                    //         } else if (data === null || data === undefined || data === '' || isNaN(deliveredStatus)) {
-                    //             // Check if driver ETA is confirmed to enable button
-                    //             let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                    //             let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                    //             let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')"`;
-                                
-                    //             return `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" title="Mark Delivered" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                    //         } else {
-                    //             // Fallback for unexpected values
-                    //             return `<span class="badge bg-secondary">Unknown (${data})</span>`;
-                    //         }
-                    //     }
-                    // }
-                    { 
                         data: null, 
                         name: 'actions',
                         className: 'text-center',
@@ -901,49 +917,60 @@
                         width: '200px', // Adjust width as needed
                         render: function(data, type, row) {
                             let actions = '';
+
+                            // NEW: View Notes button
+                            let safeNotes = (row.internalNotes || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
+                            actions += `<img src="{{ asset('assets/admin/img/icons/view.png') }}" 
+                                            alt="View" 
+                                            class="row-icons" 
+                                            style="cursor: pointer;" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="bottom" 
+                                            data-bs-title="View More Details"
+                                            onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${safeNotes}\`, '${row.carrierNo || ''}')">`;
                             
                             // Collection Check-In
                             if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Collection Completed" class="row-icons" title="Collection Check-in Completed">`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Collection Completed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in Completed">`;
                             } else {
-                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" title="Click to perform Collection Check-in" class="row-icons" style="cursor: pointer;">`;
+                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Click to perform Collection Check-in" class="row-icons" style="cursor: pointer;">`;
                             }
                             
                             // Driver Confirmed ETA
                             if (row.driverConfirmedETA === true || row.driverConfirmedETA === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Driver Confirmed" class="row-icons" title="Driver ETA Confirmed">`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Driver Confirmed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Driver ETA Confirmed">`;
                             } else {
                                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
                                 let tooltip = isDisabled ? "Complete Collection Check-in first" : "Click to confirm Driver ETA";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
                                 
-                                actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
                             
                             // Mid-Point Check
                             if (row.midpointCheckComplete === true || row.midpointCheckComplete === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Mid-Point Complete" class="row-icons" title="Mid-Point Check Completed">`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Mid-Point Complete" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Mid-Point Check Completed">`;
                             } else {
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
                                 let tooltip = isDisabled ? "Complete Driver ETA first" : "Click to mark Mid-Point Check complete";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
                                 
-                                actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             }
                             
                             // Delivered
                             const deliveredStatus = parseInt(row.delivered);
                             if (deliveredStatus === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" title="Delivered">`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Delivered">`;
                             } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
                                 let tooltip = isDisabled ? "Complete Driver ETA first" : "Click to mark as delivered";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered')"`;
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered', ${row.midpointCheckComplete ? 'true' : 'false'})"`;
                                 
-                                actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                                actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
                             } else {
                                 actions += `<span class="badge bg-secondary">Unknown (${row.delivered})</span>`;
                             }
@@ -952,15 +979,146 @@
                         }
                     }
                 ],
+                // columns: [
+                //     { 
+                //         data: 'orderNo', 
+                //         name: 'orderNo',
+                //         className: 'text-center',
+                //         orderable: true,
+                //         title: 'Order No',
+                //         width: '90px',
+                //         render: function(data, type, row) {
+                //             return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
+                //         }
+                //     },
+                //     { 
+                //         data: 'collectionTime', 
+                //         name: 'collectionTime',
+                //         className: 'text-center',
+                //         orderable: true,
+                //         title: 'Collection',
+                //         width: '80px',
+                //         render: function(data, type, row) {
+                //             return data ? data : '-';
+                //         }
+                //     },
+                //     { 
+                //         data: 'departureTime', 
+                //         name: 'departureTime',
+                //         className: 'text-center',
+                //         orderable: true,
+                //         title: 'Loaded',
+                //         width: '80px',
+                //         render: function(data, type, row) {
+                //             return data ? data : '<span class="text-muted">Pending</span>';
+                //         }
+                //     },
+                //     { 
+                //         data: 'deliveryTime', 
+                //         name: 'deliveryTime',
+                //         className: 'text-center',
+                //         orderable: true,
+                //         title: 'ETA',
+                //         width: '80px',
+                //         render: function(data, type, row) {
+                //             return data ? data : '-';
+                //         }
+                //     },
+                //     { 
+                //         data: 'midpointCheck', 
+                //         name: 'midpointCheck',
+                //         className: 'text-center',
+                //         orderable: true,
+                //         title: 'Mid-Point',
+                //         width: '80px',
+                //         render: function(data, type, row) {
+                //             return data ? data : '-';
+                //         }
+                //     },
+                //     { 
+                //         data: null, 
+                //         name: 'actions',
+                //         className: 'text-center',
+                //         orderable: false,
+                //         title: 'Actions',
+                //         width: '180px',
+                //         render: function(data, type, row) {
+                //             let actions = '';
+
+                //             // View Notes button
+                //             let safeNotes = (row.internalNotes || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
+                //             actions += `<img src="{{ asset('assets/admin/img/icons/view.png') }}" 
+                //                             alt="View" 
+                //                             class="row-icons" 
+                //                             style="cursor: pointer;" 
+                //                             data-bs-toggle="tooltip" 
+                //                             data-bs-placement="top" 
+                //                             data-bs-title="View Details"
+                //                             onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${safeNotes}\`, '${row.carrierNo || ''}')">`;
+                            
+                //             // Collection Check-In
+                //             if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Collection Done">`;
+                //             } else {
+                //                 actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Collection Check-in" class="row-icons" style="cursor: pointer;">`;
+                //             }
+                            
+                //             // Driver Confirmed ETA
+                //             if (row.driverConfirmedETA === true || row.driverConfirmedETA === 1) {
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Driver Confirmed">`;
+                //             } else {
+                //                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
+                //                 let tooltip = isDisabled ? "Collection first" : "Confirm ETA";
+                //                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                //                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA', ${row.id}, 'driver-eta')"`;
+                                
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="ETA" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                //             }
+                            
+                //             // Mid-Point Check
+                //             if (row.midpointCheckComplete === true || row.midpointCheckComplete === 1) {
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Mid-Point Done">`;
+                //             } else {
+                //                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                //                 let tooltip = isDisabled ? "ETA first" : "Mid-Point";
+                //                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                //                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point', ${row.id}, 'midpoint-check')"`;
+                                
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mid-Point" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                //             }
+                            
+                //             // Delivered
+                //             const deliveredStatus = parseInt(row.delivered);
+                //             if (deliveredStatus === 1) {
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delivered">`;
+                //             } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
+                //                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                //                 let tooltip = isDisabled ? "ETA first" : "Deliver";
+                //                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                //                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery', ${row.id}, 'delivered')"`;
+                                
+                //                 actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Deliver" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                //             }
+                            
+                //             return actions;
+                //         }
+                //     }
+                // ],
                 initComplete: function() {
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
+                    // Force table layout
+                    $('#datatable').css('table-layout', 'fixed');
                 },
                 drawCallback: function(settings) {
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
+                    // Re-initialize tooltips
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+                    // Force table layout
+                    $('#datatable').css('table-layout', 'fixed');
                 }
             });
 
@@ -1034,11 +1192,10 @@
         }
 
         // Updated confirmAction function with special delivery handling
-        function confirmAction(actionName, orderId, actionType) {
-            
+        function confirmAction(actionName, orderId, actionType, midpointComplete = false) {
             // Special handling for delivery action
             if (actionType === 'delivered') {
-                showDeliveryPopup(orderId);
+                showDeliveryPopup(orderId, midpointComplete);
                 return;
             }
             
@@ -1060,10 +1217,43 @@
         }
 
         // Special popup for delivery with 3 options
-        function showDeliveryPopup(orderId) {
+        // function showDeliveryPopup(orderId) {
+        //     Swal.fire({
+        //         title: 'Delivery Status',
+        //         text: 'Are you sure the item has been delivered?',
+        //         icon: 'question',
+        //         showCancelButton: true,
+        //         confirmButtonText: 'Yes',
+        //         cancelButtonText: 'No',
+        //         confirmButtonColor: '#28a745',
+        //         cancelButtonColor: '#dc3545',
+        //         reverseButtons: true
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             // "Not Required" - Set delivered = 1
+        //             processAction(orderId, 'delivered', { deliveredStatus: 1 });
+        //         } 
+        //     });
+        // }
+
+        function showDeliveryPopup(orderId, midpointComplete) {
+            let title, text;
+            console.log(orderId);
+            console.log(midpointComplete);
+            
+            if (midpointComplete === 'true' || midpointComplete === true) {
+                // Mid-point check is TICKED
+                title = 'Delivery Status';
+                text = 'Are you sure the item has been delivered?';
+            } else {
+                // Mid-point check is NOT TICKED
+                title = 'Continue Without Mid-Point Check?';
+                text = 'Do you wish to continue without mid-point check complete?';
+            }
+            
             Swal.fire({
-                title: 'Delivery Status',
-                text: 'Are you sure the item has been delivered?',
+                title: title,
+                text: text,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Yes',
@@ -1073,7 +1263,6 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // "Not Required" - Set delivered = 1
                     processAction(orderId, 'delivered', { deliveredStatus: 1 });
                 } 
             });
