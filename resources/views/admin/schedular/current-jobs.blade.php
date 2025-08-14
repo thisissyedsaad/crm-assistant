@@ -1210,31 +1210,8 @@
             });
         }
 
-        // Special popup for delivery with 3 options
-        // function showDeliveryPopup(orderId) {
-        //     Swal.fire({
-        //         title: 'Delivery Status',
-        //         text: 'Are you sure the item has been delivered?',
-        //         icon: 'question',
-        //         showCancelButton: true,
-        //         confirmButtonText: 'Yes',
-        //         cancelButtonText: 'No',
-        //         confirmButtonColor: '#28a745',
-        //         cancelButtonColor: '#dc3545',
-        //         reverseButtons: true
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             // "Not Required" - Set delivered = 1
-        //             processAction(orderId, 'delivered', { deliveredStatus: 1 });
-        //         } 
-        //     });
-        // }
-
         function showDeliveryPopup(orderId, midpointComplete) {
             let title, text;
-            console.log(orderId);
-            console.log(midpointComplete);
-            
             if (midpointComplete === 'true' || midpointComplete === true) {
                 // Mid-point check is TICKED
                 title = 'Delivery Status';

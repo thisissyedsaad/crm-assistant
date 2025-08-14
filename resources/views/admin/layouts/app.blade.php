@@ -157,6 +157,187 @@
           right: 10px !important;
         }
       }
+
+
+
+
+
+
+
+/* Add this CSS to your existing style section */
+
+/* Enhanced Notification Badge */
+.notification-badge {
+    position: absolute !important;
+    top: -8px !important;
+    right: -8px !important;
+    background: #ff4757 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    min-width: 18px !important;
+    text-align: center !important;
+    animation: notificationPulse 2s infinite !important;
+    z-index: 10 !important;
+}
+
+@keyframes notificationPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Notification Loading State */
+.notification-loading {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+}
+
+.notification-loading i {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Dynamic Notification Items */
+.dynamic-notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+.dynamic-notification-item:hover {
+    background-color: #f8f9fa !important;
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+.dynamic-notification-item:last-child {
+    border-bottom: none;
+}
+
+.dynamic-notification-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.dynamic-notification-icon.danger {
+    background: linear-gradient(135deg, #ff4757, #ff3742);
+}
+
+.dynamic-notification-icon.warning {
+    background: linear-gradient(135deg, #ffa502, #ff6348);
+}
+
+.dynamic-notification-icon.info {
+    background: linear-gradient(135deg, #3742fa, #2f3542);
+}
+
+.dynamic-notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dynamic-notification-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+    margin: 0 0 4px 0;
+}
+
+.dynamic-notification-message {
+    font-size: 12px;
+    color: #666;
+    margin: 0 0 4px 0;
+    line-height: 1.4;
+}
+
+.dynamic-notification-meta {
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Empty State */
+.notification-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.notification-empty i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* Notification Footer */
+.notification-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #f0f0f0;
+    text-align: center;
+}
+
+/* Time Display */
+.notification-time {
+    font-size: 10px;
+    color: #666;
+    margin-left: 10px;
+}
+
+/* Notification Count in Header */
+#notificationCount {
+    background: #007bff;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Scrollbar for notifications box */
+.notifications-box {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.notifications-box::-webkit-scrollbar {
+    width: 4px;
+}
+
+.notifications-box::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.notifications-box::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 2px;
+}
+
+.notifications-box::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}      
     </style>
     
     @stack('links')
@@ -249,81 +430,35 @@
             </div>
 
             <!-- Top Bar Nav -->
+         <!-- Top Bar Nav -->
             <ul class="right-side-content d-flex align-items-center">
               <li class="nav-item dropdown">
-                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="notificationBell">
                   <i class="bx bx-bell bx-tada"></i>
-                  <span class="active-status"></span>
+                  <span class="active-status notification-badge" id="notificationBadge" style="display: none;">0</span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-right">
+                <div class="dropdown-menu dropdown-menu-right" id="notificationDropdown">
                   <div class="top-notifications-area">
                     <div class="notifications-heading">
                       <div class="heading-title">
                         <h6>Notifications</h6>
                       </div>
-                      <span>11</span>
+                      <span id="notificationCount">0</span>
+                      <small class="notification-time" id="lastUpdated" style="font-size: 10px; color: #fff; margin-left: 10px;">Just now</small>
                     </div>
 
                     <div class="notifications-box" id="notificationsBox">
-                      <a href="#" class="dropdown-item">
-                        <i class="bx bx-shopping-bag"></i>
-                        <div>
-                          <span>Your order is placed</span>
-                          <p class="mb-0 font-12">
-                            Consectetur adipisicing elit. Ipsa, porro!
-                          </p>
-                        </div>
-                      </a>
+                      <!-- Dynamic notifications will be loaded here -->
+                      <div class="notification-loading" style="text-align: center; padding: 30px 20px; color: #666;">
+                        <i class="bx bx-loader-alt bx-spin" style="font-size: 1.5rem; margin-bottom: 10px; display: block;"></i>
+                        <span>Loading notifications...</span>
+                      </div>
+                    </div>
 
-                      <a href="#" class="dropdown-item">
-                        <i class="bx bx-wallet-alt"></i>
-                        <div>
-                          <span>Haslina Obeta</span>
-                          <p class="mb-0 font-12">
-                            Consectetur adipisicing elit. Ipsa, porro!
-                          </p>
-                        </div>
-                      </a>
-
-                      <a href="#" class="dropdown-item">
-                        <i class="bx bx-dollar-circle"></i>
-                        <div>
-                          <span>Your order is Dollar</span>
-                          <p class="mb-0 font-12">
-                            Consectetur adipisicing elit. Ipsa, porro!
-                          </p>
-                        </div>
-                      </a>
-
-                      <a href="#" class="dropdown-item">
-                        <i class="bx bx-wallet-alt"></i>
-                        <div>
-                          <span>Haslina Obeta</span>
-                          <p class="mb-0 font-12">
-                            Consectetur adipisicing elit. Ipsa, porro!
-                          </p>
-                        </div>
-                      </a>
-
-                      <a href="#" class="dropdown-item">
-                        <i class="bx bx-border-all"></i>
-                        <div>
-                          <span>Your order is placed</span>
-                          <p class="mb-0 font-12">
-                            Consectetur adipisicing elit. Ipsa, porro!
-                          </p>
-                        </div>
-                      </a>
-                      
-                      <a href="#" class="dropdown-item">
-                        <i class="bx bx-wallet-alt"></i>
-                        <div>
-                          <span>Haslina Obeta</span>
-                          <p class="mb-0 font-12">
-                            Consectetur adipisicing elit. Ipsa, porro!
-                          </p>
-                        </div>
-                      </a>
+                    <div class="notification-footer" style="padding: 10px 15px; border-top: 1px solid #f0f0f0; text-align: center;">
+                      <button class="btn btn-sm btn-outline-primary" onclick="refreshNotifications()" style="font-size: 22px; background: #0652dd !important; color: #fff;">
+                        <i class="bx bx-sync"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -485,6 +620,168 @@
           }
         });
       });
+
+
+// Add this JavaScript to your existing script section
+
+// Notification System Variables
+let notificationInterval;
+
+// Initialize notification system when document is ready
+$(document).ready(function() {
+      // Prevent dropdown from closing when clicking inside
+    $('#notificationDropdown').on('click', function(e) {
+        e.stopPropagation();
+    });
+
+    initializeNotifications();
+});
+
+function initializeNotifications() {
+    // Initial load
+    fetchNotifications();
+    
+    // Set up auto-refresh every 30 seconds
+    notificationInterval = setInterval(fetchNotifications, 30000);
+    
+    // Refresh notifications when dropdown is opened
+    $('#notificationBell').on('click', function() {
+        setTimeout(fetchNotifications, 100); // Small delay to let dropdown open
+    });
+}
+
+function fetchNotifications() {
+    $.ajax({
+        url: '/admin/schedular/current-jobs/get-notifications',
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(response) {
+            if (response.success) {
+                updateNotificationUI(response);
+            } else {
+                console.error('Failed to fetch notifications:', response.error);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Notification fetch error:', error);
+            showNotificationError();
+        }
+    });
+}
+
+function updateNotificationUI(data) {
+    const badge = $('#notificationBadge');
+    const count = $('#notificationCount');
+    const box = $('#notificationsBox');
+    const lastUpdated = $('#lastUpdated');
+    
+    // Update badge count
+    if (data.total_count > 0) {
+        badge.text(data.total_count).show();
+        count.text(data.total_count);
+    } else {
+        badge.hide();
+        count.text('0');
+    }
+    
+    // Update last updated time
+    lastUpdated.text('Updated: ' + data.last_updated);
+    
+    // Update notification body
+    if (data.notifications.length > 0) {
+        let html = '';
+        data.notifications.forEach(function(notification) {
+            html += buildNotificationItem(notification);
+        });
+        box.html(html);
+    } else {
+        box.html(`
+            <div class="notification-empty">
+                <i class="bx bx-check-circle"></i>
+                <p style="margin: 10px 0 5px 0; font-weight: 600;">All Clear!</p>
+                <small>No overdue items at the moment</small>
+            </div>
+        `);
+    }
+}
+
+function buildNotificationItem(notification) {
+    return `
+        <a href="#" class="dynamic-notification-item" onclick="goToOrder('${notification.order_id}', '${notification.order_no}'); return false;">
+            <div class="dynamic-notification-icon ${notification.color}">
+                <i class="bx ${notification.icon}"></i>
+            </div>
+            <div class="dynamic-notification-content">
+                <div class="dynamic-notification-title">${notification.title}</div>
+                <div class="dynamic-notification-message">${notification.message}</div>
+                <div class="dynamic-notification-meta">
+                    <span style="color: #ff4757; font-weight: 600;">Overdue by ${notification.overdue_by}</span>
+                    <span>${notification.time}</span>
+                </div>
+            </div>
+        </a>
+    `;
+}
+
+function refreshNotifications() {
+    $('#notificationsBox').html(`
+        <div class="notification-loading">
+            <i class="bx bx-loader-alt bx-spin"></i>
+            <span>Refreshing notifications...</span>
+        </div>
+    `);
+    fetchNotifications();
+}
+
+function showNotificationError() {
+    $('#notificationsBox').html(`
+        <div class="notification-empty">
+            <i class="bx bx-error-circle" style="color: #ff4757;"></i>
+            <p style="margin: 10px 0 5px 0; font-weight: 600;">Connection Error</p>
+            <small>Failed to load notifications</small>
+        </div>
+    `);
+}
+
+function goToOrder(orderId, orderNo) {
+    // Close the dropdown
+    $('.dropdown-toggle').dropdown('hide');
+    
+    // Show notification that order was selected
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Order Selected',
+            text: `Order #${orderNo} is overdue - check Current Jobs page`,
+            icon: 'warning',
+            timer: 3000,
+            showConfirmButton: true,
+            confirmButtonText: 'Go to Current Jobs',
+            confirmButtonColor: '#007bff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to current jobs page
+                window.location.href = '{{ route("admin.schedular.current-jobs.index") }}';
+            }
+        });
+    } else {
+        // Fallback if SweetAlert is not available
+        alert(`Order #${orderNo} is overdue - please check the Current Jobs page`);
+        window.location.href = '{{ route("admin.schedular.current-jobs.index") }}';
+    }
+}
+
+// Clean up interval when page unloads
+window.addEventListener('beforeunload', function() {
+    if (notificationInterval) {
+        clearInterval(notificationInterval);
+    }
+});
+
+
+
     </script>
 
     @stack('scripts')

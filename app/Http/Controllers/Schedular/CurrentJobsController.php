@@ -101,7 +101,7 @@ class CurrentJobsController extends Controller
                             $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                             
                             if ($deliveryTime->diffInHours($collectionTime) >=2) {
-                                $midpointCheck = $collectionTime->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
+                                $midpointCheck = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
                             }
                         } catch (\Exception $e) {
                             $midpointCheck = null;
@@ -292,8 +292,8 @@ class CurrentJobsController extends Controller
             $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
             
             if ($deliveryTime->diffInHours($collectionTime) >= 2) {
-                // $midpointTime = $collectionTime->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
-                $midpointTime = $collectionTime->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
+                // $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
+                $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
                 return $midpointTime;
             }
             return false;
@@ -736,6 +736,190 @@ class CurrentJobsController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Could not fetch order count'
+            ], 500);
+        }
+    }
+
+    public function getNotifications(Request $request)
+    {
+        try {
+            $client = new Client();
+            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiKey = env('TRANSPORT_API_KEY');
+
+            // Get sorting parameters
+            $apiQuery['sort'] = '-orderNo';
+
+            $response = $client->get($apiUrl . 'orders', [
+                'headers' => [
+                    'Authorization' => 'Basic ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'Accept'        => 'application/json',
+                ],
+                'query' => $apiQuery,
+            ]);
+
+            $res = json_decode($response->getBody()->getContents(), true);
+            $records = collect($res['data'] ?? []);
+
+            // Filter for recent orders (not just today)
+            $orders = $records->filter(function($order) {
+                $destinations = $order['attributes']['destinations'] ?? [];
+                $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                $status = $order['attributes']['status'] ?? '';
+                
+                // Include orders from last few days that are not quotes/pending
+                return $pickup && 
+                    isset($pickup['date']) && 
+                    Carbon::parse($pickup['date'])->gte(Carbon::now()->subDays(3)) && // Last 3 days
+                    !in_array($status, ['pending-acceptation', 'quote']);
+            });
+
+            $currentTime = Carbon::now();
+            $notifications = [];
+            $totalCount = 0;
+
+            foreach ($orders as $order) {
+                $destinations = $order['attributes']['destinations'] ?? [];
+                $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
+                $orderNo = $order['attributes']['orderNo'] ?? 'Unknown';
+
+                // Check if this order is already completed
+                $tracking = CurrentJobsTracking::where('order_id', $order['id'])->first();
+                if ($tracking && $tracking->status === 'completed') {
+                    continue; // Skip completed orders
+                }
+
+                // Check Collections Overdue (ANY DATE in the past)
+                if ($pickup && isset($pickup['departureTime']) && isset($pickup['date'])) {
+                    try {
+                        $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
+                        if ($currentTime->greaterThan($departureDateTime)) {
+                            // Only show if collection is not checked in yet
+                            if (!$tracking || !$tracking->collection_checked_in) {
+                                $overdueHours = $currentTime->diffInHours($departureDateTime);
+                                $overdueMinutes = $currentTime->diffInMinutes($departureDateTime);
+                                
+                                $overdueText = $overdueHours > 24 ? 
+                                    floor($overdueHours / 24) . ' days' : 
+                                    ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
+
+                                $notifications[] = [
+                                    'type' => 'collection_overdue',
+                                    'title' => 'Collection Overdue',
+                                    'message' => "Order #{$orderNo} collection was due {$pickup['date']} at {$pickup['departureTime']}",
+                                    'time' => Carbon::parse($pickup['date'])->format('M d'),
+                                    'overdue_by' => $overdueText,
+                                    'order_id' => $order['id'],
+                                    'order_no' => $orderNo,
+                                    'icon' => 'bx-time-five',
+                                    'color' => 'danger',
+                                    'priority' => $overdueMinutes // For sorting
+                                ];
+                                $totalCount++;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip if date parsing fails
+                    }
+                }
+
+                // Check Deliveries Overdue (ANY DATE in the past)
+                if ($delivery && isset($delivery['toTime']) && isset($delivery['date'])) {
+                    try {
+                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
+                        if ($currentTime->greaterThan($deliveryDateTime)) {
+                            // Only show if not delivered yet
+                            if (!$tracking || !$tracking->delivered) {
+                                $overdueHours = $currentTime->diffInHours($deliveryDateTime);
+                                $overdueMinutes = $currentTime->diffInMinutes($deliveryDateTime);
+                                
+                                $overdueText = $overdueHours > 24 ? 
+                                    floor($overdueHours / 24) . ' days' : 
+                                    ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
+
+                                $notifications[] = [
+                                    'type' => 'delivery_overdue',
+                                    'title' => 'Delivery Overdue',
+                                    'message' => "Order #{$orderNo} delivery was due {$delivery['date']} at {$delivery['toTime']}",
+                                    'time' => Carbon::parse($delivery['date'])->format('M d'),
+                                    'overdue_by' => $overdueText,
+                                    'order_id' => $order['id'],
+                                    'order_no' => $orderNo,
+                                    'icon' => 'bx-truck',
+                                    'color' => 'warning',
+                                    'priority' => $overdueMinutes // For sorting
+                                ];
+                                $totalCount++;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip if date parsing fails
+                    }
+                }
+
+                // Check Mid-Point Check Overdue (ANY DATE in the past)
+                if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
+                    try {
+                        $collectionTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                        $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                        
+                        // Only if journey is 2+ hours
+                        if ($deliveryTime->diffInHours($collectionTime) >= 2) {
+                            $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
+                            
+                            if ($currentTime->greaterThan($midpointTime)) {
+                                // Check if midpoint check is already completed
+                                if (!$tracking || !$tracking->midpoint_check_completed) {
+                                    $overdueHours = $currentTime->diffInHours($midpointTime);
+                                    $overdueMinutes = $currentTime->diffInMinutes($midpointTime);
+                                    
+                                    $overdueText = $overdueHours > 24 ? 
+                                        floor($overdueHours / 24) . ' days' : 
+                                        ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
+
+                                    $notifications[] = [
+                                        'type' => 'midpoint_overdue',
+                                        'title' => 'Mid-Point Check Overdue',
+                                        'message' => "Order #{$orderNo} mid-point check was due {$pickup['date']} at {$midpointTime->format('H:i')}",
+                                        'time' => Carbon::parse($pickup['date'])->format('M d'),
+                                        'overdue_by' => $overdueText,
+                                        'order_id' => $order['id'],
+                                        'order_no' => $orderNo,
+                                        'icon' => 'bx-clipboard',
+                                        'color' => 'info',
+                                        'priority' => $overdueMinutes // For sorting
+                                    ];
+                                    $totalCount++;
+                                }
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip if date parsing fails
+                    }
+                }
+            }
+
+            // Sort notifications by priority (most overdue first)
+            // $notifications = collect($notifications)->sortByDesc('priority')->take(20)->values();
+            $notifications = collect($notifications)->sortBy('priority')->take(20)->values();
+
+
+            return response()->json([
+                'success' => true,
+                'total_count' => $totalCount,
+                'notifications' => $notifications,
+                'last_updated' => Carbon::now()->format('H:i:s')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Notification fetch error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'total_count' => 0,
+                'notifications' => [],
+                'error' => 'Failed to fetch notifications'
             ], 500);
         }
     }
