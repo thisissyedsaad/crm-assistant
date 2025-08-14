@@ -927,7 +927,7 @@
                             if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
                                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Collection Completed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in Completed">`;
                             } else {
-                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Click to perform Collection Check-in" class="row-icons" style="cursor: pointer;">`;
+                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in" class="row-icons" style="cursor: pointer;">`;
                             }
                             
                             // Driver Confirmed ETA
@@ -935,7 +935,7 @@
                                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Driver Confirmed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Driver ETA Confirmed">`;
                             } else {
                                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
-                                let tooltip = isDisabled ? "Complete Collection Check-in first" : "Click to confirm Driver ETA";
+                                let tooltip = isDisabled ? "Complete Collection Check-in" : "Confirm Driver ETA";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
                                 
@@ -947,7 +947,7 @@
                                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Mid-Point Complete" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Mid-Point Check Completed">`;
                             } else {
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                                let tooltip = isDisabled ? "Complete Driver ETA first" : "Click to mark Mid-Point Check complete";
+                                let tooltip = isDisabled ? "Complete Driver ETA" : "Mark Mid-Point check complete";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
                                 
@@ -960,7 +960,7 @@
                                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Delivered">`;
                             } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
                                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                                let tooltip = isDisabled ? "Complete Driver ETA first" : "Click to mark as delivered";
+                                let tooltip = isDisabled ? "Complete Driver ETA" : "Mark as delivered";
                                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
                                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered', ${row.midpointCheckComplete ? 'true' : 'false'})"`;
                                 
