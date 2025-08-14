@@ -464,12 +464,6 @@
         padding: 2px 8px;
         font-size: 12px;
     }
-    .row-icons {
-        width: 30px; 
-        height: 30px; 
-        margin: 0 12px; /* Small margin between icons */
-        display: inline-block;
-    }
 
     /* Actions column specific styling */
     td:last-child {
@@ -533,7 +527,7 @@
     .row-icons {
         width: 24px !important; 
         height: 24px !important; 
-        margin: 0 1px !important;
+        margin: 0 12px !important;
         display: inline-block;
         vertical-align: middle;
     }
