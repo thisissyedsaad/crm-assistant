@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Schedular\CurrentJobsController;
 use App\Http\Controllers\Schedular\CompletedJobsController;
+use App\Http\Controllers\TrainingController;
 use Illuminate\Support\Facades\Artisan;
 
 /*
@@ -77,5 +78,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // Insert this near your other CurrentJobsController routes
     });
 
+    Route::resource('staff-training', TrainingController::class);
 });
 require __DIR__.'/auth.php';
