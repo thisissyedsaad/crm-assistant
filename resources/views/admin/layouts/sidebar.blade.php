@@ -65,11 +65,11 @@
                 Completed Jobs
               </a>
             </li> -->
-            <li class="">
+            <!-- <li class="">
               <a href="" class="">
                 Notifications
               </a>
-            </li>
+            </li> -->
           </ul>
         </li>
         @endif

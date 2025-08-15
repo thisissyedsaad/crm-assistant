@@ -879,10 +879,11 @@ class CurrentJobsController extends Controller
                                         floor($overdueHours / 24) . ' days' : 
                                         ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
+                                    $pickupDateFormatted = \Carbon\Carbon::parse($pickup['date'])->format('d-m-Y');
                                     $notifications[] = [
                                         'type' => 'midpoint_overdue',
                                         'title' => 'Mid-Point Check Overdue',
-                                        'message' => "Order #{$orderNo} mid-point check was due {$pickup['date']} at {$midpointTime->format('H:i')}",
+                                        'message' => "Order #{$orderNo} mid-point check was due {$pickupDateFormatted} at {$midpointTime->format('H:i')}",
                                         'time' => Carbon::parse($pickup['date'])->format('M d'),
                                         'overdue_by' => $overdueText,
                                         'order_id' => $order['id'],
