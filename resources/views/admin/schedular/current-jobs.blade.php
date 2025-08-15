@@ -849,8 +849,8 @@
                         d.filterType = window.currentFilter; // Add filter parameter
                     }
                 },
-                pageLength: 10,
-                lengthMenu: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                pageLength: 50,
+                lengthMenu: [[50, 60, 70, 80, 90, 100], [50, 60, 70, 80, 90, 100]],
                 columns: [
                     { 
                         data: 'orderNo', 

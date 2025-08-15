@@ -147,7 +147,7 @@ class CurrentJobsController extends Controller
                         'delivered' => $tracking ? $tracking->delivered : null,
                         
                         // Add computed fields for filtering
-                        'isCollectionOverdue' => $this->isCollectionOverdue($pickup),
+                        'isCollectionOverdue' => $this->isCollectionOverdue($pickup, $row['attributes']['orderNo']),
                         'isDeliveryOverdue' => $this->isDeliveryOverdue($delivery),
                         'isMidpointOverdue' => $this->isMidpointOverdue($pickup, $delivery),
                         'isDelivered' => $tracking && $tracking->status === 'completed',
@@ -253,15 +253,18 @@ class CurrentJobsController extends Controller
     }
 
     // NEW: Helper methods for filtering logic
-    private function isCollectionOverdue($pickup)
+    private function isCollectionOverdue($pickup, $orderId)
     {
         if (!$pickup || !isset($pickup['departureTime']) || $pickup['date'] !== date('Y-m-d')) {
             return false;
         }
 
         try {
+            $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
             $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
-            return Carbon::now()->greaterThan($departureDateTime);
+            if (!$tracking || !$tracking->driver_eta_confirmed) {
+                return Carbon::now()->greaterThan($departureDateTime);
+            }
         } catch (\Exception $e) {
             return false;
         }
@@ -373,13 +376,16 @@ class CurrentJobsController extends Controller
                 $destinations = $order['attributes']['destinations'] ?? [];
                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
                 $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
+                $tracking = CurrentJobsTracking::where('order_id', $order['id'])->first();
 
                 // Check collections overdue
                 if ($pickup && isset($pickup['departureTime']) && $pickup['date'] === $currentDate) {
                     try {
                         $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
                         if ($currentTime->greaterThan($departureDateTime)) {
-                            $collectionsOverdue++;
+                            if (!$tracking || !$tracking->driver_eta_confirmed) {
+                                $collectionsOverdue++;
+                            }
                         }
                     } catch (\Exception $e) {
                         // Skip if date/time parsing fails
@@ -797,7 +803,7 @@ class CurrentJobsController extends Controller
                         $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
                         if ($currentTime->greaterThan($departureDateTime)) {
                             // Only show if collection is not checked in yet
-                            if (!$tracking || !$tracking->collection_checked_in) {
+                            if (!$tracking || !$tracking->driver_eta_confirmed) {
                                 $overdueHours = $currentTime->diffInHours($departureDateTime);
                                 $overdueMinutes = $currentTime->diffInMinutes($departureDateTime);
                                 
@@ -805,10 +811,11 @@ class CurrentJobsController extends Controller
                                     floor($overdueHours / 24) . ' days' : 
                                     ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
+                                $dateFormatted = \Carbon\Carbon::parse($pickup['date'])->format('d/m/Y');
                                 $notifications[] = [
                                     'type' => 'collection_overdue',
                                     'title' => 'Collection Overdue',
-                                    'message' => "Order #{$orderNo} collection was due {$pickup['date']} at {$pickup['departureTime']}",
+                                    'message' => "Order #{$orderNo} collection was due {$dateFormatted} at {$pickup['departureTime']}",
                                     'time' => Carbon::parse($pickup['date'])->format('M d'),
                                     'overdue_by' => $overdueText,
                                     'order_id' => $order['id'],
@@ -839,10 +846,11 @@ class CurrentJobsController extends Controller
                                     floor($overdueHours / 24) . ' days' : 
                                     ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
+                                $dateFormatted = \Carbon\Carbon::parse($delivery['date'])->format('d/m/Y');
                                 $notifications[] = [
                                     'type' => 'delivery_overdue',
                                     'title' => 'Delivery Overdue',
-                                    'message' => "Order #{$orderNo} delivery was due {$delivery['date']} at {$delivery['toTime']}",
+                                    'message' => "Order #{$orderNo} delivery was due {$dateFormatted} at {$delivery['toTime']}",
                                     'time' => Carbon::parse($delivery['date'])->format('M d'),
                                     'overdue_by' => $overdueText,
                                     'order_id' => $order['id'],
@@ -879,11 +887,11 @@ class CurrentJobsController extends Controller
                                         floor($overdueHours / 24) . ' days' : 
                                         ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
-                                    $pickupDateFormatted = \Carbon\Carbon::parse($pickup['date'])->format('d-m-Y');
+                                    $dateFormatted = \Carbon\Carbon::parse($pickup['date'])->format('d/m/Y');
                                     $notifications[] = [
                                         'type' => 'midpoint_overdue',
                                         'title' => 'Mid-Point Check Overdue',
-                                        'message' => "Order #{$orderNo} mid-point check was due {$pickupDateFormatted} at {$midpointTime->format('H:i')}",
+                                        'message' => "Order #{$orderNo} mid-point check was due {$dateFormatted} at {$midpointTime->format('H:i')}",
                                         'time' => Carbon::parse($pickup['date'])->format('M d'),
                                         'overdue_by' => $overdueText,
                                         'order_id' => $order['id'],
