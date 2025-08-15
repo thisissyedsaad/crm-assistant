@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Schedular\CurrentJobsController;
 use App\Http\Controllers\Schedular\CompletedJobsController;
+use Illuminate\Support\Facades\Artisan;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,15 @@ use App\Http\Controllers\Schedular\CompletedJobsController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/optimize-clear', function () {
+    // Optional: require a secret key to avoid public access
+    if (request('key') !== 'csdCacheClear') {
+        abort(403, 'Unauthorized');
+    }
+    Artisan::call('optimize:clear');
+    return 'Application cache cleared successfully!';
+});
 
 
 Route::get('/', function () {
