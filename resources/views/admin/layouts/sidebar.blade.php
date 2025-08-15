@@ -72,6 +72,12 @@
             </li> -->
           </ul>
         </li>
+
+        <li class="{{ request()->routeIs('admin.trainings.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.trainings.index') }}" class="{{ request()->routeIs('admin.trainings.*') ? 'active' : '' }}">
+            <i class="bx bx-chalkboard"></i> Staff Training
+          </a>
+        </li>
         @endif
         
       </ul>

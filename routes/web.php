@@ -78,6 +78,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // Insert this near your other CurrentJobsController routes
     });
 
-    Route::resource('staff-training', TrainingController::class);
+    Route::resource('trainings', TrainingController::class);
 });
 require __DIR__.'/auth.php';
