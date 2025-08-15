@@ -56,57 +56,21 @@
             border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
-        /* Card Gradient Colors */
-        .stats-card.adr {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .stats-card.cancellations {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .stats-card.complaints {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        .stats-card.double-manned {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-
-        .stats-card.breakdown {
-            background: linear-gradient(135deg, #c20068 0%, #f9e738 100%);
-        }
-
-        .stats-card.driver-late {
-            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
-        }
-
-        .stats-card.duplicate-profiles {
-            background: linear-gradient(135deg, #a8e6cf 0%, #88d8a3 100%);
-        }
-
-        .stats-card.fragile-items {
-            background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
-        }
-
-        .stats-card.international-delivery {
-            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        }
-
-        .stats-card.potential-fraud {
-            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
-        }
-
-        .stats-card.upselling-handballing {
-            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
-        }
-
-        .stats-card.upselling-insurance {
-            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
-        }
-
+        /* Card Gradient Colors - All Blue */
+        .stats-card.adr,
+        .stats-card.cancellations,
+        .stats-card.complaints,
+        .stats-card.double-manned,
+        .stats-card.breakdown,
+        .stats-card.driver-late,
+        .stats-card.duplicate-profiles,
+        .stats-card.fragile-items,
+        .stats-card.international-delivery,
+        .stats-card.potential-fraud,
+        .stats-card.upselling-handballing,
+        .stats-card.upselling-insurance,
         .stats-card.upselling-waiting {
-            background: linear-gradient(135deg, #fd63a8 0%, #fc3da8 100%);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         }
         
         .stats-card .card-icon {
@@ -129,8 +93,8 @@
         }
         
         .stats-card .card-title {
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1.3rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
@@ -205,7 +169,7 @@
         }
 
         .adr-modal .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
             border: none;
             border-radius: 15px 15px 0 0;
@@ -263,7 +227,7 @@
             width: 24px;
             height: 24px;
             margin-right: 12px;
-            color: #667eea;
+            color: #007bff;
         }
 
         .adr-resource-card .resource-desc {
@@ -274,7 +238,7 @@
 
         .adr-resource-card .resource-link {
             font-size: 0.8rem;
-            color: #667eea;
+            color: #007bff;
             display: flex;
             align-items: center;
         }
@@ -283,7 +247,6 @@
             margin-left: 5px;
             font-size: 0.7rem;
         }
-
         .page-title {
             text-align: center;
             margin-bottom: 40px;
