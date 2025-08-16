@@ -92,13 +92,43 @@
             color: inherit !important;
         }
         
+        .stats-card .card-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            width: 100%;
+        }
+        
         .stats-card .card-title {
-            font-size: 1.3rem;
+            font-size: 0.9rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+            letter-spacing: 0.2px;
+            margin-bottom: 0;
             opacity: 0.95;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: calc(100% - 20px);
+            transition: all 0.3s ease;
+            line-height: 1;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: auto;
+            max-height: 60px;
+        }
+        
+        .stats-card:hover .card-title {
+            top: 30%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            max-height: 40px;
         }
         
         .stats-card .card-value {
@@ -106,17 +136,39 @@
         }
         
         .stats-card .card-subtitle {
-            font-size: 0.85rem;
-            opacity: 0.8;
+            font-size: 0.8rem;
+            opacity: 0;
             font-weight: 400;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            line-height: 1.3;
+        }
+        
+        .stats-card:hover .card-subtitle {
+            opacity: 0.85;
         }
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .stats-card {
-                padding: 20px;
+                padding: 15px;
                 margin-bottom: 15px;
                 height: 130px;
+            }
+            
+            .stats-card .card-title {
+                font-size: 0.7rem;
+                letter-spacing: 0.1px;
+                max-height: 50px;
+            }
+            
+            .stats-card:hover .card-title {
+                font-size: 0.65rem;
+                max-height: 35px;
             }
             
             .stats-card .card-value {
@@ -125,6 +177,31 @@
             
             .stats-card .card-icon {
                 font-size: 2.5rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .stats-card .card-title {
+                font-size: 0.8rem;
+                letter-spacing: 0.1px;
+                max-height: 55px;
+            }
+            
+            .stats-card:hover .card-title {
+                font-size: 0.7rem;
+                max-height: 38px;
+            }
+        }
+
+        @media (min-width: 1200px) and (max-width: 1399px) {
+            .stats-card .card-title {
+                font-size: 0.85rem;
+                max-height: 58px;
+            }
+            
+            .stats-card:hover .card-title {
+                font-size: 0.75rem;
+                max-height: 38px;
             }
         }
 
@@ -205,6 +282,9 @@
             text-decoration: none;
             color: inherit;
             display: block;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
         }
 
         .adr-resource-card:hover {
@@ -218,41 +298,55 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 8px;
+            margin-bottom: 0;
             display: flex;
             align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: calc(100% - 40px);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .adr-resource-card:hover .resource-title {
+            top: 25%;
+            transform: translate(-50%, -50%);
+            font-size: 1rem;
         }
 
         .adr-resource-card .resource-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 12px;
-            color: #007bff;
+            display: none;
         }
 
         .adr-resource-card .resource-desc {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #6c757d;
-            margin-bottom: 10px;
+            margin-bottom: 0;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            line-height: 1.3;
+        }
+
+        .adr-resource-card:hover .resource-desc {
+            opacity: 0.8;
         }
 
         .adr-resource-card .resource-link {
-            font-size: 0.8rem;
-            color: #007bff;
-            display: flex;
-            align-items: center;
-        }
-
-        .adr-resource-card .resource-link i {
-            margin-left: 5px;
-            font-size: 0.7rem;
+            display: none;
         }
         .page-title {
             text-align: center;
             margin-bottom: 40px;
             color: #343a40;
         }
-
         .page-title h2 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -274,7 +368,7 @@
             <div class="container-fluid">
                 <!-- Page Title -->
                 <div class="page-title">
-                    <h2>Staff Training Module</h2>
+                    <h2>Staff Training Resources</h2>
                     <p>Select a training category to begin learning</p>
                 </div>
 
