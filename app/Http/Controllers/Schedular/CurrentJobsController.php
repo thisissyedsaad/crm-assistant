@@ -56,7 +56,7 @@ class CurrentJobsController extends Controller
                 if ($sortField === 'orderNo') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
                 }
-
+                $apiQuery['filter[status]'] = 'planned';
                 $today = date('Y-m-d');
 
                 $response = $client->get($apiUrl . 'orders', [
@@ -331,7 +331,8 @@ class CurrentJobsController extends Controller
             if ($sortField === 'orderNo') {
                 $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
             }
-            // Limit to maximum 100 records
+            
+            $apiQuery['filter[status]'] = 'planned';
             $today = date('Y-m-d');
             // $apiQuery['filter[date]'] = $today;
 
@@ -764,7 +765,9 @@ class CurrentJobsController extends Controller
 
             // Get sorting parameters
             $apiQuery['sort'] = '-orderNo';
-
+            $apiQuery['filter[status]'] = 'planned';
+            $today = date('Y-m-d');
+            
             $response = $client->get($apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
@@ -778,15 +781,34 @@ class CurrentJobsController extends Controller
             $records = collect($res['data'] ?? []);
 
             // Filter for recent orders (not just today)
-            $orders = $records->filter(function($order) {
+            // $orders = $records->filter(function($order) {
+            //     $destinations = $order['attributes']['destinations'] ?? [];
+            //     $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+            //     $status = $order['attributes']['status'] ?? '';
+                
+            //     // Include orders from last few days that are not quotes/pending
+            //     return $pickup && 
+            //         isset($pickup['date']) && 
+            //         Carbon::parse($pickup['date'])->gte(Carbon::now()->subDays(3)) && // Last 3 days
+            //         !in_array($status, ['pending-acceptation', 'quote']);
+            // });
+
+            $orders = $records->filter(function($order) use ($today) {
                 $destinations = $order['attributes']['destinations'] ?? [];
                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
                 $status = $order['attributes']['status'] ?? '';
                 
-                // Include orders from last few days that are not quotes/pending
-                return $pickup && 
-                    isset($pickup['date']) && 
-                    Carbon::parse($pickup['date'])->gte(Carbon::now()->subDays(3)) && // Last 3 days
+                // Check if pickup date is today
+                $pickupToday = $pickup && isset($pickup['date']) && $pickup['date'] === $today;
+                
+                // Check if delivery date is today
+                $deliveryToday = $delivery && isset($delivery['date']) && $delivery['date'] === $today;
+                
+                // Only include orders where:
+                // 1. pickup date is today OR delivery date is today
+                // 2. status is NOT "pending-acceptation" or "quote"
+                return ($pickupToday || $deliveryToday) &&
                     !in_array($status, ['pending-acceptation', 'quote']);
             });
 
