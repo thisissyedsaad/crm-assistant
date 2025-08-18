@@ -47,16 +47,16 @@ class CurrentJobsController extends Controller
                 if ($request->filled('toDate')) {
                     $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
                 }
-                if (!$request->filled('fromDate') && !$request->filled('toDate')) {
-                    $apiQuery['filter[createdAt][gte]'] = Carbon::now('UTC')->subDays(2)->format('Y-m-d\TH:i:s\Z');
-                }
+
+                // if (!$request->filled('fromDate') && !$request->filled('toDate')) {
+                //     $apiQuery['filter[createdAt][gte]'] = Carbon::now('UTC')->subDays(2)->format('Y-m-d\TH:i:s\Z');
+                // }
 
                 // Set sorting - handle different field mappings for API
                 if ($sortField === 'orderNo') {
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
                 }
 
-                // Limit to maximum 100 records
                 $today = date('Y-m-d');
 
                 $response = $client->get($apiUrl . 'orders', [
@@ -74,14 +74,19 @@ class CurrentJobsController extends Controller
                 $orders = $records->filter(function($order) use ($today) {
                     $destinations = $order['attributes']['destinations'] ?? [];
                     $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                    $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
                     $status = $order['attributes']['status'] ?? '';
                     
+                    // Check if pickup date is today
+                    $pickupToday = $pickup && isset($pickup['date']) && $pickup['date'] === $today;
+                    
+                    // Check if delivery date is today
+                    $deliveryToday = $delivery && isset($delivery['date']) && $delivery['date'] === $today;
+                    
                     // Only include orders where:
-                    // 1. pickup date is today
+                    // 1. pickup date is today OR delivery date is today
                     // 2. status is NOT "pending-acceptation" or "quote"
-                    return $pickup && 
-                        isset($pickup['date']) && 
-                        $pickup['date'] === $today &&
+                    return ($pickupToday || $deliveryToday) &&
                         !in_array($status, ['pending-acceptation', 'quote']);
                 });
                 $meta = $res['meta'] ?? [];
@@ -248,7 +253,6 @@ class CurrentJobsController extends Controller
 
         // Calculate dynamic dashboard counters
         $countData = $this->calculateDashboardCounters();
-
         return view('admin.schedular.current-jobs', compact('countData'));
     }
 
@@ -347,14 +351,19 @@ class CurrentJobsController extends Controller
             $orders = $records->filter(function($order) use ($today) {
                 $destinations = $order['attributes']['destinations'] ?? [];
                 $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
+                $delivery = collect($destinations)->firstWhere('taskType', 'delivery');
                 $status = $order['attributes']['status'] ?? '';
                 
+                // Check if pickup date is today
+                $pickupToday = $pickup && isset($pickup['date']) && $pickup['date'] === $today;
+                
+                // Check if delivery date is today
+                $deliveryToday = $delivery && isset($delivery['date']) && $delivery['date'] === $today;
+                
                 // Only include orders where:
-                // 1. pickup date is today
+                // 1. pickup date is today OR delivery date is today
                 // 2. status is NOT "pending-acceptation" or "quote"
-                return $pickup && 
-                    isset($pickup['date']) && 
-                    $pickup['date'] === $today &&
+                return ($pickupToday || $deliveryToday) &&
                     !in_array($status, ['pending-acceptation', 'quote']);
             });
             
@@ -418,10 +427,10 @@ class CurrentJobsController extends Controller
                 }
             }
 
-            // Get completed jobs count from local tracking table for today
-            $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
-                ->whereDate('completed_at', Carbon::today())
-                ->count();
+            // // Get completed jobs count from local tracking table for today
+            // $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
+            //     ->whereDate('completed_at', Carbon::today())
+            //     ->count();
 
             return [
                 'totalJobs' => $totalJobs, // This will now match datatable exactly
