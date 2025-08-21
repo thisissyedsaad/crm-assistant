@@ -805,7 +805,7 @@
     <script src="{{ asset('assets/admin/js/jszip.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/dataTables-custom.js') }}"></script>
 
-    <script>
+    <!-- <script>
 
         $('#datatable').on('draw.dt', function () {
             document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
@@ -1303,6 +1303,464 @@
                         text: 'Error occurred while updating status. Please try again.',
                         icon: 'error'
                     });
+                }
+            });
+        }
+
+        function showActualModal(orderNo, customerNo, comments, carrierNo) {
+            // Show modal immediately with available data
+            $('#modalOrderNumber').text(orderNo || '-');
+            $('#modalCompanyName').text('Loading...');
+            $('#modalCarrierName').text('Loading...');
+            $('#modalNewExist').text('Loading...');
+            
+            $('#modalCommentsContent').text(comments || 'No comments available');
+            $('#commentsModal').modal('show');
+                    
+            // API call for company name
+            if (customerNo) {
+                $.ajax({
+                    url: '{{ route("admin.schedular.current.getCustomer") }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        customerNo: customerNo,
+                        carrierNo: carrierNo
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#modalCompanyName').text(response.companyName);
+                            $('#modalCarrierName').text(response.carrierName);
+                            $('#modalNewExist').text(response.newExist);
+
+                            // Make company name clickable
+                            $('#modalCompanyName').off('click').on('click', function() {
+                                // Redirect to customer details page
+                                window.location.href = `/admin/customers/${customerNo}`;
+                            });
+
+                            $('#modalCompanyName').css({
+                                'cursor': 'pointer',
+                            });
+
+                        } else {
+                            $('#modalCompanyName').text('Customer #' + customerNo);
+                        }
+                    },
+                    error: function() {
+                        $('#modalCompanyName').text('Customer #' + customerNo);
+                    }
+                });
+            } else {
+                $('#modalCompanyName').text('-');
+            }
+        }
+    </script> -->
+    
+    <script>
+
+        $('#datatable').on('draw.dt', function () {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new bootstrap.Tooltip(el);
+            });
+        });
+
+        // Global variables for filtering - get from server-side stored value
+        window.currentFilter = '{{ $storedFilter ?? "all" }}';
+        let table;
+
+        $(function () {
+            // Initialize DataTable
+            if ($.fn.DataTable.isDataTable('#datatable')) {
+                $('#datatable').DataTable().destroy();
+            }
+            
+            table = $('#datatable').DataTable({
+                processing: true,
+                serverSide: true,
+                scrollX: true,
+                scrollCollapse: false,
+                autoWidth: false,
+                responsive: false,
+                ordering: true,
+                order: [[0, 'desc']], // Default sort by first column descending
+                columnDefs: [
+                    { targets: [0], width: '90px' },
+                    { targets: [1], width: '80px' },
+                    { targets: [2], width: '80px' },
+                    { targets: [3], width: '80px' },
+                    { targets: [4], width: '80px' },
+                    { targets: [5], width: '180px' },
+                    { className: "text-center", targets: "_all" }
+                ],
+                ajax: {
+                    url: "{{ route('admin.schedular.current-jobs.index') }}",
+                    data: function (d) {
+                        d.fromDate = $('#fromDate').val();
+                        d.toDate = $('#toDate').val();
+                        d.filterType = window.currentFilter; // Add filter parameter
+                    }
+                },
+                pageLength: 50,
+                lengthMenu: [[50, 75, 100, 125, 150], [50, 75, 100, 125, 150]],
+                columns: [
+                    { 
+                        data: 'orderNo', 
+                        name: 'orderNo',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Order Number',
+                        render: function(data, type, row) {
+                            return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
+                        }
+                    },
+                    { 
+                        data: 'collectionTime', 
+                        name: 'collectionTime',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Collection Time',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'departureTime', 
+                        name: 'departureTime',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Driver Loaded',
+                        render: function(data, type, row) {
+                            return data ? data : '<span class="text-muted">Pending</span>';
+                        }
+                    },
+                    { 
+                        data: 'deliveryTime', 
+                        name: 'deliveryTime',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'ETA Delivery',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: 'midpointCheck', 
+                        name: 'midpointCheck',
+                        className: 'text-nowrap',
+                        orderable: true,
+                        title: 'Mid-Point Check',
+                        render: function(data, type, row) {
+                            return data ? data : '-';
+                        }
+                    },
+                    { 
+                        data: null, 
+                        name: 'actions',
+                        className: 'text-center',
+                        orderable: false,
+                        title: 'Actions',
+                        width: '200px',
+                        render: function(data, type, row) {
+                            let actions = '';
+
+                            // NEW: View Notes button
+                            let safeNotes = (row.internalNotes || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
+                            actions += `<img src="{{ asset('assets/admin/img/icons/view.png') }}" 
+                                            alt="View" 
+                                            class="row-icons" 
+                                            style="cursor: pointer;" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="bottom" 
+                                            data-bs-title="View More Details"
+                                            onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${safeNotes}\`, '${row.carrierNo || ''}')">`;
+                            
+                            // Collection Check-In
+                            if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Collection Completed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in Completed">`;
+                            } else {
+                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in" class="row-icons" style="cursor: pointer;">`;
+                            }
+                            
+                            // Driver Confirmed ETA
+                            if (row.driverConfirmedETA === true || row.driverConfirmedETA === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Driver Confirmed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Driver ETA Confirmed">`;
+                            } else {
+                                let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
+                                let tooltip = isDisabled ? "Complete Collection Check-in" : "Confirm Driver ETA";
+                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
+                                
+                                actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                            }
+                            
+                            // Mid-Point Check
+                            if (row.midpointCheckComplete === true || row.midpointCheckComplete === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Mid-Point Complete" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Mid-Point Check Completed">`;
+                            } else {
+                                let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                                let tooltip = isDisabled ? "Complete Driver ETA" : "Mark Mid-Point check complete";
+                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
+                                
+                                actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                            }
+                            
+                            // Delivered
+                            const deliveredStatus = parseInt(row.delivered);
+                            if (deliveredStatus === 1) {
+                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Delivered">`;
+                            } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
+                                let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
+                                let tooltip = isDisabled ? "Complete Driver ETA" : "Mark as delivered";
+                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
+                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered', ${row.midpointCheckComplete ? 'true' : 'false'})"`;
+                                
+                                actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
+                            } else {
+                                actions += `<span class="badge bg-secondary">Unknown (${row.delivered})</span>`;
+                            }
+                            
+                            return actions;
+                        }
+                    }
+                ],
+                initComplete: function() {
+                    $('.dataTables_wrapper').css({
+                        'width': '100%'
+                    });
+                    // Force table layout
+                    $('#datatable').css('table-layout', 'fixed');
+                },
+                drawCallback: function(settings) {
+                    $('.dataTables_wrapper').css({
+                        'width': '100%'
+                    });
+                    // Re-initialize tooltips
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+                    // Force table layout
+                    $('#datatable').css('table-layout', 'fixed');
+                }
+            });
+
+            // RESTORE FILTER STATE ON PAGE LOAD
+            if (window.currentFilter !== 'all') {
+                // Set active card
+                $('.stats-card').removeClass('active');
+                $(`[data-filter="${window.currentFilter}"]`).addClass('active');
+                
+                // Update filter status
+                updateFilterStatus(window.currentFilter);
+            }
+
+            // Card click event handlers
+            $('.stats-card').on('click', function() {
+                const filterType = $(this).data('filter');
+                filterDataTable(filterType);
+            });
+
+            // DataTable filter functionality
+            $('#filterBtn').on('click', function () {
+                table.draw();
+            });
+
+            $('#resetBtn').on('click', function () {
+                $('#fromDate').val('');
+                $('#toDate').val('');
+                table.draw();
+            });
+        });
+
+        // Filter function
+        function filterDataTable(filterType) {
+            // Remove active class from all cards
+            $('.stats-card').removeClass('active');
+            
+            // Add active class to clicked card
+            $(`[data-filter="${filterType}"]`).addClass('active');
+            
+            // Set global filter
+            window.currentFilter = filterType;
+            
+            // Update filter status
+            updateFilterStatus(filterType);
+            
+            // Refresh DataTable
+            table.ajax.reload();
+        }
+
+        // Clear filter function
+        function clearFilter() {
+            // Remove active class from all cards
+            $('.stats-card').removeClass('active');
+            
+            // Reset filter
+            window.currentFilter = 'all';
+            
+            // Hide filter status
+            $('#filterStatus').removeClass('active');
+            
+            // Refresh DataTable
+            table.ajax.reload();
+        }
+
+        // Update filter status indicator
+        function updateFilterStatus(filterType) {
+            const filterTexts = {
+                'all': 'Showing all jobs',
+                'collections-overdue': 'Showing only collections overdue',
+                'deliveries-overdue': 'Showing only deliveries overdue', 
+                'midpoint-overdue': 'Showing only mid-point check overdue',
+                'delivered': 'Showing only delivered jobs'
+            };
+            
+            if (filterType !== 'all') {
+                $('#filterText').text(filterTexts[filterType] || 'Showing filtered jobs');
+                $('#filterStatus').addClass('active');
+            } else {
+                $('#filterStatus').removeClass('active');
+            }
+        }
+
+        // Updated confirmAction function with special delivery handling
+        function confirmAction(actionName, orderId, actionType, midpointComplete = false) {
+            // Special handling for delivery action
+            if (actionType === 'delivered') {
+                showDeliveryPopup(orderId, midpointComplete);
+                return;
+            }
+            
+            // Regular confirmation for other actions
+            Swal.fire({
+                title: 'Confirm Action',
+                text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, mark complete!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processAction(orderId, actionType);
+                }
+            });
+        }
+
+        function showDeliveryPopup(orderId, midpointComplete) {
+            let title, text;
+            if (midpointComplete === 'true' || midpointComplete === true) {
+                // Mid-point check is TICKED
+                title = 'Delivery Status';
+                text = 'Are you sure the item has been delivered?';
+            } else {
+                // Mid-point check is NOT TICKED
+                title = 'Continue Without Mid-Point Check?';
+                text = 'Do you wish to continue without mid-point check complete?';
+            }
+            
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processAction(orderId, 'delivered', { deliveredStatus: 1 });
+                } 
+            });
+        }
+
+        // Process the action with AJAX
+        function processAction(orderId, actionType, extraData = {}) {
+            // Show loading
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Updating job status',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Prepare data
+            let requestData = {
+                _token: '{{ csrf_token() }}',
+                orderId: orderId,
+                actionType: actionType,
+                ...extraData // Merge any extra data (like deliveredStatus)
+            };
+
+            // Make AJAX call
+            $.ajax({
+                url: '{{ route("admin.schedular.current-jobs.update-status") }}',
+                method: 'POST',
+                data: requestData,
+                success: function(response) {
+                    if (response.success) {
+                        
+                        // Show success message
+                        let message = response.message;
+                        if (response.completed) {
+                            message += ' - Job completed!';
+                        }
+                        
+                        Swal.fire({
+                            title: response.completed ? 'Job Completed!' : 'Success!',
+                            text: message,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        // BETTER APPROACH - Just refresh data, maintain filter
+                        setTimeout(() => {
+                            // Refresh DataTable with current filter
+                            table.ajax.reload();
+                            
+                            // Refresh dashboard counters
+                            // refreshDashboardCounters();
+                        }, 1000);
+                        
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('AJAX Error:', xhr.responseText);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Error occurred while updating status. Please try again.',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+
+        // Refresh dashboard counters without full page reload
+        function refreshDashboardCounters() {
+            $.ajax({
+                url: '{{ route("admin.schedular.current-jobs.index") }}?refresh_counters=1',
+                method: 'GET',
+                success: function(response) {
+                    // Simple page reload to refresh counters for now
+                    // You can implement AJAX counter refresh later if needed
+                    window.location.reload();
+                },
+                error: function() {
+                    // If AJAX fails, just reload the page
+                    window.location.reload();
                 }
             });
         }
