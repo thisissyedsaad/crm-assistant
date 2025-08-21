@@ -407,7 +407,9 @@ class CurrentJobsController extends Controller
                     try {
                         $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
                         if ($currentTime->greaterThan($deliveryDateTime)) {
-                            $deliveriesOverdue++;
+                            if (!$tracking || !$tracking->delivered) {
+                                $deliveriesOverdue++;
+                            }
                         }
                     } catch (\Exception $e) {
                         // Skip if date/time parsing fails
@@ -421,17 +423,14 @@ class CurrentJobsController extends Controller
                         $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         
                         if ($deliveryTime->diffInHours($collectionTime) >= 2) {
-                            $midPointCheckInOverdue++;
+                            if (!$tracking || !$tracking->midpoint_check_completed) {
+                                $midPointCheckInOverdue++;
+                            }
                         }
                     } catch (\Exception $e) {
                     }
                 }
             }
-
-            // // Get completed jobs count from local tracking table for today
-            // $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
-            //     ->whereDate('completed_at', Carbon::today())
-            //     ->count();
 
             return [
                 'totalJobs' => $totalJobs, // This will now match datatable exactly
