@@ -653,17 +653,17 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table id="contactsTable" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Email</th>
-                                                    <th>Phone</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @if(!empty($customer['attributes']['contacts']) && is_array($customer['attributes']['contacts']))
+                                    @if(!empty($customer['attributes']['contacts']) && is_array($customer['attributes']['contacts']) && count($customer['attributes']['contacts']) > 0)
+                                        <div class="table-responsive">
+                                            <table id="contactsTable" class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Email</th>
+                                                        <th>Phone</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                                     @foreach($customer['attributes']['contacts'] as $contact)
                                                         <tr>
                                                             <td>{{ $contact['name'] ?? '-' }}</td>
@@ -671,14 +671,18 @@
                                                             <td>{{ $contact['phone'] ?? '-' }}</td>
                                                         </tr>
                                                     @endforeach
-                                                @else
-                                                    <tr>
-                                                        <td colspan="3" class="text-center text-muted">No contacts found</td>
-                                                    </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-5">
+                                            <div class="mb-3">
+                                                <i class="bx bx-user-x" style="font-size: 3rem; color: #6c757d;"></i>
+                                            </div>
+                                            <h5 class="text-muted mb-2">No Contacts Found</h5>
+                                            <p class="text-muted">This company doesn't have any contacts registered yet.</p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -697,29 +701,30 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize Contacts DataTable
-            $('#contactsTable').DataTable({
-                pageLength: 10,
-                lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
-                responsive: true,
-                language: {
-                    search: "Search Contacts:",
-                    lengthMenu: "Show _MENU_ contacts per page",
-                    info: "Showing _START_ to _END_ of _TOTAL_ contacts",
-                    infoEmpty: "No contacts found",
-                    infoFiltered: "(filtered from _MAX_ total contacts)",
-                    emptyTable: "No contacts available",
-                    zeroRecords: "No matching contacts found"
-                },
-                dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
-                order: [[0, 'asc']], // Sort by name ascending
-                columnDefs: [
-                    {
-                        targets: [0, 1, 2], // All columns
-                        className: 'text-center'
-                    }
-                ]
-            });
+            if ($('#contactsTable').length) {
+                $('#contactsTable').DataTable({
+                    pageLength: 10,
+                    lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+                    responsive: true,
+                    language: {
+                        search: "Search Contacts:",
+                        lengthMenu: "Show _MENU_ contacts per page",
+                        info: "Showing _START_ to _END_ of _TOTAL_ contacts",
+                        infoEmpty: "No contacts found",
+                        infoFiltered: "(filtered from _MAX_ total contacts)",
+                        emptyTable: "No contacts available",
+                        zeroRecords: "No matching contacts found"
+                    },
+                    dom: '<"row"<"col-md-6"l><"col-md-6"f>>rtip',
+                    order: [[0, 'asc']], // Sort by name ascending
+                    columnDefs: [
+                        {
+                            targets: [0, 1, 2], // All columns
+                            className: 'text-center'
+                        }
+                    ]
+                });
+            }
 
             // Initialize Orders DataTable ONLY if table exists and has data
             if ($('#ordersTable').length && $('#ordersTable tbody tr').length > 0) {
