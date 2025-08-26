@@ -446,27 +446,14 @@ class CurrentJobsController extends Controller
                     });
                 }
 
-                // Apply client-side sorting for fields not sortable by API
-                if (in_array($sortField, ['customerUserId', 'carrierNo', 'newExisting', 'collectionDate', 'collectionTime', 'departureTime', 'orderPrice', 'deliveryTime', 'midpointCheck', 'internalNotes', 'collectionCheckIn', 'driverConfirmedETA', 'midpointCheckComplete'])) {
-                    $transformedData = $transformedData->sortBy(function($item) use ($sortField) {
-                        // For price fields, convert to numeric for proper sorting
-                        if (in_array($sortField, ['orderPrice'])) {
-                            return (float) ($item[$sortField] ?? 0);
-                        }
-                        // For date/time fields
-                        if (in_array($sortField, ['collectionDate', 'collectionTime', 'departureTime', 'deliveryTime'])) {
-                            return $item[$sortField] ?? '';
-                        }
-                        // For text fields, convert to lowercase
-                        return strtolower($item[$sortField] ?? '');
-                    });
-                    
-                    if ($orderDirection === 'desc') {
-                        $transformedData = $transformedData->reverse();
+                // ALWAYS sort by collectionTime in descending order (latest times first)
+                $transformedData = $transformedData->sortBy(function($item) {
+                    $timeValue = $item['collectionTime'] ?? '';
+                    if (empty($timeValue)) {
+                        return '00:00'; // Put empty values at the end when sorting desc
                     }
-                    
-                    $transformedData = $transformedData->values(); // Reset keys
-                }
+                    return $timeValue;
+                })->values(); // reverse() makes it descending order
 
                 // Handle pagination - limit to 100 records total
                 $totalRecords = min($transformedData->count(), 100);
