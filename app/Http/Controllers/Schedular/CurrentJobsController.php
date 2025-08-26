@@ -505,15 +505,15 @@ class CurrentJobsController extends Controller
     // NEW: Helper methods for filtering logic
     private function isCollectionOverdue($pickup, $orderId)
     {
-        if (!$pickup || !isset($pickup['departureTime']) || $pickup['date'] !== date('Y-m-d')) {
+        if (!$pickup || !isset($pickup['toTime']) || $pickup['date'] !== date('Y-m-d')) {
             return false;
         }
 
         try {
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-            $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
-            if (!$tracking || !$tracking->driver_eta_confirmed) {
-                return Carbon::now()->greaterThan($departureDateTime);
+            $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+            if (!$tracking || !$tracking->collection_checked_in) {
+                return Carbon::now()->greaterThan($pickupDateTime);
             }
         } catch (\Exception $e) {
             return false;
@@ -522,14 +522,14 @@ class CurrentJobsController extends Controller
 
     private function isDeliveryOverdue($delivery, $orderId)
     {
-        if (!$delivery || !isset($delivery['toTime']) || !isset($delivery['date'])) {
+        if (!$delivery || !isset($delivery['deliveryTime']) || !isset($delivery['date'])) {
             return false;
         }
 
         try {
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-            $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
-            if (!$tracking || !$tracking->delivered) {
+            $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+            if (!$tracking || !$tracking->driver_eta_confirmed) {
                 return Carbon::now()->greaterThan($deliveryDateTime);
             }
         } catch (\Exception $e) {
@@ -645,11 +645,11 @@ class CurrentJobsController extends Controller
                 $tracking = CurrentJobsTracking::where('order_id', $order['id'])->first();
 
                 // Check collections overdue
-                if ($pickup && isset($pickup['departureTime']) && $pickup['date'] === $currentDate) {
+                if ($pickup && isset($pickup['toTime']) && $pickup['date'] === $currentDate) {
                     try {
-                        $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
-                        if ($currentTime->greaterThan($departureDateTime)) {
-                            if (!$tracking || !$tracking->driver_eta_confirmed) {
+                        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                        if ($currentTime->greaterThan($pickupDateTime)) {
+                            if (!$tracking || !$tracking->collection_checked_in) {
                                 $collectionsOverdue++;
                             }
                         }
@@ -659,11 +659,11 @@ class CurrentJobsController extends Controller
                 }
 
                 // Check deliveries overdue
-                if ($delivery && isset($delivery['toTime']) && isset($delivery['date'])) {
+                if ($delivery && isset($delivery['deliveryTime']) && isset($delivery['date'])) {
                     try {
-                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
+                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         if ($currentTime->greaterThan($deliveryDateTime)) {
-                            if (!$tracking || !$tracking->delivered) {
+                            if (!$tracking || !$tracking->driver_eta_confirmed) {
                                 $deliveriesOverdue++;
                             }
                         }
@@ -1084,14 +1084,14 @@ class CurrentJobsController extends Controller
                 }
 
                 // Check Collections Overdue (ANY DATE in the past)
-                if ($pickup && isset($pickup['departureTime']) && isset($pickup['date'])) {
+                if ($pickup && isset($pickup['toTime']) && isset($pickup['date'])) {
                     try {
-                        $departureDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['departureTime']);
-                        if ($currentTime->greaterThan($departureDateTime)) {
+                        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                        if ($currentTime->greaterThan($pickupDateTime)) {
                             // Only show if collection is not checked in yet
                             if (!$tracking || !$tracking->driver_eta_confirmed) {
-                                $overdueHours = $currentTime->diffInHours($departureDateTime);
-                                $overdueMinutes = $currentTime->diffInMinutes($departureDateTime);
+                                $overdueHours = $currentTime->diffInHours($pickupDateTime);
+                                $overdueMinutes = $currentTime->diffInMinutes($pickupDateTime);
                                 
                                 $overdueText = $overdueHours > 24 ? 
                                     floor($overdueHours / 24) . ' days' : 
@@ -1101,7 +1101,7 @@ class CurrentJobsController extends Controller
                                 $notifications[] = [
                                     'type' => 'collection_overdue',
                                     'title' => 'Collection Overdue',
-                                    'message' => "Order #{$orderNo} collection was due {$dateFormatted} at {$pickup['departureTime']}",
+                                    'message' => "Order #{$orderNo} collection was due {$dateFormatted} at {$pickup['toTime']}",
                                     'time' => Carbon::parse($pickup['date'])->format('M d'),
                                     'overdue_by' => $overdueText,
                                     'order_id' => $order['id'],
@@ -1119,9 +1119,9 @@ class CurrentJobsController extends Controller
                 }
 
                 // Check Deliveries Overdue (ANY DATE in the past)
-                if ($delivery && isset($delivery['toTime']) && isset($delivery['date'])) {
+                if ($delivery && isset($delivery['deliveryTime']) && isset($delivery['date'])) {
                     try {
-                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['toTime']);
+                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         if ($currentTime->greaterThan($deliveryDateTime)) {
                             // Only show if not delivered yet
                             if (!$tracking || !$tracking->delivered) {
@@ -1136,7 +1136,7 @@ class CurrentJobsController extends Controller
                                 $notifications[] = [
                                     'type' => 'delivery_overdue',
                                     'title' => 'Delivery Overdue',
-                                    'message' => "Order #{$orderNo} delivery was due {$dateFormatted} at {$delivery['toTime']}",
+                                    'message' => "Order #{$orderNo} delivery was due {$dateFormatted} at {$delivery['deliveryTime']}",
                                     'time' => Carbon::parse($delivery['date'])->format('M d'),
                                     'overdue_by' => $overdueText,
                                     'order_id' => $order['id'],
