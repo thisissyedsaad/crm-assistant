@@ -141,71 +141,56 @@
         }
 
         /* Smart responsive table styling */
-        .dataTables_wrapper {
-            overflow-x: visible !important;
-        }
+.dataTables_wrapper {
+    overflow-x: hidden !important;
+}
+
+.dataTables_scrollBody {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+}
+
+/* Table should use full width and fit container */
+#datatable {
+    width: 100% !important;
+    table-layout: fixed !important;
+}
         
-        .dataTables_scrollBody {
-            overflow-x: auto !important;
-            overflow-y: visible !important;
-        }
-        
-        /* Table should use full width when columns fit, scroll when they don't */
-        #datatable {
-            width: 100% !important;
-            table-layout: auto;
-        }
-        
-        /* Set minimum widths but allow columns to expand to fill available space */
-        #datatable th:nth-child(1), #datatable td:nth-child(1) { 
-            min-width: 120px; 
-            width: 10%; 
-        } /* Order Number */
-        
-        #datatable th:nth-child(2), #datatable td:nth-child(2) { 
-            min-width: 120px; 
-            width: 8%; 
-        } /* Collection Time */
-        
-        #datatable th:nth-child(3), #datatable td:nth-child(3) { 
-            min-width: 140px; 
-            width: 10%; 
-        } /* Driver Loaded Time */
-        
-        #datatable th:nth-child(4), #datatable td:nth-child(4) { 
-            min-width: 120px; 
-            width: 8%; 
-        } /* ETA Delivery */
-        
-        #datatable th:nth-child(5), #datatable td:nth-child(5) { 
-            min-width: 120px; 
-            width: 8%; 
-        } /* Mid-Point Check */
-        
-        #datatable th:nth-child(6), #datatable td:nth-child(6) { 
-            min-width: 100px; 
-            width: 6%; 
-        } /* Notes */
-        
-        #datatable th:nth-child(7), #datatable td:nth-child(7) { 
-            min-width: 140px; 
-            width: 12%; 
-        } /* Collection Check-In */
-        
-        #datatable th:nth-child(8), #datatable td:nth-child(8) { 
-            min-width: 140px; 
-            width: 12%; 
-        } /* Driver Confirmed ETA */
-        
-        #datatable th:nth-child(9), #datatable td:nth-child(9) { 
-            min-width: 160px; 
-            width: 12%; 
-        } /* Mid-Point Check Complete */
-        
-        #datatable th:nth-child(10), #datatable td:nth-child(10) { 
-            min-width: 120px; 
-            width: 12%; 
-        } /* Delivered */
+/* Optimized column widths for full width without scroll */
+#datatable th:nth-child(1), #datatable td:nth-child(1) { 
+    width: 50px !important; 
+    max-width: 50px !important;
+} /* Checkbox column */
+
+#datatable th:nth-child(2), #datatable td:nth-child(2) { 
+    width: 120px !important; 
+    max-width: 120px !important;
+} /* Order Number */
+
+#datatable th:nth-child(3), #datatable td:nth-child(3) { 
+    width: 110px !important; 
+    max-width: 110px !important;
+} /* Collection Time */
+
+#datatable th:nth-child(4), #datatable td:nth-child(4) { 
+    width: 110px !important; 
+    max-width: 110px !important;
+} /* Driver Loaded */
+
+#datatable th:nth-child(5), #datatable td:nth-child(5) { 
+    width: 110px !important; 
+    max-width: 110px !important;
+} /* ETA Delivery */
+
+#datatable th:nth-child(6), #datatable td:nth-child(6) { 
+    width: 120px !important; 
+    max-width: 120px !important;
+} /* Mid-Point Check */
+
+#datatable th:nth-child(7), #datatable td:nth-child(7) { 
+    width: auto !important; 
+    min-width: 200px !important;
+} /* Actions - takes remaining space */
         
         /* Most columns should not wrap by default */
         #datatable th,
@@ -410,21 +395,6 @@
         }
     }
 
-    /* #datatable thead th:first-child,
-    #datatable tbody td:first-child {
-        position: sticky !important;
-        left: 0 !important;
-        z-index: 10 !important;
-        background-color: #fff !important;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
-        border-right: 2px solid #dee2e6 !important;
-    }
-    #datatable tbody tr:nth-child(even) td:first-child {
-        background-color: #f8f9fa !important; 
-    }
-    #datatable tbody tr:nth-child(odd) td:first-child {
-        background-color: #ffffff !important; 
-    }      */
     #datatable tbody tr:nth-child(even) {
         background-color: #f8f9fa !important; /* Light gray */
     }
@@ -532,37 +502,6 @@
         vertical-align: middle;
     }
 
-    /* Reduce column widths more aggressively */
-    #datatable th:nth-child(1), #datatable td:nth-child(1) { 
-        min-width: 90px !important; 
-        max-width: 90px !important;
-        width: 90px !important; 
-    }
-
-    #datatable th:nth-child(2), #datatable td:nth-child(2) { 
-        min-width: 80px !important; 
-        max-width: 80px !important;
-        width: 80px !important; 
-    }
-
-    #datatable th:nth-child(3), #datatable td:nth-child(3) { 
-        min-width: 80px !important; 
-        max-width: 80px !important;
-        width: 80px !important; 
-    }
-
-    #datatable th:nth-child(4), #datatable td:nth-child(4) { 
-        min-width: 80px !important; 
-        max-width: 80px !important;
-        width: 80px !important; 
-    }
-
-    #datatable th:nth-child(5), #datatable td:nth-child(5) { 
-        min-width: 80px !important; 
-        max-width: 80px !important;
-        width: 80px !important; 
-    }
-
     /* Force table to use exact widths */
     #datatable {
         table-layout: fixed !important;
@@ -595,6 +534,73 @@
     #datatable td:last-child {
         overflow: visible !important;
         text-overflow: unset !important;
+    }
+
+    /* NEW: Selection and bulk actions styling */
+    .bulk-actions-bar {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #fff;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        padding: 12px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        gap: 15px;
+        animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    .bulk-actions-bar.active {
+        display: flex;
+    }
+
+    .selected-count {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .btn-remove-selected {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        font-size: 14px;
+        padding: 6px 16px;
+    }
+
+    .btn-remove-selected:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        color: white;
+    }
+
+    /* Checkbox styling */
+    .order-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    #selectAllCheckbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Make sure checkbox column is properly sized */
+    #datatable th:first-child,
+    #datatable td:first-child {
+        min-width: 60px !important;
+        max-width: 60px !important;
+        width: 60px !important;
+        text-align: center !important;
     }
     </style>
 @endpush
@@ -691,6 +697,16 @@
                     </button>
                 </div>
 
+                <!-- NEW: Bulk Actions Bar -->
+                <div class="bulk-actions-bar" id="bulkActionsBar">
+                    <div class="selected-count">
+                        <span id="selectedCount">0</span> orders selected
+                    </div>
+                    <button type="button" class="btn btn-remove-selected" onclick="removeSelectedOrders()">
+                        <i class="bx bx-trash"></i> Remove Selected Orders
+                    </button>
+                </div>
+
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="card">
@@ -698,6 +714,9 @@
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap data-table-area">
                                     <thead>
                                         <tr>
+                                            <th>
+                                                <input type="checkbox" id="selectAllCheckbox" title="Select/Deselect All">
+                                            </th>
                                             <th>Order Number</th>
                                             <th>Collection Time</th>
                                             <th>Driver Loaded</th>
@@ -804,558 +823,6 @@
     <script src="{{ asset('assets/admin/js/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/jszip.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/dataTables-custom.js') }}"></script>
-
-    <!-- <script>
-
-        $('#datatable').on('draw.dt', function () {
-            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
-                new bootstrap.Tooltip(el);
-            });
-        });
-
-        // Global variables for filtering
-        window.currentFilter = 'all';
-        let table;
-
-        $(function () {
-            // Initialize DataTable
-            if ($.fn.DataTable.isDataTable('#datatable')) {
-                $('#datatable').DataTable().destroy();
-            }
-            
-            table = $('#datatable').DataTable({
-                processing: true,
-                serverSide: true,
-                scrollX: true,
-                scrollCollapse: false,
-                autoWidth: false,
-                responsive: false,
-                ordering: true,
-                order: [[0, 'desc']], // Default sort by first column descending
-                columnDefs: [
-                    { targets: [0], width: '90px' },
-                    { targets: [1], width: '80px' },
-                    { targets: [2], width: '80px' },
-                    { targets: [3], width: '80px' },
-                    { targets: [4], width: '80px' },
-                    { targets: [5], width: '180px' },
-                    { className: "text-center", targets: "_all" }
-                ],
-                ajax: {
-                    url: "{{ route('admin.schedular.current-jobs.index') }}",
-                    data: function (d) {
-                        d.fromDate = $('#fromDate').val();
-                        d.toDate = $('#toDate').val();
-                        d.filterType = window.currentFilter; // Add filter parameter
-                    }
-                },
-                pageLength: 50,
-                lengthMenu: [[50, 75, 100, 125, 150], [50, 75, 100, 125, 150]],
-                columns: [
-                    { 
-                        data: 'orderNo', 
-                        name: 'orderNo',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'Order Number',
-                        render: function(data, type, row) {
-                            return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
-                        }
-                    },
-                    { 
-                        data: 'collectionTime', 
-                        name: 'collectionTime',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'Collection Time',
-                        render: function(data, type, row) {
-                            return data ? data : '-';
-                        }
-                    },
-                    { 
-                        data: 'departureTime', 
-                        name: 'departureTime',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'Driver Loaded',
-                        render: function(data, type, row) {
-                            return data ? data : '<span class="text-muted">Pending</span>';
-                        }
-                    },
-                    { 
-                        data: 'deliveryTime', 
-                        name: 'deliveryTime',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'ETA Delivery',
-                        render: function(data, type, row) {
-                            return data ? data : '-';
-                        }
-                    },
-                    { 
-                        data: 'midpointCheck', 
-                        name: 'midpointCheck',
-                        className: 'text-nowrap',
-                        orderable: true,
-                        title: 'Mid-Point Check',
-                        render: function(data, type, row) {
-                            return data ? data : '-';
-                        }
-                    },
-                    { 
-                        data: null, 
-                        name: 'actions',
-                        className: 'text-center',
-                        orderable: false,
-                        title: 'Actions',
-                        width: '200px', // Adjust width as needed
-                        render: function(data, type, row) {
-                            let actions = '';
-
-                            // NEW: View Notes button
-                            let safeNotes = (row.internalNotes || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
-                            actions += `<img src="{{ asset('assets/admin/img/icons/view.png') }}" 
-                                            alt="View" 
-                                            class="row-icons" 
-                                            style="cursor: pointer;" 
-                                            data-bs-toggle="tooltip" 
-                                            data-bs-placement="bottom" 
-                                            data-bs-title="View More Details"
-                                            onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${safeNotes}\`, '${row.carrierNo || ''}')">`;
-                            
-                            // Collection Check-In
-                            if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Collection Completed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in Completed">`;
-                            } else {
-                                actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Collection Check-in" class="row-icons" style="cursor: pointer;">`;
-                            }
-                            
-                            // Driver Confirmed ETA
-                            if (row.driverConfirmedETA === true || row.driverConfirmedETA === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Driver Confirmed" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Driver ETA Confirmed">`;
-                            } else {
-                                let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
-                                let tooltip = isDisabled ? "Complete Collection Check-in" : "Confirm Driver ETA";
-                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA Confirmation', ${row.id}, 'driver-eta')"`;
-                                
-                                actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="Confirm ETA" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                            }
-                            
-                            // Mid-Point Check
-                            if (row.midpointCheckComplete === true || row.midpointCheckComplete === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Mid-Point Complete" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Mid-Point Check Completed">`;
-                            } else {
-                                let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                                let tooltip = isDisabled ? "Complete Driver ETA" : "Mark Mid-Point check complete";
-                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point Check', ${row.id}, 'midpoint-check')"`;
-                                
-                                actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mark Complete" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                            }
-                            
-                            // Delivered
-                            const deliveredStatus = parseInt(row.delivered);
-                            if (deliveredStatus === 1) {
-                                actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Delivered" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Delivered">`;
-                            } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
-                                let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                                let tooltip = isDisabled ? "Complete Driver ETA" : "Mark as delivered";
-                                let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                                let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery Status', ${row.id}, 'delivered', ${row.midpointCheckComplete ? 'true' : 'false'})"`;
-                                
-                                actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Mark Delivered" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                            } else {
-                                actions += `<span class="badge bg-secondary">Unknown (${row.delivered})</span>`;
-                            }
-                            
-                            return actions;
-                        }
-                    }
-                ],
-                // columns: [
-                //     { 
-                //         data: 'orderNo', 
-                //         name: 'orderNo',
-                //         className: 'text-center',
-                //         orderable: true,
-                //         title: 'Order No',
-                //         width: '90px',
-                //         render: function(data, type, row) {
-                //             return data ? `<span class="order-num badge bg-primary"><a href="/admin/orders/${row.id}">${data}</a></span>` : '-'; 
-                //         }
-                //     },
-                //     { 
-                //         data: 'collectionTime', 
-                //         name: 'collectionTime',
-                //         className: 'text-center',
-                //         orderable: true,
-                //         title: 'Collection',
-                //         width: '80px',
-                //         render: function(data, type, row) {
-                //             return data ? data : '-';
-                //         }
-                //     },
-                //     { 
-                //         data: 'departureTime', 
-                //         name: 'departureTime',
-                //         className: 'text-center',
-                //         orderable: true,
-                //         title: 'Loaded',
-                //         width: '80px',
-                //         render: function(data, type, row) {
-                //             return data ? data : '<span class="text-muted">Pending</span>';
-                //         }
-                //     },
-                //     { 
-                //         data: 'deliveryTime', 
-                //         name: 'deliveryTime',
-                //         className: 'text-center',
-                //         orderable: true,
-                //         title: 'ETA',
-                //         width: '80px',
-                //         render: function(data, type, row) {
-                //             return data ? data : '-';
-                //         }
-                //     },
-                //     { 
-                //         data: 'midpointCheck', 
-                //         name: 'midpointCheck',
-                //         className: 'text-center',
-                //         orderable: true,
-                //         title: 'Mid-Point',
-                //         width: '80px',
-                //         render: function(data, type, row) {
-                //             return data ? data : '-';
-                //         }
-                //     },
-                //     { 
-                //         data: null, 
-                //         name: 'actions',
-                //         className: 'text-center',
-                //         orderable: false,
-                //         title: 'Actions',
-                //         width: '180px',
-                //         render: function(data, type, row) {
-                //             let actions = '';
-
-                //             // View Notes button
-                //             let safeNotes = (row.internalNotes || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
-                //             actions += `<img src="{{ asset('assets/admin/img/icons/view.png') }}" 
-                //                             alt="View" 
-                //                             class="row-icons" 
-                //                             style="cursor: pointer;" 
-                //                             data-bs-toggle="tooltip" 
-                //                             data-bs-placement="top" 
-                //                             data-bs-title="View Details"
-                //                             onclick="showActualModal('${row.orderNo || ''}', '${row.customerNo || ''}', \`${safeNotes}\`, '${row.carrierNo || ''}')">`;
-                            
-                //             // Collection Check-In
-                //             if (row.collectionCheckIn === true || row.collectionCheckIn === 1) {
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Collection Done">`;
-                //             } else {
-                //                 actions += `<img onclick="confirmAction('Collection Check-In', ${row.id}, 'collection-checkin')" src="{{ asset('assets/admin/img/icons/check-in.png') }}" alt="Check-In" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Collection Check-in" class="row-icons" style="cursor: pointer;">`;
-                //             }
-                            
-                //             // Driver Confirmed ETA
-                //             if (row.driverConfirmedETA === true || row.driverConfirmedETA === 1) {
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Driver Confirmed">`;
-                //             } else {
-                //                 let isDisabled = !(row.collectionCheckIn === true || row.collectionCheckIn === 1);
-                //                 let tooltip = isDisabled ? "Collection first" : "Confirm ETA";
-                //                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                //                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Driver ETA', ${row.id}, 'driver-eta')"`;
-                                
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/driver-confirmed.png') }}" alt="ETA" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                //             }
-                            
-                //             // Mid-Point Check
-                //             if (row.midpointCheckComplete === true || row.midpointCheckComplete === 1) {
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Mid-Point Done">`;
-                //             } else {
-                //                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                //                 let tooltip = isDisabled ? "ETA first" : "Mid-Point";
-                //                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                //                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Mid-Point', ${row.id}, 'midpoint-check')"`;
-                                
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/mid-point-check.png') }}" alt="Mid-Point" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                //             }
-                            
-                //             // Delivered
-                //             const deliveredStatus = parseInt(row.delivered);
-                //             if (deliveredStatus === 1) {
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/complete.png') }}" alt="Done" class="row-icons" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delivered">`;
-                //             } else if (row.delivered === null || row.delivered === undefined || row.delivered === '' || isNaN(deliveredStatus)) {
-                //                 let isDisabled = !(row.driverConfirmedETA === true || row.driverConfirmedETA === 1);
-                //                 let tooltip = isDisabled ? "ETA first" : "Deliver";
-                //                 let disabledAttr = isDisabled ? 'style="cursor: not-allowed; opacity: 0.5;"' : 'style="cursor: pointer;"';
-                //                 let onclickAttr = isDisabled ? '' : `onclick="confirmAction('Delivery', ${row.id}, 'delivered')"`;
-                                
-                //                 actions += `<img src="{{ asset('assets/admin/img/icons/delivered.png') }}" alt="Deliver" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${tooltip}" class="row-icons" ${disabledAttr} ${onclickAttr}>`;
-                //             }
-                            
-                //             return actions;
-                //         }
-                //     }
-                // ],
-                initComplete: function() {
-                    $('.dataTables_wrapper').css({
-                        'width': '100%'
-                    });
-                    // Force table layout
-                    $('#datatable').css('table-layout', 'fixed');
-                },
-                drawCallback: function(settings) {
-                    $('.dataTables_wrapper').css({
-                        'width': '100%'
-                    });
-                    // Re-initialize tooltips
-                    $('[data-bs-toggle="tooltip"]').tooltip();
-                    // Force table layout
-                    $('#datatable').css('table-layout', 'fixed');
-                }
-            });
-
-            // Card click event handlers
-            $('.stats-card').on('click', function() {
-                const filterType = $(this).data('filter');
-                filterDataTable(filterType);
-            });
-
-            // DataTable filter functionality
-            $('#filterBtn').on('click', function () {
-                table.draw();
-            });
-
-            $('#resetBtn').on('click', function () {
-                $('#fromDate').val('');
-                $('#toDate').val('');
-                table.draw();
-            });
-        });
-
-        // Filter function
-        function filterDataTable(filterType) {
-            // Remove active class from all cards
-            $('.stats-card').removeClass('active');
-            
-            // Add active class to clicked card
-            $(`[data-filter="${filterType}"]`).addClass('active');
-            
-            // Set global filter
-            window.currentFilter = filterType;
-            
-            // Update filter status
-            updateFilterStatus(filterType);
-            
-            // Refresh DataTable
-            table.ajax.reload();
-        }
-
-        // Clear filter function
-        function clearFilter() {
-            // Remove active class from all cards
-            $('.stats-card').removeClass('active');
-            
-            // Reset filter
-            window.currentFilter = 'all';
-            
-            // Hide filter status
-            $('#filterStatus').removeClass('active');
-            
-            // Refresh DataTable
-            table.ajax.reload();
-        }
-
-        // Update filter status indicator
-        function updateFilterStatus(filterType) {
-            const filterTexts = {
-                'all': 'Showing all jobs',
-                'collections-overdue': 'Showing only collections overdue',
-                'deliveries-overdue': 'Showing only deliveries overdue', 
-                'midpoint-overdue': 'Showing only mid-point check overdue',
-                'delivered': 'Showing only delivered jobs'
-            };
-            
-            if (filterType !== 'all') {
-                $('#filterText').text(filterTexts[filterType] || 'Showing filtered jobs');
-                $('#filterStatus').addClass('active');
-            } else {
-                $('#filterStatus').removeClass('active');
-            }
-        }
-
-        // Updated confirmAction function with special delivery handling
-        function confirmAction(actionName, orderId, actionType, midpointComplete = false) {
-            // Special handling for delivery action
-            if (actionType === 'delivered') {
-                showDeliveryPopup(orderId, midpointComplete);
-                return;
-            }
-            
-            // Regular confirmation for other actions
-            Swal.fire({
-                title: 'Confirm Action',
-                text: `Are you sure you want to mark "${actionName}" as complete for Order #${orderId}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, mark complete!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    processAction(orderId, actionType);
-                }
-            });
-        }
-
-        function showDeliveryPopup(orderId, midpointComplete) {
-            let title, text;
-            if (midpointComplete === 'true' || midpointComplete === true) {
-                // Mid-point check is TICKED
-                title = 'Delivery Status';
-                text = 'Are you sure the item has been delivered?';
-            } else {
-                // Mid-point check is NOT TICKED
-                title = 'Continue Without Mid-Point Check?';
-                text = 'Do you wish to continue without mid-point check complete?';
-            }
-            
-            Swal.fire({
-                title: title,
-                text: text,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes',
-                cancelButtonText: 'No',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#dc3545',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    processAction(orderId, 'delivered', { deliveredStatus: 1 });
-                } 
-            });
-        }
-
-        // Process the action with AJAX
-        function processAction(orderId, actionType, extraData = {}) {
-            // Show loading
-            Swal.fire({
-                title: 'Processing...',
-                text: 'Updating job status',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Prepare data
-            let requestData = {
-                _token: '{{ csrf_token() }}',
-                orderId: orderId,
-                actionType: actionType,
-                ...extraData // Merge any extra data (like deliveredStatus)
-            };
-
-            // Make AJAX call
-            $.ajax({
-                url: '{{ route("admin.schedular.current-jobs.update-status") }}',
-                method: 'POST',
-                data: requestData,
-                success: function(response) {
-                    if (response.success) {
-                        
-                        // Show success message
-                        let message = response.message;
-                        if (response.completed) {
-                            message += ' - Job will be removed from the list!';
-                        }
-                        
-                        Swal.fire({
-                            title: response.completed ? 'Job Completed!' : 'Success!',
-                            text: message,
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        
-                        // GUARANTEED FIX - Reload entire page
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2200);
-                        
-                    } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: response.message,
-                            icon: 'error'
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    console.error('AJAX Error:', xhr.responseText);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Error occurred while updating status. Please try again.',
-                        icon: 'error'
-                    });
-                }
-            });
-        }
-
-        function showActualModal(orderNo, customerNo, comments, carrierNo) {
-            // Show modal immediately with available data
-            $('#modalOrderNumber').text(orderNo || '-');
-            $('#modalCompanyName').text('Loading...');
-            $('#modalCarrierName').text('Loading...');
-            $('#modalNewExist').text('Loading...');
-            
-            $('#modalCommentsContent').text(comments || 'No comments available');
-            $('#commentsModal').modal('show');
-                    
-            // API call for company name
-            if (customerNo) {
-                $.ajax({
-                    url: '{{ route("admin.schedular.current.getCustomer") }}',
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        customerNo: customerNo,
-                        carrierNo: carrierNo
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#modalCompanyName').text(response.companyName);
-                            $('#modalCarrierName').text(response.carrierName);
-                            $('#modalNewExist').text(response.newExist);
-
-                            // Make company name clickable
-                            $('#modalCompanyName').off('click').on('click', function() {
-                                // Redirect to customer details page
-                                window.location.href = `/admin/customers/${customerNo}`;
-                            });
-
-                            $('#modalCompanyName').css({
-                                'cursor': 'pointer',
-                            });
-
-                        } else {
-                            $('#modalCompanyName').text('Customer #' + customerNo);
-                        }
-                    },
-                    error: function() {
-                        $('#modalCompanyName').text('Customer #' + customerNo);
-                    }
-                });
-            } else {
-                $('#modalCompanyName').text('-');
-            }
-        }
-    </script> -->
     
     <script>
 
@@ -1368,6 +835,7 @@
         // Global variables for filtering - get from server-side stored value
         window.currentFilter = '{{ $storedFilter ?? "all" }}';
         let table;
+        let selectedOrders = []; // Track selected order IDs
 
         $(function () {
             // Initialize DataTable
@@ -1378,32 +846,43 @@
             table = $('#datatable').DataTable({
                 processing: true,
                 serverSide: true,
-                scrollX: true,
+scrollX: false, // Disable horizontal scrolling
                 scrollCollapse: false,
                 autoWidth: false,
                 responsive: false,
                 ordering: true,
-                order: [[0, 'desc']], // Default sort by first column descending
-                columnDefs: [
-                    { targets: [0], width: '90px' },
-                    { targets: [1], width: '80px' },
-                    { targets: [2], width: '80px' },
-                    { targets: [3], width: '80px' },
-                    { targets: [4], width: '80px' },
-                    { targets: [5], width: '180px' },
-                    { className: "text-center", targets: "_all" }
-                ],
+                order: [[1, 'desc']], // Sort by Order Number column (second column now)
+columnDefs: [
+    { targets: [0], width: '50px', orderable: false }, // Checkbox column
+    { targets: [1], width: '120px' }, // Order Number
+    { targets: [2], width: '110px' }, // Collection Time
+    { targets: [3], width: '110px' }, // Driver Loaded
+    { targets: [4], width: '110px' }, // ETA Delivery
+    { targets: [5], width: '120px' }, // Mid-Point Check
+    { targets: [6], width: 'auto' }, // Actions - flexible width
+    { className: "text-center", targets: "_all" }
+],
                 ajax: {
                     url: "{{ route('admin.schedular.current-jobs.index') }}",
                     data: function (d) {
                         d.fromDate = $('#fromDate').val();
                         d.toDate = $('#toDate').val();
-                        d.filterType = window.currentFilter; // Add filter parameter
+                        d.filterType = window.currentFilter;
                     }
                 },
                 pageLength: 50,
                 lengthMenu: [[50, 75, 100, 125, 150], [50, 75, 100, 125, 150]],
                 columns: [
+                    { 
+                        data: null,
+                        name: 'checkbox',
+                        className: 'text-center',
+                        orderable: false,
+                        title: '<input type="checkbox" id="selectAllCheckbox" title="Select/Deselect All">',
+                        render: function(data, type, row) {
+                            return `<input type="checkbox" class="order-checkbox" value="${row.id}" data-order-no="${row.orderNo}">`;
+                        }
+                    },
                     { 
                         data: 'orderNo', 
                         name: 'orderNo',
@@ -1464,7 +943,7 @@
                         render: function(data, type, row) {
                             let actions = '';
 
-                            // NEW: View Notes button
+                            // View Notes button
                             let safeNotes = (row.internalNotes || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
                             actions += `<img src="{{ asset('assets/admin/img/icons/view.png') }}" 
                                             alt="View" 
@@ -1529,27 +1008,28 @@
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
-                    // Force table layout
                     $('#datatable').css('table-layout', 'fixed');
                 },
                 drawCallback: function(settings) {
                     $('.dataTables_wrapper').css({
                         'width': '100%'
                     });
-                    // Re-initialize tooltips
                     $('[data-bs-toggle="tooltip"]').tooltip();
-                    // Force table layout
                     $('#datatable').css('table-layout', 'fixed');
+                    
+                    // Re-check previously selected orders
+                    selectedOrders.forEach(function(orderId) {
+                        $(`.order-checkbox[value="${orderId}"]`).prop('checked', true);
+                    });
+                    
+                    updateBulkActionsBar();
                 }
             });
 
             // RESTORE FILTER STATE ON PAGE LOAD
             if (window.currentFilter !== 'all') {
-                // Set active card
                 $('.stats-card').removeClass('active');
                 $(`[data-filter="${window.currentFilter}"]`).addClass('active');
-                
-                // Update filter status
                 updateFilterStatus(window.currentFilter);
             }
 
@@ -1559,17 +1039,170 @@
                 filterDataTable(filterType);
             });
 
-            // DataTable filter functionality
-            $('#filterBtn').on('click', function () {
-                table.draw();
+            // NEW: Selection event handlers
+            
+            // Select All checkbox
+            $(document).on('change', '#selectAllCheckbox', function() {
+                const isChecked = $(this).prop('checked');
+                $('.order-checkbox').prop('checked', isChecked);
+                
+                if (isChecked) {
+                    // Add all visible orders to selection
+                    $('.order-checkbox').each(function() {
+                        const orderId = $(this).val();
+                        if (!selectedOrders.includes(orderId)) {
+                            selectedOrders.push(orderId);
+                        }
+                    });
+                } else {
+                    // Remove all visible orders from selection
+                    $('.order-checkbox').each(function() {
+                        const orderId = $(this).val();
+                        selectedOrders = selectedOrders.filter(id => id !== orderId);
+                    });
+                }
+                
+                updateBulkActionsBar();
             });
 
-            $('#resetBtn').on('click', function () {
-                $('#fromDate').val('');
-                $('#toDate').val('');
-                table.draw();
+            // Individual checkbox change
+            $(document).on('change', '.order-checkbox', function() {
+                const orderId = $(this).val();
+                const isChecked = $(this).prop('checked');
+                
+                if (isChecked) {
+                    if (!selectedOrders.includes(orderId)) {
+                        selectedOrders.push(orderId);
+                    }
+                } else {
+                    selectedOrders = selectedOrders.filter(id => id !== orderId);
+                }
+                
+                // Update select all checkbox state
+                const totalCheckboxes = $('.order-checkbox').length;
+                const checkedCheckboxes = $('.order-checkbox:checked').length;
+                
+                if (checkedCheckboxes === 0) {
+                    $('#selectAllCheckbox').prop('indeterminate', false).prop('checked', false);
+                } else if (checkedCheckboxes === totalCheckboxes) {
+                    $('#selectAllCheckbox').prop('indeterminate', false).prop('checked', true);
+                } else {
+                    $('#selectAllCheckbox').prop('indeterminate', true);
+                }
+                
+                updateBulkActionsBar();
             });
         });
+
+        // Update bulk actions bar visibility and count
+        function updateBulkActionsBar() {
+            const selectedCount = selectedOrders.length;
+            $('#selectedCount').text(selectedCount);
+            
+            if (selectedCount > 0) {
+                $('#bulkActionsBar').addClass('active');
+            } else {
+                $('#bulkActionsBar').removeClass('active');
+            }
+        }
+
+        // Remove selected orders function
+        function removeSelectedOrders() {
+            if (selectedOrders.length === 0) {
+                return;
+            }
+            
+            // Get order numbers for display
+            const orderNumbers = [];
+            selectedOrders.forEach(function(orderId) {
+                const checkbox = $(`.order-checkbox[value="${orderId}"]`);
+                const orderNo = checkbox.data('order-no');
+                if (orderNo) {
+                    orderNumbers.push(orderNo);
+                }
+            });
+            
+            const orderList = orderNumbers.length > 5 
+                ? orderNumbers.slice(0, 5).join(', ') + ` and ${orderNumbers.length - 5} more...`
+                : orderNumbers.join(', ');
+            
+            Swal.fire({
+                title: 'Remove Orders?',
+                html: `Are you sure you want to remove the following order(s) from this list?<br><br><strong>${orderList}</strong><br><br><small class="text-muted">Note: This will only hide them from the Current Jobs view. The orders will not be deleted from the system.</small>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Remove Orders',
+                cancelButtonText: 'No, Keep Orders',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processRemoveOrders();
+                }
+            });
+        }
+
+        // Process the removal
+        function processRemoveOrders() {
+            // Show loading
+            Swal.fire({
+                title: 'Removing Orders...',
+                text: 'Please wait while we update the list',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Make AJAX call to remove orders
+            $.ajax({
+                url: '{{ route("admin.schedular.current-jobs.remove-orders") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    orderIds: selectedOrders
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Clear selections
+                        selectedOrders = [];
+                        updateBulkActionsBar();
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Orders Removed!',
+                            text: `${response.removedCount} order(s) have been removed from the current jobs list.`,
+                            icon: 'success',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                        
+                        // Refresh the DataTable
+                        setTimeout(() => {
+                            table.ajax.reload();
+                        }, 1000);
+                        
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message || 'An error occurred while removing orders.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('AJAX Error:', xhr.responseText);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Error occurred while removing orders. Please try again.',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
 
         // Filter function
         function filterDataTable(filterType) {
@@ -1585,6 +1218,10 @@
             // Update filter status
             updateFilterStatus(filterType);
             
+            // Clear selections when changing filter
+            selectedOrders = [];
+            updateBulkActionsBar();
+            
             // Refresh DataTable
             table.ajax.reload();
         }
@@ -1599,6 +1236,10 @@
             
             // Hide filter status
             $('#filterStatus').removeClass('active');
+            
+            // Clear selections
+            selectedOrders = [];
+            updateBulkActionsBar();
             
             // Refresh DataTable
             table.ajax.reload();
@@ -1720,13 +1361,9 @@
                             showConfirmButton: false
                         });
                         
-                        // BETTER APPROACH - Just refresh data, maintain filter
+                        // Refresh DataTable with current filter
                         setTimeout(() => {
-                            // Refresh DataTable with current filter
                             table.ajax.reload();
-                            
-                            // Refresh dashboard counters
-                            // refreshDashboardCounters();
                         }, 1000);
                         
                     } else {
@@ -1744,23 +1381,6 @@
                         text: 'Error occurred while updating status. Please try again.',
                         icon: 'error'
                     });
-                }
-            });
-        }
-
-        // Refresh dashboard counters without full page reload
-        function refreshDashboardCounters() {
-            $.ajax({
-                url: '{{ route("admin.schedular.current-jobs.index") }}?refresh_counters=1',
-                method: 'GET',
-                success: function(response) {
-                    // Simple page reload to refresh counters for now
-                    // You can implement AJAX counter refresh later if needed
-                    window.location.reload();
-                },
-                error: function() {
-                    // If AJAX fails, just reload the page
-                    window.location.reload();
                 }
             });
         }
@@ -1814,4 +1434,4 @@
             }
         }
     </script>
-@endpush
+@endpush        

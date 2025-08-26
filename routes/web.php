@@ -76,6 +76,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::post('completed-jobs/get-customer', [CompletedJobsController::class, 'getCustomer'])->name('completed.getCustomer');
 
     // Insert this near your other CurrentJobsController routes
+    Route::post('/current-jobs/remove-orders', [CurrentJobsController::class, 'removeOrders'])->name('current-jobs.remove-orders');
     });
 
     Route::resource('trainings', TrainingController::class);
