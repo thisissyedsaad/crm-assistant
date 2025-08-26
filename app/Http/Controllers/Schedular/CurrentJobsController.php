@@ -512,7 +512,7 @@ class CurrentJobsController extends Controller
         try {
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
             $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
-            if (!$tracking || !$tracking->collection_checked_in) {
+            if (!$tracking || !$tracking->driver_eta_confirmed) {
                 return Carbon::now()->greaterThan($pickupDateTime);
             }
         } catch (\Exception $e) {
@@ -529,7 +529,7 @@ class CurrentJobsController extends Controller
         try {
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
             $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
-            if (!$tracking || !$tracking->driver_eta_confirmed) {
+            if (!$tracking || !$tracking->delivered) {
                 return Carbon::now()->greaterThan($deliveryDateTime);
             }
         } catch (\Exception $e) {
@@ -649,7 +649,7 @@ class CurrentJobsController extends Controller
                     try {
                         $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
                         if ($currentTime->greaterThan($pickupDateTime)) {
-                            if (!$tracking || !$tracking->collection_checked_in) {
+                            if (!$tracking || !$tracking->driver_eta_confirmed) {
                                 $collectionsOverdue++;
                             }
                         }
@@ -663,7 +663,7 @@ class CurrentJobsController extends Controller
                     try {
                         $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         if ($currentTime->greaterThan($deliveryDateTime)) {
-                            if (!$tracking || !$tracking->driver_eta_confirmed) {
+                            if (!$tracking || !$tracking->delivered) {
                                 $deliveriesOverdue++;
                             }
                         }
