@@ -676,9 +676,9 @@ class CurrentJobsController extends Controller
                         //     }
                         // }
                         if ($deliveryTime->diffInHours($collectionTime) >= 2) {
-                            $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
+                            $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
                             // Check if midpoint time has passed AND not completed
-                            if (\Carbon\Carbon::now()->isAfter($midpointTime) && 
+                            if (\Carbon\Carbon::now()->format('H:i') > $midpointTime && 
                                 (!$tracking || !$tracking->midpoint_check_completed)) {
                                 $midPointCheckInOverdue++;
                             }
