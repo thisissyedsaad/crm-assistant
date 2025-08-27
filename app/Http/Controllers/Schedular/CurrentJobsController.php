@@ -534,17 +534,17 @@ class CurrentJobsController extends Controller
             $collectionTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
             $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-            $currentTime = Carbon::now();
+            $currentTime = Carbon::now()->format('H:i');
 
             if ($deliveryTime->diffInHours($collectionTime) >= 2) {
                 // $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
-                $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
+                $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
                 // if (!$tracking || !$tracking->midpoint_check_completed) {
                 //     return $midpointTime;
                 // }
-                if ($currentTime->greaterThan($midpointTime) && 
+                if ($currentTime > $midpointTime && 
                     (!$tracking || !$tracking->midpoint_check_completed)) {
-                    return $midpointTime->format('H:i');
+                    return $midpointTime;
                 }
             }
             return false;
