@@ -678,8 +678,16 @@ class CurrentJobsController extends Controller
                         $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
                         $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
                         
+                        // if ($deliveryTime->diffInHours($collectionTime) >= 2) {
+                        //     if (!$tracking || !$tracking->midpoint_check_completed) {
+                        //         $midPointCheckInOverdue++;
+                        //     }
+                        // }
                         if ($deliveryTime->diffInHours($collectionTime) >= 2) {
-                            if (!$tracking || !$tracking->midpoint_check_completed) {
+                            $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2);
+                            // Check if midpoint time has passed AND not completed
+                            if (\Carbon\Carbon::now()->isAfter($midpointTime) && 
+                                (!$tracking || !$tracking->midpoint_check_completed)) {
                                 $midPointCheckInOverdue++;
                             }
                         }
