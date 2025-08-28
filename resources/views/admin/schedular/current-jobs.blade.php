@@ -1128,13 +1128,13 @@ columnDefs: [
             
             Swal.fire({
                 title: 'Remove Orders?',
-                html: `Are you sure you want to remove the following order(s) from this list?<br><br><strong>${orderList}</strong><br><br><small class="text-muted">Note: This will only hide them from the Current Jobs view. The orders will not be deleted from the system.</small>`,
+                html: `Are you sure you want to remove the following order(s) from this list?`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Remove Orders',
-                cancelButtonText: 'No, Keep Orders',
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {

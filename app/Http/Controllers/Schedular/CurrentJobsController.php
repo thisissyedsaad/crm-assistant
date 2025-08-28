@@ -47,10 +47,10 @@ class CurrentJobsController extends Controller
 
                 // Date Range Filtering
                 if ($request->filled('fromDate')) {
-                    $apiQuery['filter[createdAt][gte]'] = Carbon::parse($request->input('fromDate'))->startOfDay()->format('Y-m-d\TH:i:s');
+                    $apiQuery['filter[createdAt][gte]'] = Carbon::parse($request->input('fromDate'), 'Europe/London')->startOfDay()->format('Y-m-d\TH:i:s');
                 }
                 if ($request->filled('toDate')) {
-                    $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'))->endOfDay()->format('Y-m-d\TH:i:s');
+                    $apiQuery['filter[createdAt][lte]'] = Carbon::parse($request->input('toDate'), 'Europe/London')->endOfDay()->format('Y-m-d\TH:i:s');
                 }
 
                 // Set sorting - handle different field mappings for API
@@ -58,7 +58,7 @@ class CurrentJobsController extends Controller
                     $apiQuery['sort'] = ($orderDirection === 'desc') ? '-orderNo' : 'orderNo';
                 }
                 $apiQuery['filter[status]'] = 'planned';
-                $today = date('Y-m-d');
+                $today = Carbon::now('Europe/London')->format('Y-m-d');
 
                 $response = $client->get($apiUrl . 'orders', [
                     'headers' => [
@@ -74,11 +74,11 @@ class CurrentJobsController extends Controller
 
                 // NEW: Get hidden job IDs for current user/session
                 // $hiddenJobIds = HiddenCurrentJob::where('hidden_by', auth()->id() ?? 'guest')
-                //     ->where('created_at', '>=', Carbon::today()) // Only hide for current day
+                //     ->where('created_at', '>=', Carbon::today('Europe/London')) // Only hide for current day
                 //     ->pluck('order_id')
                 //     ->toArray();
 
-                $hiddenJobIds = HiddenCurrentJob::where('created_at', '>=', Carbon::today()) // Only hide for current day
+                $hiddenJobIds = HiddenCurrentJob::where('created_at', '>=', Carbon::today('Europe/London')) // Only hide for current day
                     ->pluck('order_id')
                     ->toArray();
 
@@ -117,8 +117,8 @@ class CurrentJobsController extends Controller
                     $midpointCheck = null;
                     if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
                         try {
-                            $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
-                            $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                            $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
+                            $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
                             
                             if ($deliveryTime->diffInHours($collectionTime) >=2) {
                                 $midpointCheck = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
@@ -273,14 +273,14 @@ class CurrentJobsController extends Controller
                 // Check if already hidden today
                 $existing = HiddenCurrentJob::where('order_id', $orderId)
                     // ->where('hidden_by', $userId)
-                    ->whereDate('created_at', Carbon::today())
+                    ->whereDate('created_at', Carbon::today('Europe/London'))
                     ->first();
                 
                 if (!$existing) {
                     HiddenCurrentJob::create([
                         'order_id' => $orderId,
                         'hidden_by' => $userId,
-                        'hidden_at' => Carbon::now()
+                        'hidden_at' => Carbon::now('Europe/London')
                     ]);
                     $removedCount++;
                 }
@@ -304,15 +304,16 @@ class CurrentJobsController extends Controller
     // Helper methods for filtering logic (unchanged)
     private function isCollectionOverdue($pickup, $orderId)
     {
-        if (!$pickup || !isset($pickup['toTime']) || $pickup['date'] !== date('Y-m-d')) {
+        if (!$pickup || !isset($pickup['toTime']) || $pickup['date'] !== Carbon::now('Europe/London')->format('Y-m-d')) {
             return false;
         }
 
         try {
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-            $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+            // Convert pickup time to UTC for comparison
+            $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
             if (!$tracking || !$tracking->driver_eta_confirmed) {
-                return Carbon::now()->greaterThan($pickupDateTime);
+                return Carbon::now('Europe/London')->greaterThan($pickupDateTime);
             }
         } catch (\Exception $e) {
             return false;
@@ -327,9 +328,9 @@ class CurrentJobsController extends Controller
 
         try {
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-            $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+            $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
             if (!$tracking || !$tracking->delivered) {
-                return Carbon::now()->greaterThan($deliveryDateTime);
+                return Carbon::now('Europe/London')->greaterThan($deliveryDateTime);
             }
         } catch (\Exception $e) {
             return false;
@@ -343,10 +344,10 @@ class CurrentJobsController extends Controller
         }
 
         try {
-            $collectionTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
-            $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+            $collectionTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
+            $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
             $tracking = CurrentJobsTracking::where('order_id', $orderId)->first();
-            $currentTime = Carbon::now()->format('H:i');
+            $currentTime = Carbon::now('Europe/London')->format('H:i');
 
             if ($deliveryTime->diffInHours($collectionTime) >= 2) {
                 $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
@@ -387,7 +388,7 @@ class CurrentJobsController extends Controller
             }
             
             $apiQuery['filter[status]'] = 'planned';
-            $today = date('Y-m-d');
+            $today = Carbon::now('Europe/London')->format('Y-m-d');
 
             $response = $client->get($apiUrl . 'orders', [
                 'headers' => [
@@ -403,11 +404,11 @@ class CurrentJobsController extends Controller
 
             // NEW: Get hidden job IDs for current user/session
             // $hiddenJobIds = HiddenCurrentJob::where('hidden_by', auth()->id() ?? 'guest')
-            //     ->where('created_at', '>=', Carbon::today())
+            //     ->where('created_at', '>=', Carbon::today('Europe/London'))
             //     ->pluck('order_id')
             //     ->toArray();
 
-            $hiddenJobIds = HiddenCurrentJob::where('created_at', '>=', Carbon::today())
+            $hiddenJobIds = HiddenCurrentJob::where('created_at', '>=', Carbon::today('Europe/London'))
                 ->pluck('order_id')
                 ->toArray();
 
@@ -441,10 +442,10 @@ class CurrentJobsController extends Controller
             // Get completed jobs count ONLY from today's filtered orders
             $completedJobsToday = CurrentJobsTracking::whereIn('order_id', $orderIds)
                 ->where('status', 'completed')
-                ->whereDate('completed_at', Carbon::today())
+                ->whereDate('completed_at', Carbon::today('Europe/London'))
                 ->count();
             
-            $currentTime = Carbon::now();
+            $currentTime = Carbon::now('Europe/London');
             $currentDate = $currentTime->format('Y-m-d');
             
             // Initialize counters
@@ -462,7 +463,7 @@ class CurrentJobsController extends Controller
                 // Check collections overdue
                 if ($pickup && isset($pickup['toTime']) && $pickup['date'] === $currentDate) {
                     try {
-                        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
                         if ($currentTime->greaterThan($pickupDateTime)) {
                             if (!$tracking || !$tracking->driver_eta_confirmed) {
                                 $collectionsOverdue++;
@@ -476,7 +477,7 @@ class CurrentJobsController extends Controller
                 // Check deliveries overdue
                 if ($delivery && isset($delivery['deliveryTime']) && isset($delivery['date'])) {
                     try {
-                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
                         if ($currentTime->greaterThan($deliveryDateTime)) {
                             if (!$tracking || !$tracking->delivered) {
                                 $deliveriesOverdue++;
@@ -490,8 +491,8 @@ class CurrentJobsController extends Controller
                 // Check midpoint check overdue
                 if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
                     try {
-                        $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
-                        $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                        $collectionTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
+                        $deliveryTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
                         
                         // if ($deliveryTime->diffInHours($collectionTime) >= 2) {
                         //     if (!$tracking || !$tracking->midpoint_check_completed) {
@@ -501,7 +502,7 @@ class CurrentJobsController extends Controller
                         if ($deliveryTime->diffInHours($collectionTime) >= 2) {
                             $midpointTime = $collectionTime->copy()->addMinutes($deliveryTime->diffInMinutes($collectionTime) / 2)->format('H:i');
                             // Check if midpoint time has passed AND not completed
-                            if (\Carbon\Carbon::now()->format('H:i') > $midpointTime && 
+                            if (\Carbon\Carbon::now('Europe/London')->format('H:i') > $midpointTime && 
                                 (!$tracking || !$tracking->midpoint_check_completed)) {
                                 $midPointCheckInOverdue++;
                             }
@@ -751,7 +752,7 @@ class CurrentJobsController extends Controller
                     if(!empty($ordersData['data']) && count($ordersData['data']) > 0){
                         $firstOrder = end($ordersData['data']);
                         $firstOrderDate = isset($firstOrder['createdAt']) 
-                            ? \Carbon\Carbon::parse($firstOrder['createdAt'])->format('d-m-Y H:i')
+                            ? \Carbon\Carbon::parse($firstOrder['createdAt'], 'Europe/London')->format('d-m-Y H:i')
                             : null;
                     }
 
@@ -845,7 +846,7 @@ class CurrentJobsController extends Controller
             // Get sorting parameters
             $apiQuery['sort'] = '-orderNo';
             $apiQuery['filter[status]'] = 'planned';
-            $today = date('Y-m-d');
+            $today = Carbon::now('Europe/London')->format('Y-m-d');
             
             $response = $client->get($apiUrl . 'orders', [
                 'headers' => [
@@ -858,19 +859,6 @@ class CurrentJobsController extends Controller
 
             $res = json_decode($response->getBody()->getContents(), true);
             $records = collect($res['data'] ?? []);
-
-            // Filter for recent orders (not just today)
-            // $orders = $records->filter(function($order) {
-            //     $destinations = $order['attributes']['destinations'] ?? [];
-            //     $pickup = collect($destinations)->firstWhere('taskType', 'pickup');
-            //     $status = $order['attributes']['status'] ?? '';
-                
-            //     // Include orders from last few days that are not quotes/pending
-            //     return $pickup && 
-            //         isset($pickup['date']) && 
-            //         Carbon::parse($pickup['date'])->gte(Carbon::now()->subDays(3)) && // Last 3 days
-            //         !in_array($status, ['pending-acceptation', 'quote']);
-            // });
 
             $orders = $records->filter(function($order) use ($today) {
                 $destinations = $order['attributes']['destinations'] ?? [];
@@ -891,7 +879,7 @@ class CurrentJobsController extends Controller
                     !in_array($status, ['pending-acceptation', 'quote']);
             });
 
-            $currentTime = Carbon::now();
+            $currentTime = Carbon::now('Europe/London');
             $notifications = [];
             $totalCount = 0;
 
@@ -910,7 +898,7 @@ class CurrentJobsController extends Controller
                 // Check Collections Overdue (ANY DATE in the past)
                 if ($pickup && isset($pickup['toTime']) && isset($pickup['date'])) {
                     try {
-                        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
+                        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
                         if ($currentTime->greaterThan($pickupDateTime)) {
                             // Only show if collection is not checked in yet
                             if (!$tracking || !$tracking->driver_eta_confirmed) {
@@ -921,12 +909,12 @@ class CurrentJobsController extends Controller
                                     floor($overdueHours / 24) . ' days' : 
                                     ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
-                                $dateFormatted = \Carbon\Carbon::parse($pickup['date'])->format('d/m/Y');
+                                $dateFormatted = \Carbon\Carbon::parse($pickup['date'], 'Europe/London')->format('d/m/Y');
                                 $notifications[] = [
                                     'type' => 'collection_overdue',
                                     'title' => 'Collection Overdue',
                                     'message' => "Order #{$orderNo} collection was due {$dateFormatted} at {$pickup['toTime']}",
-                                    'time' => Carbon::parse($pickup['date'])->format('M d'),
+                                    'time' => Carbon::parse($pickup['date'], 'Europe/London')->format('M d'),
                                     'overdue_by' => $overdueText,
                                     'order_id' => $order['id'],
                                     'order_no' => $orderNo,
@@ -945,7 +933,7 @@ class CurrentJobsController extends Controller
                 // Check Deliveries Overdue (ANY DATE in the past)
                 if ($delivery && isset($delivery['deliveryTime']) && isset($delivery['date'])) {
                     try {
-                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                        $deliveryDateTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
                         if ($currentTime->greaterThan($deliveryDateTime)) {
                             // Only show if not delivered yet
                             if (!$tracking || !$tracking->delivered) {
@@ -956,12 +944,12 @@ class CurrentJobsController extends Controller
                                     floor($overdueHours / 24) . ' days' : 
                                     ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
-                                $dateFormatted = \Carbon\Carbon::parse($delivery['date'])->format('d/m/Y');
+                                $dateFormatted = \Carbon\Carbon::parse($delivery['date'], 'Europe/London')->format('d/m/Y');
                                 $notifications[] = [
                                     'type' => 'delivery_overdue',
                                     'title' => 'Delivery Overdue',
                                     'message' => "Order #{$orderNo} delivery was due {$dateFormatted} at {$delivery['deliveryTime']}",
-                                    'time' => Carbon::parse($delivery['date'])->format('M d'),
+                                    'time' => Carbon::parse($delivery['date'], 'Europe/London')->format('M d'),
                                     'overdue_by' => $overdueText,
                                     'order_id' => $order['id'],
                                     'order_no' => $orderNo,
@@ -980,8 +968,8 @@ class CurrentJobsController extends Controller
                 // Check Mid-Point Check Overdue (ANY DATE in the past)
                 if ($pickup && $delivery && isset($pickup['toTime']) && isset($delivery['deliveryTime'])) {
                     try {
-                        $collectionTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime']);
-                        $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime']);
+                        $collectionTime = Carbon::createFromFormat('Y-m-d H:i', $pickup['date'] . ' ' . $pickup['toTime'], 'Europe/London');
+                        $deliveryTime = Carbon::createFromFormat('Y-m-d H:i', $delivery['date'] . ' ' . $delivery['deliveryTime'], 'Europe/London');
                         
                         // Only if journey is 2+ hours
                         if ($deliveryTime->diffInHours($collectionTime) >= 2) {
@@ -997,12 +985,12 @@ class CurrentJobsController extends Controller
                                         floor($overdueHours / 24) . ' days' : 
                                         ($overdueHours > 0 ? $overdueHours . ' hrs' : $overdueMinutes . ' min');
 
-                                    $dateFormatted = \Carbon\Carbon::parse($pickup['date'])->format('d/m/Y');
+                                    $dateFormatted = \Carbon\Carbon::parse($pickup['date'], 'Europe/London')->format('d/m/Y');
                                     $notifications[] = [
                                         'type' => 'midpoint_overdue',
                                         'title' => 'Mid-Point Check Overdue',
                                         'message' => "Order #{$orderNo} mid-point check was due {$dateFormatted} at {$midpointTime->format('H:i')}",
-                                        'time' => Carbon::parse($pickup['date'])->format('M d'),
+                                        'time' => Carbon::parse($pickup['date'], 'Europe/London')->format('M d'),
                                         'overdue_by' => $overdueText,
                                         'order_id' => $order['id'],
                                         'order_no' => $orderNo,
@@ -1029,7 +1017,7 @@ class CurrentJobsController extends Controller
                 'success' => true,
                 'total_count' => $totalCount,
                 'notifications' => $notifications,
-                'last_updated' => Carbon::now()->format('H:i:s')
+                'last_updated' => Carbon::now('Europe/London')->format('H:i:s')
             ]);
 
         } catch (\Exception $e) {
