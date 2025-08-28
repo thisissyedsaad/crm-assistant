@@ -1146,16 +1146,16 @@ columnDefs: [
         // Process the removal
         function processRemoveOrders() {
             // Show loading
-            Swal.fire({
-                title: 'Removing Orders...',
-                text: 'Please wait while we update the list',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            // Swal.fire({
+            //     title: 'Removing Orders...',
+            //     text: 'Please wait while we update the list',
+            //     icon: 'info',
+            //     allowOutsideClick: false,
+            //     showConfirmButton: false,
+            //     willOpen: () => {
+            //         Swal.showLoading();
+            //     }
+            // });
 
             // Make AJAX call to remove orders
             $.ajax({
