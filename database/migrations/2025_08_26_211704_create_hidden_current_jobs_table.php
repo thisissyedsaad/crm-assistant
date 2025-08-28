@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('hidden_current_jobs', function (Blueprint $table) {
             $table->id();
-            $table->string('order_id'); // The order ID from the third-party API
-            $table->string('hidden_by')->default('guest'); // User ID or 'guest' for non-authenticated users
+            $table->string('order_id', 191); // The order ID from the third-party API
+            $table->string('hidden_by', 191)->default('guest'); // User ID or 'guest' for non-authenticated users
             $table->timestamp('hidden_at');
             $table->timestamps();
             
             // Indexes for performance
-            $table->index(['order_id', 'hidden_by']);
-            $table->index(['hidden_by', 'created_at']);
-            $table->index('hidden_at');
+            // $table->index(['order_id', 'hidden_by']);
+            // $table->index(['hidden_by', 'created_at']);
+            // $table->index('hidden_at');
         });
     }
 
