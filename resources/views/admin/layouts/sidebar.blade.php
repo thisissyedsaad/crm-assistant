@@ -80,6 +80,13 @@
         </li>
         @endif
         
+        <li class="menu-header-title">Security</li>
+        <!-- 2FA Link -->
+        <li class="{{ request()->routeIs('2fa.*') ? 'active' : '' }}">
+          <a href="{{ route('2fa.show') }}" class="{{ request()->routeIs('2fa.*') ? 'active' : '' }}">
+            <i class="bx bx-shield"></i> Two-Factor Auth
+          </a>
+        </li>
       </ul>
     </nav>
   </div>

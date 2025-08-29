@@ -10,6 +10,7 @@ use App\Http\Controllers\Schedular\CurrentJobsController;
 use App\Http\Controllers\Schedular\CompletedJobsController;
 use App\Http\Controllers\TrainingController;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\TwoFactorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,26 +37,36 @@ Route::get('/', function () {
     return view('auth.login'); // this will load the login page
 });
 
+// 2FA Routes (authenticated users ke liye)
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/2fa/setup', [TwoFactorController::class, 'show'])->name('2fa.show');
+    Route::post('/admin/2fa/enable', [TwoFactorController::class, 'enable'])->name('2fa.enable');
+    Route::post('/admin/2fa/disable', [TwoFactorController::class, 'disable'])->name('2fa.disable');
+    
+    Route::get('/admin/2fa/verify', [TwoFactorController::class, 'showVerifyForm'])->name('2fa.verify');
+    Route::post('/admin/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify.post');
+});
+
 // Route::get('/admin/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth'])
+    ->middleware(['auth', 'ensure2fa'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'ensure2fa')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
   
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'ensure2fa'])->group(function () {
     Route::resource('users', UserController::class);
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'ensure2fa'])->group(function () {
     Route::resource('orders', OrderController::class);
     Route::post('/admin/get-customer', [OrderController::class, 'getCustomer'])->name('getCustomer');
     Route::get('/admin/orders/autocomplete', [OrderController::class, 'autocomplete'])->name('orders.autocomplete');

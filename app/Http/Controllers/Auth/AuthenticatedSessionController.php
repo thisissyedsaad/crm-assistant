@@ -29,6 +29,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        // Agar user ka 2FA enabled hai to verify page pe bhejo
+        if ($user->google2fa_enabled) {
+            return redirect()->route('2fa.verify');
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
@@ -40,8 +47,10 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
+        
+        // 2FA session bhi clear karo
+        $request->session()->forget('2fa_verified');
 
         return redirect('/');
     }
