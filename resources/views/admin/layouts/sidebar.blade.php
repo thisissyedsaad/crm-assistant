@@ -80,8 +80,15 @@
         </li>
         @endif
         
-        <li class="menu-header-title">Security</li>
         <!-- 2FA Link -->
+        <li class="menu-header-title">
+          2F - Authentication 
+          @if(auth()->user()->google2fa_enabled)
+            <i class="bx bx-check-circle" style="color: #28a745; font-size: 15px; margin-left: 5px; vertical-align: middle;"></i>
+          @else
+            <i class="bx bx-x-circle" style="color: #dc3545; font-size: 15px; margin-left: 5px; vertical-align: middle;"></i>
+          @endif
+        </li>       
         <li class="{{ request()->routeIs('2fa.*') ? 'active' : '' }}">
           <a href="{{ route('2fa.show') }}" class="{{ request()->routeIs('2fa.*') ? 'active' : '' }}">
             <i class="bx bx-shield"></i> Two-Factor Auth
