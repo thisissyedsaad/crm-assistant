@@ -14,7 +14,12 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all(); // ya pagination
+        // $users = User::all(); // ya pagination
+        if (auth()->user()->role !== 'super-admin') {
+            $users = User::where('role', '!=', 'super-admin')->get();
+        } else {
+            $users = User::all(); // Super-admin sab dekh sakta hai
+        }
         return view('admin.users.index', compact('users'));
     }
 
@@ -34,7 +39,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'role' => ['required', 'in:admin,staff'],
+            'role' => ['required', 'in:admin,staff,super-admin'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -65,20 +70,52 @@ class UserController extends Controller
         return view('admin.users.edit', compact('user'));
     }
 
+    // public function update(Request $request, $id)
+    // {
+    //     $user = User::findOrFail($id);
+
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         // 'email' => "required|email|unique:users,email,{$user->id}",
+    //         'role' => 'required|in:admin,staff,super-admin',
+    //         'password' => 'nullable|min:6|confirmed',
+    //     ]);
+
+    //     $user->name = $request->name;
+    //     // $user->email = $request->email;
+    //     $user->role = $request->role;
+
+    //     if ($request->password) {
+    //         $user->password = bcrypt($request->password);
+    //     }
+
+    //     $user->save();
+
+    //     return redirect()->route('admin.users.index')->with('success', 'User updated successfully!');
+    // }
+
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
-        $request->validate([
+        $validationRules = [
             'name' => 'required|string|max:255',
-            // 'email' => "required|email|unique:users,email,{$user->id}",
-            'role' => 'required|in:admin,staff',
             'password' => 'nullable|min:6|confirmed',
-        ]);
+        ];
+
+        // Super-admin nahi hai to role validation add karo
+        if ($user->role !== 'super-admin') {
+            $validationRules['role'] = 'required|in:admin,staff';
+        }
+
+        $request->validate($validationRules);
 
         $user->name = $request->name;
-        // $user->email = $request->email;
-        $user->role = $request->role;
+        
+        // Super-admin ka role update nahi karo
+        if ($user->role !== 'super-admin') {
+            $user->role = $request->role;
+        }
 
         if ($request->password) {
             $user->password = bcrypt($request->password);

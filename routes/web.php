@@ -51,7 +51,7 @@ Route::middleware('auth')->group(function () {
   
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|super-admin'])->group(function () {
     Route::resource('users', UserController::class);
 });
 

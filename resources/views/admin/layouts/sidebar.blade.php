@@ -27,7 +27,7 @@
           </a>
         </li>
         
-        @if (auth()->user()->role === 'admin')
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'super-admin')
         <li class="treeview {{ request()->routeIs('admin.users.*') ? 'menu-open active' : '' }}">
           <a href="javascript:void(0)" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
             <i class="bx bx-user-circle"></i>
