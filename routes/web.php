@@ -62,7 +62,7 @@ Route::middleware('auth', 'ensure2fa')->group(function () {
   
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'ensure2fa'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|super-admin', 'ensure2fa'])->group(function () {
     Route::resource('users', UserController::class);
 });
 

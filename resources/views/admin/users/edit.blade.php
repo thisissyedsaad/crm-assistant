@@ -56,13 +56,29 @@
                                     <input type="email" name="email" class="form-control" id="email" value="{{ old('email', $user->email) }}" readonly disabled>
                                 </div>
 
-                                <div class="mb-3">
+                          {{-- <div class="mb-3">
                                     <label for="role" class="form-label">Role</label>
                                     <select name="role" id="role" class="form-select" required>
                                         <option value="">-- Select Role --</option>
                                         <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                                         <option value="staff" {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}>Staff</option>
                                     </select>
+                                </div> --}}
+
+                                <div class="mb-3">
+                                    @if($user->role == 'super-admin')
+                                        <label for="role" class="form-label" style="color:red;">This user’s role cannot be changed.</label>
+                                        <!-- <input type="text" class="form-control" value="Super Admin" disabled> -->
+                                        <input type="hidden" name="role" value="super-admin">
+                                        <!-- <small class="text-muted">Role cannot be changed</small> -->
+                                    @else
+                                        <label for="role" class="form-label">Role</label>
+                                        <select name="role" id="role" class="form-select" required>
+                                            <option value="">-- Select Role --</option>
+                                            <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                                            <option value="staff" {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}>Staff</option>
+                                        </select>
+                                    @endif
                                 </div>
 
                                 <div class="mb-3 position-relative">
