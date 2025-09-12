@@ -5,13 +5,13 @@
     <!-- Sidebar Menu -->
     <nav>
       <ul class="sidebar-menu" data-widget="tree">
-        <li class="menu-header-title">Main</li>
+        <!-- <li class="menu-header-title">Main</li>
 
         <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
           <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bx bx-home-heart"></i> Dashboard 
           </a>
-        </li>
+        </li> -->
 
         <li class="menu-header-title">CRM Modules</li>
         
