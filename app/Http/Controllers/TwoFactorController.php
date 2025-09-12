@@ -106,7 +106,7 @@ class TwoFactorController extends Controller
 
         if ($valid) {
             session(['2fa_verified' => true]);
-            return redirect()->intended('/admin/dashboard');
+            return redirect()->intended('/admin/orders');
         }
 
         return back()->withErrors(['one_time_password' => 'Invalid OTP code']);
