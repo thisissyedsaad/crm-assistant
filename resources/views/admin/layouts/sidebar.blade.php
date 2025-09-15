@@ -47,6 +47,7 @@
             </li>
           </ul>
         </li>
+        @endif
 
         <li class="treeview {{ request()->routeIs('admin.schedular.*') ? 'menu-open active' : '' }}">
           <a href="javascript:void(0)" class="">
@@ -72,7 +73,6 @@
             </li> -->
           </ul>
         </li>
-        @endif
         <li class="{{ request()->routeIs('admin.trainings.*') ? 'active' : '' }}">
           <a href="{{ route('admin.trainings.index') }}" class="{{ request()->routeIs('admin.trainings.*') ? 'active' : '' }}">
             <i class="bx bx-chalkboard"></i> Staff Training
