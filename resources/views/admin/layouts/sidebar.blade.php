@@ -78,6 +78,14 @@
             <i class="bx bx-chalkboard"></i> Staff Training
           </a>
         </li>
+
+        @if (auth()->user()->role === 'super-admin')
+        <li class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.ip-whitelist.index') }}" class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
+            <i class="bx bx-shield-alt-2"></i> Whitelist IPs
+          </a>
+        </li>
+        @endif
         
         <!-- 2FA Link -->
         <li class="menu-header-title">
@@ -93,6 +101,7 @@
             <i class="bx bx-shield"></i> Two-Factor Auth
           </a>
         </li>
+
       </ul>
     </nav>
   </div>
