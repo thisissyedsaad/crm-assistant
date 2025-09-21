@@ -527,11 +527,11 @@
                                         <table id="ordersTable" class="table table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th>Order Date/Time</th>
-                                                    <th>Order Number</th>
                                                     <th>Carrier/Vehicle</th>
                                                     <th>Distance</th>
                                                     <th>Sale Price</th>
+                                                    <th>Order Date/Time</th>
+                                                    <th>Order Number</th>
                                                     <th>Purchase</th>
                                                     <th>Order Status</th>
                                                 </tr>
@@ -539,6 +539,19 @@
                                             <tbody>
                                                 @foreach($orders as $order)
                                                     <tr>
+                                                        <td>
+                                                            {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
+                                                        </td>
+                                                        <td>
+                                                            {{ $order['attributes']['distance'] ?? '-' }}
+                                                        </td>
+                                                        <td>
+                                                            @if(isset($order['attributes']['orderPrice']))
+                                                                £{{ number_format($order['attributes']['orderPrice'], 2) }}
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td>
                                                         <td>
                                                             @if(isset($order['createdAt']))
                                                                 {{ \Carbon\Carbon::parse($order['createdAt'])->format('d-m-Y H:i') }}
@@ -551,19 +564,6 @@
                                                                 <a href="{{ route('admin.orders.show', $order['id'] ?? '#') }}" class="text-primary">
                                                                     {{ $order['attributes']['orderNo'] }}
                                                                 </a>
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
-                                                        </td>
-                                                        <td>
-                                                            {{ $order['attributes']['distance'] ?? '-' }}
-                                                        </td>
-                                                        <td>
-                                                            @if(isset($order['attributes']['orderPrice']))
-                                                                £{{ number_format($order['attributes']['orderPrice'], 2) }}
                                                             @else
                                                                 -
                                                             @endif
