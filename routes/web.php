@@ -51,11 +51,11 @@ Route::get('/optimize-clear', function () {
 });
 
 
-Route::get('/', function () {
-    return view('auth.login'); // this will load the login page
-});
-
 Route::middleware(['ip.whitelist'])->group(function () {
+    Route::get('/', function () {
+        return view('auth.login'); // this will load the login page
+    });
+
     // 2FA Routes (authenticated users ke liye)
     Route::middleware('auth')->group(function () {
         Route::get('/admin/2fa/setup', [TwoFactorController::class, 'show'])->name('2fa.show');
@@ -111,6 +111,7 @@ Route::middleware(['ip.whitelist'])->group(function () {
 
         Route::resource('trainings', TrainingController::class);
     });
+    
+    require __DIR__.'/auth.php';
 });
 
-require __DIR__.'/auth.php';

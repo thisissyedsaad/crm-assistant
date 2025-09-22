@@ -14,20 +14,45 @@ class IpWhitelistMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip IP check for super admin users
+        // Skip IP check for super admin users (already logged in)
         if (auth()->check() && auth()->user()->role === 'super-admin') {
             return $next($request);
         }
 
         // Get client IP address
         $clientIp = $this->getClientIp($request);
-        // Check if IP is whitelisted and active
-        if (IpWhitelist::isIpAllowed($clientIp)) {
-            // Return access denied response
+        
+        // Check if IP whitelist is enabled
+        if (!env('IP_WHITELIST_ENABLED', false)) {
+            return $next($request);
+        }
+
+        // Check default allowed IPs from environment
+        if ($this->isDefaultAllowedIp($clientIp)) {
+            return $next($request);
+        }
+
+        // Check if IP is whitelisted in database and active
+        if (!IpWhitelist::isIpAllowed($clientIp)) {
             return $this->accessDeniedResponse($request, $clientIp);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Check if IP is in default allowed IPs from environment
+     */
+    private function isDefaultAllowedIp(string $clientIp): bool
+    {
+        $defaultIps = env('DEFAULT_ALLOWED_IPS', '');
+        
+        if (empty($defaultIps)) {
+            return false;
+        }
+
+        $allowedIps = array_map('trim', explode(',', $defaultIps));
+        return in_array($clientIp, $allowedIps);
     }
 
     /**
@@ -74,31 +99,6 @@ class IpWhitelistMiddleware
     /**
      * Return access denied response
      */
-    // private function accessDeniedResponse(Request $request, string $ip): Response
-    // {
-    //     // Log the access attempt
-    //     \Log::warning('IP Access Denied', [
-    //         'ip' => $ip,
-    //         'url' => $request->fullUrl(),
-    //         'user_agent' => $request->userAgent(),
-    //         'timestamp' => now()
-    //     ]);
-
-    //     // Return JSON response for API requests
-    //     if ($request->expectsJson() || $request->is('api/*')) {
-    //         return response()->json([
-    //             'error' => 'Access Denied',
-    //             'message' => 'Your IP address is not authorized to access this resource.',
-    //             'ip' => $ip
-    //         ], 403);
-    //     }
-
-    //     // Return view for web requests
-    //     return response()->view('errors.ip-access-denied', [
-    //         'ip' => $ip
-    //     ], 403);
-    // }
-
     private function accessDeniedResponse(Request $request, string $ip): Response
     {
         // Log the access attempt
@@ -106,7 +106,9 @@ class IpWhitelistMiddleware
             'ip' => $ip,
             'url' => $request->fullUrl(),
             'user_agent' => $request->userAgent(),
-            'timestamp' => now()
+            'timestamp' => now(),
+            'default_ips' => env('DEFAULT_ALLOWED_IPS', 'none'),
+            'whitelist_enabled' => env('IP_WHITELIST_ENABLED', false)
         ]);
 
         // Logout the user if authenticated
@@ -121,13 +123,20 @@ class IpWhitelistMiddleware
             return response()->json([
                 'error' => 'Access Denied',
                 'message' => 'Your IP address is not authorized to access this resource.',
-                'ip' => $ip
+                'ip' => $ip,
+                'contact' => 'Please contact administrator to whitelist your IP address.'
             ], 403);
         }
 
-        // Return simple plain text for web requests
-        return response("Access Denied. Your IP address ({$ip}) is not authorized.", 403)
-            ->header('Content-Type', 'text/plain');
-    }
+        // Return enhanced plain text for web requests with more info
+        $message = "🚫 Access Denied\n\n";
+        $message .= "Your IP Address: {$ip}\n";
+        $message .= "Status: Not Authorized\n\n";
+        $message .= "This application is restricted to authorized IP addresses only.\n";
+        $message .= "Please contact the system administrator to request access.\n\n";
+        $message .= "Timestamp: " . now()->format('Y-m-d H:i:s T');
 
+        return response($message, 403)
+            ->header('Content-Type', 'text/plain; charset=utf-8');
+    }
 }
