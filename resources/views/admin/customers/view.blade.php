@@ -198,8 +198,8 @@
         }
 
         .dataTable tbody tr:hover {
-            background-color: rgba(13, 110, 253, 0.05) !important;
-            transform: translateX(5px);
+            /* background-color: rgba(13, 110, 253, 0.05) !important; */
+            transform: translateX(15px);
         }
 
         /* Card hover effects */
@@ -332,6 +332,45 @@
         .section-title .badge {
             margin-left: auto;
         }
+
+
+/* Row background colors based on status - using exact same colors as badges */
+.row-status-quote { 
+    background-color: #ffbc62 !important; 
+}
+.row-status-open { 
+    background-color: #e097fd !important; 
+}
+.row-status-mainopen { 
+    background-color: #ff8888 !important; 
+    color: #fff !important;
+}
+.row-status-planned { 
+    background-color: #ffff69 !important; 
+}
+.row-status-signed-off { 
+    background-color: #88ccff !important; 
+}
+.row-status-checked { 
+    background-color: #88ff88 !important; 
+}
+.row-status-invoiced { 
+    background-color: #e0e1df !important; 
+}
+
+/* Ensure text remains readable on colored backgrounds */
+.row-status-mainopen td {
+    color: #fff !important;
+}
+.row-status-mainopen td a {
+    color: #fff !important;
+    text-decoration: underline;
+}
+
+table.dataTable.table-striped>tbody>tr.odd>* {
+    box-shadow: none !important;
+}
+
     </style>
 @endpush
 
@@ -537,7 +576,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach($orders as $order)
+                                                <!-- @foreach($orders as $order)
                                                     <tr>
                                                         <td>
                                                             {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
@@ -615,7 +654,96 @@
                                                             @endif
                                                         </td>
                                                     </tr>
-                                                @endforeach
+                                                @endforeach -->
+
+@foreach($orders as $order)
+    @php
+        $status = strtolower($order['attributes']['status'] ?? '');
+        $statusClass = 'badge ';
+        $rowClass = '';
+        
+        switch($status) {
+            case 'quote':
+                $statusClass .= 'status-quote';
+                $rowClass = 'row-status-quote';
+                break;
+            case 'open':
+                $statusClass .= 'status-open';
+                $rowClass = 'row-status-open';
+                break;
+            case 'mainopen':
+                $statusClass .= 'status-mainopen';
+                $rowClass = 'row-status-mainopen';
+                break;
+            case 'planned':
+                $statusClass .= 'status-planned';
+                $rowClass = 'row-status-planned';
+                break;
+            case 'signedoff':
+                $statusClass .= 'status-signed-off';
+                $rowClass = 'row-status-signed-off';
+                break;
+            case 'checked':
+                $statusClass .= 'status-checked';
+                $rowClass = 'row-status-checked';
+                break;
+            case 'invoiced':
+                $statusClass .= 'status-invoiced';
+                $rowClass = 'row-status-invoiced';
+                break;
+            default:
+                $statusClass .= 'bg-secondary';
+                $rowClass = '';
+        }
+    @endphp
+    <tr class="{{ $rowClass }}">
+        <td>
+            {{ $order['attributes']['vehicleTypeName'] ?? '-' }}
+        </td>
+        <td>
+            {{ $order['attributes']['distance'] ?? '-' }}
+        </td>
+        <td>
+            @if(isset($order['attributes']['orderPrice']))
+                £{{ number_format($order['attributes']['orderPrice'], 2) }}
+            @else
+                -
+            @endif
+        </td>
+        <td>
+            @if(isset($order['createdAt']))
+                {{ \Carbon\Carbon::parse($order['createdAt'])->format('d-m-Y H:i') }}
+            @else
+                -
+            @endif
+        </td>
+        <td>
+            @if(!empty($order['attributes']['orderNo']))
+                <a href="{{ route('admin.orders.show', $order['id'] ?? '#') }}" class="text-primary">
+                    {{ $order['attributes']['orderNo'] }}
+                </a>
+            @else
+                -
+            @endif
+        </td>
+        <td>
+            @if(isset($order['attributes']['orderPurchasePrice']))
+                £{{ number_format($order['attributes']['orderPurchasePrice'], 2) }}
+            @else
+                -
+            @endif
+        </td>
+        <td>
+            @if(!empty($order['attributes']['status']))
+                <span class="{{ $statusClass }}">
+                    {{ ucfirst($order['attributes']['status']) }}
+                </span>
+            @else
+                -
+            @endif
+        </td>
+    </tr>
+@endforeach
                                             </tbody>
                                         </table>
                                     </div>

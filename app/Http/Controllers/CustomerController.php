@@ -475,27 +475,31 @@ class CustomerController extends Controller
                     
                     // Get first 10 orders for display in Order History tab
                     $orders = $allOrders->toArray();
-                    
                     \Log::info("Customer {$customerNo}: Total orders = {$totalOrders}, Total revenue = £{$totalRevenue}, AOV = £{$customerAOV}");
+
+                    // Get first 10 orders for display in Order History tab
+                    // $orders = $allOrders->toArray();
+                    
+                    // \Log::info("Customer {$customerNo}: Total orders = {$totalOrders}, Total revenue = £{$totalRevenue}, AOV = £{$customerAOV}");
                     
                     // Get meta from first page if needed (for compatibility)
-                    if ($currentPage === 2) { // Only 1 page was fetched
-                        $ordersResponse = $client->get($apiUrl . 'orders', [
-                            'headers' => [
-                                'Authorization' => 'Basic ' . $apiKey,
-                                'Content-Type'  => 'application/json',
-                                'Accept'        => 'application/json',
-                            ],
-                            'query' => [
-                                'filter[customerNo]' => $customerNo,
-                                'sort' => '-createdAt',
-                                'page' => 1
-                            ]
-                        ]);
-                        $ordersBody = $ordersResponse->getBody()->getContents();
-                        $ordersData = json_decode($ordersBody, true);
-                        $orders = array_slice($ordersData['data'] ?? [], 0, 10);
-                    }
+                    // if ($currentPage === 2) { // Only 1 page was fetched
+                    //     $ordersResponse = $client->get($apiUrl . 'orders', [
+                    //         'headers' => [
+                    //             'Authorization' => 'Basic ' . $apiKey,
+                    //             'Content-Type'  => 'application/json',
+                    //             'Accept'        => 'application/json',
+                    //         ],
+                    //         'query' => [
+                    //             'filter[customerNo]' => $customerNo,
+                    //             'sort' => '-createdAt',
+                    //             'page' => 1
+                    //         ]
+                    //     ]);
+                    //     $ordersBody = $ordersResponse->getBody()->getContents();
+                    //     $ordersData = json_decode($ordersBody, true);
+                    //     $orders = array_slice($ordersData['data'] ?? [], 0, 10);
+                    // }
                     
                 } catch (\Exception $e) {
                     // If orders API fails, continue with empty data
