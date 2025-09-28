@@ -33,10 +33,10 @@ class CompletedJobsController extends Controller
 
                 // Date Range Filtering
                 if ($request->filled('fromDate')) {
-                    $query->whereDate('updated_at', '>=', Carbon::parse($request->input('fromDate'))->startOfDay());
+                    $query->whereDate('completed_at', '>=', Carbon::parse($request->input('fromDate'))->startOfDay());
                 }
                 if ($request->filled('toDate')) {
-                    $query->whereDate('updated_at', '<=', Carbon::parse($request->input('toDate'))->endOfDay());
+                    $query->whereDate('completed_at', '<=', Carbon::parse($request->input('toDate'))->endOfDay());
                 }
 
                 // Apply search filter if provided
@@ -50,11 +50,11 @@ class CompletedJobsController extends Controller
                 }
 
                 // Apply sorting
-                if ($sortField === 'updated_at') {
-                    $query->orderBy('updated_at', $orderDirection);
+                if ($sortField === 'completed_at') {
+                    $query->orderBy('completed_at', $orderDirection);
                 } else {
                     // For JSON fields, we'll sort by updated_at as fallback
-                    $query->orderBy('updated_at', $orderDirection);
+                    $query->orderBy('completed_at', $orderDirection);
                 }
 
                 // Get total count before pagination
@@ -111,7 +111,7 @@ class CompletedJobsController extends Controller
 
                     return [
                         'id' => $job->order_id,
-                        'updatedAt' => $job->updated_at ? $job->updated_at->format('d-m-Y H:i') : null,
+                        'completedAt' => $job->completed_at ? $job->completed_at->format('d-m-Y H:i') : null,
                         'orderNo' => $attributes['orderNo'] ?? null,
                         'customerUserId' => $userDisplay,
                         'carrierNo' => isset($attributes['carrierNo']) ? $attributes['carrierNo'] : null,
@@ -132,7 +132,7 @@ class CompletedJobsController extends Controller
                         'customerNo' => $attributes['customerNo'] ?? null,
                         'vehicleTypeName' => $attributes['vehicleTypeName'] ?? null,
                         'status' => 'Completed', // All are completed
-                        'completedAt' => $job->updated_at ? $job->updated_at->format('d-m-Y H:i') : null,
+                        'completedAt' => $job->completed_at ? $job->completed_at->format('d-m-Y H:i') : null,
                     ];
                 });
 

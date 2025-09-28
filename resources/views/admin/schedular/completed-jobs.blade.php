@@ -441,8 +441,8 @@
                 lengthMenu: [[25, 50, 100], [25, 50, 100]],
                 columns: [
                     { 
-                        data: 'updatedAt', 
-                        name: 'updated_at',
+                        data: 'completedAt', 
+                        name: 'completed_at',
                         className: 'text-nowrap',
                         orderable: true,
                         title: 'Completed Date'

@@ -440,8 +440,7 @@ class CurrentJobsController extends Controller
             $orderIds = $orders->pluck('id')->toArray();
 
             // Get completed jobs count ONLY from today's filtered orders
-            $completedJobsToday = CurrentJobsTracking::whereIn('order_id', $orderIds)
-                ->where('status', 'completed')
+            $completedJobsToday = CurrentJobsTracking::where('status', 'completed')
                 ->whereDate('completed_at', Carbon::today('Europe/London'))
                 ->count();
             
