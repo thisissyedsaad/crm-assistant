@@ -459,9 +459,16 @@ class CustomerController extends Controller
                             }
                         }
                         
-                        // If less than 100 records, this is the last page
-                        if ($pageOrders->count() < 100) {
-                            \Log::info("Last page reached (< 100 records). Total pages: {$currentPage}");
+                        // CHECK META TO DETERMINE IF THERE ARE MORE PAGES
+                        $meta = $ordersData['meta'] ?? [];
+                        $currentPageFromMeta = $meta['current_page'] ?? $currentPage;
+                        $lastPage = $meta['last_page'] ?? 1;
+                        
+                        \Log::info("Meta - Current page: {$currentPageFromMeta}, Last page: {$lastPage}");
+                        
+                        // If we've reached the last page, stop
+                        if ($currentPageFromMeta >= $lastPage) {
+                            \Log::info("Reached last page ({$lastPage}). Stopping.");
                             break;
                         }
                         
