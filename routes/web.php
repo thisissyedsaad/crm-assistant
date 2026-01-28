@@ -12,6 +12,7 @@ use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\Admin\IpWhitelistController; // Add this import
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\TargetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +111,10 @@ Route::middleware(['ip.whitelist'])->group(function () {
         });
 
         Route::resource('trainings', TrainingController::class);
+
+        Route::get('/targets', [TargetController::class, 'index'])->name('targets.index');
+        Route::post('/targets/update', [TargetController::class, 'updateTarget'])->name('targets.update');
+        Route::post('/targets/save-all', [TargetController::class, 'saveAll'])->name('targets.save-all');
     });
     
 });

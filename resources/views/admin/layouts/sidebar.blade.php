@@ -47,6 +47,12 @@
             </li>
           </ul>
         </li>
+
+        <li class="{{ request()->routeIs('admin.targets.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.targets.index') }}" class="{{ request()->routeIs('admin.targets.*') ? 'active' : '' }}">
+            <i class="bx bx-target-lock"></i> Targets Management
+          </a>
+        </li>
         @endif
 
         <li class="treeview {{ request()->routeIs('admin.schedular.*') ? 'menu-open active' : '' }}">

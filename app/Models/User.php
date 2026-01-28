@@ -47,4 +47,9 @@ class User extends Authenticatable
         'password' => 'hashed',
         'google2fa_enabled' => 'boolean',
     ];
+
+    public function dailyTarget()
+    {
+        return $this->hasOne(DailyTarget::class);
+    }
 }
