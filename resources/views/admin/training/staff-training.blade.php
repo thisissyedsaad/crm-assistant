@@ -65,6 +65,7 @@
         .stats-card.driver-late,
         .stats-card.duplicate-profiles,
         .stats-card.fragile-items,
+        .stats-card.hgv-items,
         .stats-card.international-delivery,
         .stats-card.potential-fraud,
         .stats-card.upselling-handballing,
@@ -450,8 +451,18 @@
                     <div class="col training-card">
                         <div class="card stats-card fragile-items" data-training="fragile-items" onclick="openFragileItemsModal()">
                             <div class="card-content">
-                                <div class="card-title">Fragile Item(s)</div>
-                                <div class="card-subtitle">Fragile Handling Procedures</div>
+                                <div class="card-title">Fragile & High Value Item(s)</div>
+                                <div class="card-subtitle">Fragile & High Value Handling Procedures</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HGV Item(s) -->
+                    <div class="col training-card">
+                        <div class="card stats-card hgv-items" data-training="hgv-items" onclick="openHGVItemsModal()">
+                            <div class="card-content">
+                                <div class="card-title">HGV</div>
+                                <div class="card-subtitle">Learn more about Heavy Goods Vehicles</div>
                             </div>
                         </div>
                     </div>
@@ -882,7 +893,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="fragileItemsModalLabel">
-                    <i class="bx bx-package me-2"></i>Fragile Items Training Resources
+                    <i class="bx bx-package me-2"></i>Fragile / High Value Items Training Resources
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -911,6 +922,43 @@
                             <div class="resource-desc">Comprehensive fragile item handling procedures.</div>
                         </a>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="https://docs.google.com/document/d/1Cs1bppbZZlcpjgqp7CkmhPQJzoAzRS9u/edit?usp=sharing&ouid=100559360821818587824&rtpof=true&sd=true" target="_blank" class="adr-resource-card">
+                            <div class="resource-title">High-Value Items Delivery</div>
+                            <div class="resource-desc">Any items where the declared value creates increased financial, insurance, or liability risk.</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- HGV Items Modal -->
+<div class="modal fade adr-modal" id="hgvItemsModal" tabindex="-1" aria-labelledby="hgvItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hgvItemsModalLabel">
+                    <i class="bx bx-package me-2"></i>HGV Training Resources
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <p class="text-muted mb-4">Proper handling and care procedures for Heavy Goods Vehicle.</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="https://docs.google.com/document/d/1MfJmm-sqRuG8n1MLW6hatdZ3qtzN4bhX/edit?usp=sharing&ouid=100559360821818587824&rtpof=true&sd=true" target="_blank" class="adr-resource-card">
+                            <div class="resource-title">Heavy Goods Vehicles</div>
+                            <div class="resource-desc">Learn about Heavy Goods Vehicles.</div>
+                        </a>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -1181,6 +1229,11 @@
         // Function to open Fragile Items Modal
         function openFragileItemsModal() {
             $('#fragileItemsModal').modal('show');
+        }
+
+        // Function to open HGV Items Modal
+        function openHGVItemsModal() {
+            $('#hgvItemsModal').modal('show');
         }
 
         // Function to open International Delivery Modal
