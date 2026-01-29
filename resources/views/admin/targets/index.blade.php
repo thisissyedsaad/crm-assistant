@@ -106,7 +106,28 @@
         .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        
+
+        /* Alternating row colors for better visual appeal */
+        #datatable tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
+        }
+
+        #datatable tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        #datatable tbody tr:hover {
+            background-color: #e9ecef !important;
+        }
+
+        /* Total field styling - make it look disabled */
+        .daily-target-total-display {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+
         /* Mobile specific styling */
         @media (max-width: 767px) {
             .dataTables_filter input[type="search"] {
@@ -195,31 +216,47 @@
 
                                     <tbody>
                                         @foreach ($staffUsers as $user)
+                                            @php
+                                                // Calculate working days (weekdays) for current month
+                                                $now = \Carbon\Carbon::now();
+                                                $startOfMonth = $now->copy()->startOfMonth();
+                                                $endOfMonth = $now->copy()->endOfMonth();
+                                                $workingDays = 0;
+                                                
+                                                for ($date = $startOfMonth->copy(); $date->lte($endOfMonth); $date->addDay()) {
+                                                    if ($date->isWeekday()) {
+                                                        $workingDays++;
+                                                    }
+                                                }
+                                            @endphp
                                         <tr data-user-id="{{ $user->id }}">
                                             <td><strong>{{ $user->name }}</strong></td>
                                             <td>
                                                 <div class="d-flex gap-2 align-items-center" style="white-space: nowrap;">
-                                                    <input 
-                                                        type="number" 
-                                                        class="form-control form-control-sm daily-target-total" 
+                                                    <strong class="">
+                                                        {{ ($user->dailyTarget->daily_target_new ?? 0) + ($user->dailyTarget->daily_target_existing ?? 0) }}
+                                                    </strong>
+                                                    <!-- <input
+                                                        type="text"
+                                                        class="form-control form-control-sm daily-target-total daily-target-total-display"
                                                         placeholder="Total"
-                                                        value="{{ $user->dailyTarget->daily_target_total ?? 0 }}"
-                                                        min="0"
-                                                        style="width: 70px;"
-                                                    >
+                                                        value="{{ ($user->dailyTarget->daily_target_new ?? 0) + ($user->dailyTarget->daily_target_existing ?? 0) }}"
+                                                        readonly
+                                                        style   ="width: 70px;"
+                                                    > -->
                                                     <span class="align-self-center">/</span>
-                                                    <input 
-                                                        type="number" 
-                                                        class="form-control form-control-sm daily-target-new" 
+                                                    <input
+                                                        type="number"
+                                                        class="form-control form-control-sm daily-target-new"
                                                         placeholder="New"
                                                         value="{{ $user->dailyTarget->daily_target_new ?? 0 }}"
                                                         min="0"
                                                         style="width: 70px;"
                                                     >
                                                     <span class="align-self-center">/</span>
-                                                    <input 
-                                                        type="number" 
-                                                        class="form-control form-control-sm daily-target-existing" 
+                                                    <input
+                                                        type="number"
+                                                        class="form-control form-control-sm daily-target-existing"
                                                         placeholder="Existing"
                                                         value="{{ $user->dailyTarget->daily_target_existing ?? 0 }}"
                                                         min="0"
@@ -231,7 +268,7 @@
                                                 <input 
                                                     type="number" 
                                                     class="form-control form-control-sm working-days" 
-                                                    value="{{ $user->dailyTarget->working_days ?? 0 }}"
+                                                    value="{{ $user->dailyTarget->working_days ?? $workingDays }}"
                                                     min="0"
                                                     style="width: 100px;"
                                                 >
@@ -308,19 +345,31 @@
                 }
             });
 
-            // Auto-calculate monthly target on input change
-            function calculateMonthlyTarget(row) {
-                const total = parseInt(row.find('.daily-target-total').val()) || 0;
+            // Auto-calculate total and monthly target
+            function calculateTargets(row) {
+                const newTarget = parseInt(row.find('.daily-target-new').val()) || 0;
+                const existingTarget = parseInt(row.find('.daily-target-existing').val()) || 0;
+                const total = newTarget + existingTarget;
+
+                // Update the total field
+                row.find('.daily-target-total').val(total);
+
+                // Calculate monthly target
                 const workingDays = parseInt(row.find('.working-days').val()) || 0;
                 const monthlyTarget = total * workingDays;
-                
+
                 row.find('.monthly-target').text(monthlyTarget);
             }
 
-            // Listen to input changes
-            $('#datatable tbody').on('input', '.daily-target-total, .working-days', function() {
+            // Listen to input changes on New, Existing, and Working Days
+            $('#datatable tbody').on('input', '.daily-target-new, .daily-target-existing, .working-days', function() {
                 const row = $(this).closest('tr');
-                calculateMonthlyTarget(row);
+                calculateTargets(row);
+            });
+
+            // Calculate targets for all rows on page load
+            $('#datatable tbody tr').each(function() {
+                calculateTargets($(this));
             });
 
             // Save individual row
@@ -341,11 +390,15 @@
                 // Disable button and show loading
                 button.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
 
+                const newTarget = parseInt(row.find('.daily-target-new').val()) || 0;
+                const existingTarget = parseInt(row.find('.daily-target-existing').val()) || 0;
+                const total = newTarget + existingTarget;
+
                 const data = {
                     user_id: userId,
-                    daily_target_total: parseInt(row.find('.daily-target-total').val()) || 0,
-                    daily_target_new: parseInt(row.find('.daily-target-new').val()) || 0,
-                    daily_target_existing: parseInt(row.find('.daily-target-existing').val()) || 0,
+                    daily_target_total: total,
+                    daily_target_new: newTarget,
+                    daily_target_existing: existingTarget,
                     working_days: parseInt(row.find('.working-days').val()) || 0,
                     _token: '{{ csrf_token() }}'
                 };
@@ -392,13 +445,17 @@
                 $('#datatable tbody tr').each(function() {
                     const row = $(this);
                     const userId = row.data('user-id');
-                    
+
                     if (userId) {
+                        const newTarget = parseInt(row.find('.daily-target-new').val()) || 0;
+                        const existingTarget = parseInt(row.find('.daily-target-existing').val()) || 0;
+                        const total = newTarget + existingTarget;
+
                         targets.push({
                             user_id: userId,
-                            daily_target_total: parseInt(row.find('.daily-target-total').val()) || 0,
-                            daily_target_new: parseInt(row.find('.daily-target-new').val()) || 0,
-                            daily_target_existing: parseInt(row.find('.daily-target-existing').val()) || 0,
+                            daily_target_total: total,
+                            daily_target_new: newTarget,
+                            daily_target_existing: existingTarget,
                             working_days: parseInt(row.find('.working-days').val()) || 0,
                         });
                     }
