@@ -17,7 +17,7 @@ class OrderController extends Controller
         if ($request->ajax()) {
             try {
                 $client = new Client();
-                $apiUrl = env('TRANSPORT_API_URL'); 
+                $apiUrl = env('TRANSPORT_API_URL');
                 $apiKey = env('TRANSPORT_API_KEY');
 
                 // DataTables parameters
@@ -71,6 +71,7 @@ class OrderController extends Controller
                         'Accept'        => 'application/json',
                     ],
                     'query' => $apiQuery,
+                    'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                 ]);
 
                 $res = json_decode($response->getBody()->getContents(), true);
@@ -166,6 +167,7 @@ class OrderController extends Controller
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $customerData = json_decode($response->getBody()->getContents(), true);
@@ -198,6 +200,7 @@ class OrderController extends Controller
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $data = json_decode($response->getBody()->getContents(), true);
@@ -222,6 +225,7 @@ class OrderController extends Controller
                             'Content-Type'  => 'application/json',
                             'Accept'        => 'application/json',
                         ],
+                        'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                     ]);
 
                     $customerData = json_decode($customerResponse->getBody()->getContents(), true);
@@ -249,7 +253,8 @@ class OrderController extends Controller
                         'query' => [
                             'filter[customerNo]' => $customerNo,
                             'sort' => '-createdAt'
-                        ]
+                        ],
+                        'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                     ]);
                     $ordersData = json_decode($ordersResponse->getBody()->getContents(), true);
                     
@@ -324,7 +329,8 @@ class OrderController extends Controller
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
-                'query' => $apiQuery
+                'query' => $apiQuery,
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $ordersData = json_decode($response->getBody()->getContents(), true);

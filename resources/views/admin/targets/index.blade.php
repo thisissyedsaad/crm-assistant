@@ -128,6 +128,84 @@
             cursor: not-allowed;
         }
 
+        /* Calendar Grid Styling */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-height: 45px;
+        }
+
+        .calendar-day:hover:not(.day-header):not(.empty-day):not(.past-day) {
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 123, 255, 0.2);
+        }
+
+        .calendar-day.selected {
+            background: #007bff !important;
+            color: white !important;
+            border-color: #0056b3 !important;
+        }
+
+        .calendar-day.selected:hover {
+            background: #0056b3 !important;
+        }
+
+        .calendar-day.day-header {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+            cursor: default;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .calendar-day.empty-day {
+            background: transparent;
+            border-color: transparent;
+            cursor: default;
+        }
+
+        .calendar-day.past-day {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .calendar-day.weekend {
+            background: #fff3cd;
+        }
+
+        .calendar-day.weekend.selected {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            border-color: #e0a800 !important;
+        }
+
+        .calendar-day.today {
+            border-color: #28a745;
+            border-width: 3px;
+            font-weight: 700;
+        }
+
         /* Mobile specific styling */
         @media (max-width: 767px) {
             .dataTables_filter input[type="search"] {
@@ -217,16 +295,14 @@
                                     <tbody>
                                         @foreach ($staffUsers as $user)
                                             @php
-                                                // Calculate working days (weekdays) for current month
-                                                $now = \Carbon\Carbon::now();
-                                                $startOfMonth = $now->copy()->startOfMonth();
-                                                $endOfMonth = $now->copy()->endOfMonth();
-                                                $workingDays = 0;
-                                                
-                                                for ($date = $startOfMonth->copy(); $date->lte($endOfMonth); $date->addDay()) {
-                                                    if ($date->isWeekday()) {
-                                                        $workingDays++;
-                                                    }
+                                                // Get working days from calendar table if exists, otherwise from daily_targets
+                                                $currentCalendar = $user->workingDaysCalendar->first();
+
+                                                if ($currentCalendar) {
+                                                    $workingDays = $currentCalendar->total_working_days;
+                                                } else {
+                                                    // Fallback: Calculate working days (weekdays) for current month
+                                                    $workingDays = $user->dailyTarget->working_days ?? 0;
                                                 }
                                             @endphp
                                         <tr data-user-id="{{ $user->id }}">
@@ -265,13 +341,16 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input 
-                                                    type="number" 
-                                                    class="form-control form-control-sm working-days" 
-                                                    value="{{ $user->dailyTarget->working_days ?? $workingDays }}"
-                                                    min="0"
-                                                    style="width: 100px;"
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary open-calendar-btn"
+                                                    data-user-id="{{ $user->id }}"
+                                                    data-user-name="{{ $user->name }}"
                                                 >
+                                                    <i class="bx bx-calendar"></i>
+                                                    <span class="working-days-count">{{ $workingDays }}</span> Days
+                                                </button>
+                                                <input type="hidden" class="working-days" value="{{ $workingDays }}">
                                             </td>
                                             <td>
                                                 <strong class="monthly-target text-primary">
@@ -295,6 +374,50 @@
         </div>
     </div>
 </div>
+
+<!-- Working Days Calendar Modal -->
+<div class="modal fade" id="workingDaysModal" tabindex="-1" aria-labelledby="workingDaysModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="workingDaysModalLabel">
+                    <i class="bx bx-calendar"></i> Select Working Days - <span id="modal-user-name"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <h6 class="text-muted" id="current-month-year"></h6>
+                    <small class="text-info">Click dates to select/deselect working days for current month</small>
+                </div>
+
+                <!-- Color Legend -->
+                <div class="d-flex justify-content-center gap-3 mb-3 flex-wrap" style="font-size: 0.85rem;">
+                    <span><span style="display:inline-block; width:15px; height:15px; background:#007bff; border-radius:3px;"></span> Selected</span>
+                    <span><span style="display:inline-block; width:15px; height:15px; background:#fff3cd; border-radius:3px; border:1px solid #ddd;"></span> Weekend</span>
+                    <span><span style="display:inline-block; width:15px; height:15px; background:#e9ecef; border-radius:3px;"></span> Past Day</span>
+                    <span><span style="display:inline-block; width:15px; height:15px; background:white; border:3px solid #28a745; border-radius:3px;"></span> Today</span>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Calendar will be generated here by JavaScript -->
+                </div>
+
+                <div class="mt-3 text-center">
+                    <strong>Total Selected Days: <span id="selected-days-count" class="text-primary">0</span></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="save-calendar-btn">
+                    <i class="bx bx-save"></i> Save Working Days
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -409,9 +532,12 @@
                     data: data,
                     success: function(response) {
                         if (response.success) {
+                            // Update the Total display (bold number in Daily Target column)
+                            row.find('td:eq(1) strong').first().text(total);
+
                             // Update monthly target
                             row.find('.monthly-target').text(response.monthly_target);
-                            
+
                             // Show success message
                             Swal.fire({
                                 icon: 'success',
@@ -499,6 +625,185 @@
                     },
                     complete: function() {
                         button.prop('disabled', false).html('<i class="bx bx-save"></i> Save All');
+                    }
+                });
+            });
+
+            // ========================================
+            // WORKING DAYS CALENDAR FUNCTIONALITY
+            // ========================================
+
+            let currentUserId = null;
+            let currentUserName = '';
+            let selectedDays = [];
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1; // 1-12
+            const today = currentDate.getDate();
+
+            // Open calendar modal
+            $(document).on('click', '.open-calendar-btn', function() {
+                const button = $(this);
+                currentUserId = button.data('user-id');
+                currentUserName = button.data('user-name');
+
+                // Update modal title
+                $('#modal-user-name').text(currentUserName);
+
+                // Set month/year display
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+                $('#current-month-year').text(`${monthNames[currentMonth - 1]} ${currentYear}`);
+
+                // Load saved working days for this user/month
+                loadWorkingDays();
+
+                // Show modal
+                $('#workingDaysModal').modal('show');
+            });
+
+            // Load working days from database
+            function loadWorkingDays() {
+                $.ajax({
+                    url: '{{ route("admin.targets.calendar.get") }}',
+                    method: 'POST',
+                    data: {
+                        user_id: currentUserId,
+                        year: currentYear,
+                        month: currentMonth,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Convert string days to integers
+                            selectedDays = (response.working_days || []).map(day => parseInt(day));
+                            console.log('Loaded working days:', selectedDays);
+                            renderCalendar();
+                        }
+                    },
+                    error: function() {
+                        selectedDays = [];
+                        renderCalendar();
+                    }
+                });
+            }
+
+            // Render calendar grid
+            function renderCalendar() {
+                const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+                const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay(); // 0 = Sunday
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                console.log('Rendering calendar with selected days:', selectedDays);
+
+                let html = '';
+
+                // Day headers
+                dayNames.forEach(day => {
+                    html += `<div class="calendar-day day-header">${day}</div>`;
+                });
+
+                // Empty cells before first day
+                for (let i = 0; i < firstDay; i++) {
+                    html += '<div class="calendar-day empty-day"></div>';
+                }
+
+                // Days of month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(currentYear, currentMonth - 1, day);
+                    const dayOfWeek = date.getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const isToday = day === today;
+                    const isPast = day < today;
+                    const isSelected = selectedDays.includes(day);
+
+                    if (isSelected) {
+                        console.log(`Day ${day} is marked as selected`);
+                    }
+
+                    let classes = 'calendar-day';
+                    if (isSelected) classes += ' selected';
+                    if (isWeekend) classes += ' weekend';
+                    if (isToday) classes += ' today';
+                    if (isPast) classes += ' past-day';
+
+                    html += `<div class="${classes}" data-day="${day}">${day}</div>`;
+                }
+
+                $('#calendar-grid').html(html);
+                updateSelectedCount();
+            }
+
+            // Toggle day selection
+            $(document).on('click', '.calendar-day:not(.day-header):not(.empty-day):not(.past-day)', function() {
+                const day = parseInt($(this).data('day'));
+                const index = selectedDays.indexOf(day);
+
+                if (index > -1) {
+                    // Deselect
+                    selectedDays.splice(index, 1);
+                    $(this).removeClass('selected');
+                } else {
+                    // Select
+                    selectedDays.push(day);
+                    $(this).addClass('selected');
+                }
+
+                updateSelectedCount();
+            });
+
+            // Update selected days count
+            function updateSelectedCount() {
+                $('#selected-days-count').text(selectedDays.length);
+            }
+
+            // Save working days
+            $('#save-calendar-btn').on('click', function() {
+                const button = $(this);
+                button.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
+
+                $.ajax({
+                    url: '{{ route("admin.targets.calendar.save") }}',
+                    method: 'POST',
+                    data: {
+                        user_id: currentUserId,
+                        year: currentYear,
+                        month: currentMonth,
+                        working_days: selectedDays,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update the button display in the table
+                            const row = $(`tr[data-user-id="${currentUserId}"]`);
+                            row.find('.working-days-count').text(response.total_working_days);
+                            row.find('.working-days').val(response.total_working_days);
+
+                            // Update monthly target from server response (already saved in DB)
+                            row.find('.monthly-target').text(response.monthly_target);
+
+                            // Close modal
+                            $('#workingDaysModal').modal('hide');
+
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Saved!',
+                                text: 'Working days saved successfully',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to save working days. Please try again.',
+                        });
+                    },
+                    complete: function() {
+                        button.prop('disabled', false).html('<i class="bx bx-save"></i> Save Working Days');
                     }
                 });
             });

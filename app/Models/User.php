@@ -52,4 +52,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(DailyTarget::class);
     }
+
+    public function workingDaysCalendar()
+    {
+        return $this->hasMany(WorkingDaysCalendar::class);
+    }
 }

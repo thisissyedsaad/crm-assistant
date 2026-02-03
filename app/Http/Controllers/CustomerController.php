@@ -70,6 +70,7 @@ class CustomerController extends Controller
                         'Accept'        => 'application/json',
                     ],
                     'query' => $apiQuery,
+                    'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                 ]);
 
                 $res = json_decode($response->getBody()->getContents(), true);
@@ -231,6 +232,7 @@ class CustomerController extends Controller
                             'Accept'        => 'application/json',
                         ],
                         'query' => $apiQuery,
+                        'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                     ]);
 
                     $res = json_decode($response->getBody()->getContents(), true);
@@ -299,6 +301,7 @@ class CustomerController extends Controller
                     'filter[customerNo]' => $customerId,
                     'sort' => '-createdAt', // Sort by newest first
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),,
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);
@@ -357,6 +360,7 @@ class CustomerController extends Controller
                 'query' => [
                     'filter[customerNo]' => $customerNo,
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),,
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);
@@ -391,6 +395,7 @@ class CustomerController extends Controller
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),,
             ]);
 
             $body = $response->getBody()->getContents();
@@ -432,7 +437,8 @@ class CustomerController extends Controller
                                 'filter[customerNo]' => $customerNo,
                                 'sort' => '-createdAt',
                                 'page' => $currentPage
-                            ]
+                            ],
+                            'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                         ]);
 
                         $ordersBody = $ordersResponse->getBody()->getContents();

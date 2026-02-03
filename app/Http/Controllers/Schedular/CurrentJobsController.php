@@ -67,6 +67,7 @@ class CurrentJobsController extends Controller
                         'Accept'        => 'application/json',
                     ],
                     'query' => $apiQuery,
+                    'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                 ]);
 
                 $res = json_decode($response->getBody()->getContents(), true);
@@ -397,6 +398,7 @@ class CurrentJobsController extends Controller
                     'Accept'        => 'application/json',
                 ],
                 'query' => $apiQuery,
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);
@@ -552,6 +554,7 @@ class CurrentJobsController extends Controller
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $orderData = json_decode($response->getBody()->getContents(), true);
@@ -625,6 +628,7 @@ class CurrentJobsController extends Controller
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $customerData = json_decode($response->getBody()->getContents(), true);
@@ -640,6 +644,7 @@ class CurrentJobsController extends Controller
                 'query' => [
                     'filter[customerNo]' => $customerNo,
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $res = json_decode($response3->getBody()->getContents(), true);
@@ -657,6 +662,7 @@ class CurrentJobsController extends Controller
                     'query' => [
                         'filter[carrierNo]' => $carrierNo,
                     ],
+                    'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                 ]);
 
                 $carrierData = json_decode($response2->getBody()->getContents(), true);
@@ -716,6 +722,7 @@ class CurrentJobsController extends Controller
                             'Content-Type'  => 'application/json',
                             'Accept'        => 'application/json',
                         ],
+                        'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                     ]);
 
                     $customerData = json_decode($customerResponse->getBody()->getContents(), true);
@@ -743,7 +750,8 @@ class CurrentJobsController extends Controller
                         'query' => [
                             'filter[customerNo]' => $customerNo,
                             'sort' => '-createdAt'
-                        ]
+                        ],
+                        'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
                     ]);
                     $ordersData = json_decode($ordersResponse->getBody()->getContents(), true);
                     
@@ -818,6 +826,7 @@ class CurrentJobsController extends Controller
                 'query' => [
                     'filter[customerNo]' => $customerNo,
                 ],
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);
@@ -854,6 +863,7 @@ class CurrentJobsController extends Controller
                     'Accept'        => 'application/json',
                 ],
                 'query' => $apiQuery,
+                'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
             ]);
 
             $res = json_decode($response->getBody()->getContents(), true);

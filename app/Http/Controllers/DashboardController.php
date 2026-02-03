@@ -27,6 +27,7 @@ class DashboardController extends Controller
                 // 'filter[date][gte]' => '2025-06-02',
                 'filter[date][gte]' => Carbon::today()->format('Y-m-d'),
             ],
+            'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
         ]);
 
         $body = $response->getBody()->getContents();
