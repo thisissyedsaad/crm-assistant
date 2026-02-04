@@ -75,11 +75,9 @@ class SalesTargetService
             $userSales = $salesByUser->get($user->id, collect([]));
             $target = $user->dailyTarget;
 
-            // Calculate targets for the period
-            $workingDays = $this->getWorkingDaysForPeriod($user->id, $startDate, $endDate);
-
-            // Monthly targets (M = total, N = new, E = existing)
-            $targetTotal = $target ? $target->daily_target_total * $workingDays : 0;
+            // Monthly targets from database (M = monthly_target, N = new * working_days, E = existing * working_days)
+            $workingDays = $target ? $target->working_days : 0;
+            $targetTotal = $target ? $target->monthly_target : 0;
             $targetNew = $target ? $target->daily_target_new * $workingDays : 0;
             $targetExisting = $target ? $target->daily_target_existing * $workingDays : 0;
 
