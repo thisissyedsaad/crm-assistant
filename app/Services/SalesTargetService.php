@@ -65,8 +65,8 @@ class SalesTargetService
     {
         $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
 
-        // Get all staff users with their targets
-        $staffUsers = User::where('role', 'staff')
+        // Get all staff and admin users with their targets
+        $staffUsers = User::whereIn('role', ['staff', 'admin'])
             ->with('dailyTarget')
             ->get();
 
@@ -178,7 +178,7 @@ class SalesTargetService
         $byUser = $validSales->groupBy('csd_id');
 
         // Get user names
-        $users = User::where('role', 'staff')->pluck('name', 'id');
+        $users = User::whereIn('role', ['staff', 'admin'])->pluck('name', 'id');
 
         $labels = [];
         $data = [];
@@ -211,7 +211,7 @@ class SalesTargetService
         });
 
         $byUser = $newSales->groupBy('csd_id');
-        $users = User::where('role', 'staff')->pluck('name', 'id');
+        $users = User::whereIn('role', ['staff', 'admin'])->pluck('name', 'id');
 
         $labels = [];
         $data = [];
@@ -244,7 +244,7 @@ class SalesTargetService
         });
 
         $byUser = $existingSales->groupBy('csd_id');
-        $users = User::where('role', 'staff')->pluck('name', 'id');
+        $users = User::whereIn('role', ['staff', 'admin'])->pluck('name', 'id');
 
         $labels = [];
         $data = [];
@@ -271,7 +271,7 @@ class SalesTargetService
     {
         return DailyTarget::with('user')
             ->whereHas('user', function ($query) {
-                $query->where('role', 'staff');
+                $query->whereIn('role', ['staff', 'admin']);
             })
             ->get();
     }

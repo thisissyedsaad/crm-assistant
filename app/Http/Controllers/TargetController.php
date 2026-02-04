@@ -18,8 +18,8 @@ class TargetController extends Controller
         $currentYear = now()->year;
         $currentMonth = now()->month;
 
-        // Get all staff users with their targets
-        $staffUsers = User::where('role', 'staff')
+        // Get all staff and admin users with their targets
+        $staffUsers = User::whereIn('role', ['staff', 'admin'])
             ->with(['dailyTarget', 'workingDaysCalendar' => function($query) use ($currentYear, $currentMonth) {
                 $query->where('year', $currentYear)
                       ->where('month', $currentMonth);
