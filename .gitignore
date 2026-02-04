@@ -16,3 +16,7 @@ yarn-error.log
 /.vscode
 composer.lock
 .htaccess
+
+# Google Sheets API Credentials (sensitive)
+/storage/app/google-credentials.json
+google-credentials.json

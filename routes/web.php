@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\IpWhitelistController; // Add this import
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\TargetController;
+use App\Http\Controllers\Admin\SalesTargetDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,6 +85,13 @@ Route::middleware(['ip.whitelist'])->group(function () {
 
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|super-admin', 'ensure2fa'])->group(function () {
         Route::resource('users', UserController::class);
+
+        // Sales Target Dashboard Routes (Admin Only)
+        Route::prefix('sales-dashboard')->name('sales-dashboard.')->group(function () {
+            Route::get('/', [SalesTargetDashboardController::class, 'index'])->name('index');
+            Route::get('/chart-data', [SalesTargetDashboardController::class, 'getChartData'])->name('chart-data');
+            Route::post('/refresh', [SalesTargetDashboardController::class, 'refresh'])->name('refresh');
+        });
     });
 
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'ensure2fa'])->group(function () {

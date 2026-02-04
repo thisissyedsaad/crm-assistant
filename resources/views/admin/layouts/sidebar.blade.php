@@ -53,6 +53,12 @@
             <i class="bx bx-target-lock"></i> Targets Management
           </a>
         </li>
+
+        <li class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.sales-dashboard.index') }}" class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
+            <i class="bx bx-bar-chart-alt-2"></i> Sales Dashboard
+          </a>
+        </li>
         @endif
 
         <li class="treeview {{ request()->routeIs('admin.schedular.*') ? 'menu-open active' : '' }}">
