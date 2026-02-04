@@ -30,8 +30,10 @@ class SalesTargetService
         $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
         $targets = $this->getTargetsForPeriod($startDate, $endDate);
 
-        // Total Target - sum of all staff targets for the period
-        $totalTarget = $targets->sum('monthly_target');
+        // Total Target - sum of all staff targets (calculated fresh: daily_target_total × working_days)
+        $totalTarget = $targets->sum(function ($target) {
+            return $target->daily_target_total * $target->working_days;
+        });
 
         // Orders Done - count orders where sale > 0
         $ordersDone = $salesData->filter(function ($row) {
@@ -75,9 +77,9 @@ class SalesTargetService
             $userSales = $salesByUser->get($user->id, collect([]));
             $target = $user->dailyTarget;
 
-            // Monthly targets from database (M = monthly_target, N = new * working_days, E = existing * working_days)
+            // Monthly targets calculated fresh from daily targets × working days
             $workingDays = $target ? $target->working_days : 0;
-            $targetTotal = $target ? $target->monthly_target : 0;
+            $targetTotal = $target ? $target->daily_target_total * $workingDays : 0;
             $targetNew = $target ? $target->daily_target_new * $workingDays : 0;
             $targetExisting = $target ? $target->daily_target_existing * $workingDays : 0;
 
