@@ -440,7 +440,7 @@
                                                 <th>Staff Member</th>
                                                 <th class="text-center">Target (M/N/E)</th>
                                                 <th class="text-center">Actual (M/N/E)</th>
-                                                <th class="text-center">Off Target</th>
+                                                <th class="text-center">Off Target (MTD)</th>
                                                 <th class="text-center" style="min-width: 150px;">Progress</th>
                                                 <!-- <th class="text-center">Conv. %</th> -->
                                                 <th class="text-center">Conv. Rate (New Business)</th>
@@ -463,12 +463,22 @@
                                                     <span class="target-badge existing">{{ $member['actual_existing'] }}</span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="{{ $member['off_target'] <= 0 ? 'off-target-positive' : 'off-target-negative' }}">
-                                                        {{ $member['off_target'] > 0 ? '-' : '' }}{{ abs($member['off_target']) }}
+                                                    @php
+                                                        // Off Target MTD: negative = behind, positive = ahead
+                                                        $offTarget = $member['off_target'];
+                                                        $expectedMtd = $member['expected_mtd'] ?? 0;
+                                                    @endphp
+                                                    <span class="{{ $offTarget >= 0 ? 'off-target-positive' : 'off-target-negative' }}"
+                                                          title="Expected: {{ $expectedMtd }} | Actual: {{ $member['actual_total'] }}">
+                                                        {{ $offTarget >= 0 ? '+' : '' }}{{ $offTarget }}
                                                     </span>
+                                                    <small class="d-block text-muted" style="font-size: 0.7rem;">
+                                                        ({{ $member['actual_total'] }}/{{ $expectedMtd }} exp.)
+                                                    </small>
                                                 </td>
                                                 <td>
                                                     @php
+                                                        // Old progress calculation: actual/target_total (monthly)
                                                         $progress = $member['target_total'] > 0
                                                             ? min(100, round(($member['actual_total'] / $member['target_total']) * 100))
                                                             : 0;
