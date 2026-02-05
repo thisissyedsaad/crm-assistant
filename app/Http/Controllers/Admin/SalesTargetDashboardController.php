@@ -47,11 +47,17 @@ class SalesTargetDashboardController extends Controller
             try {
                 $stats = $this->salesTargetService->getDashboardStats($startDate, $endDate);
                 $teamPerformance = $this->salesTargetService->getTeamPerformance($startDate, $endDate);
+
+                // Get orders by rep first (sorted high to low) and extract sorted user IDs
+                $ordersByRep = $this->salesTargetService->getOrdersByRep($startDate, $endDate);
+                $sortedUserIds = $ordersByRep['sorted_user_ids'] ?? [];
+
+                // Pass sorted user IDs to other charts so they follow the same order
                 $chartData = [
                     'newVsExisting' => $this->salesTargetService->getNewVsExistingByDay($startDate, $endDate),
-                    'ordersByRep' => $this->salesTargetService->getOrdersByRep($startDate, $endDate),
-                    'newBusinessByRep' => $this->salesTargetService->getNewBusinessByRep($startDate, $endDate),
-                    'existingBusinessByRep' => $this->salesTargetService->getExistingBusinessByRep($startDate, $endDate),
+                    'ordersByRep' => $ordersByRep,
+                    'newBusinessByRep' => $this->salesTargetService->getNewBusinessByRep($startDate, $endDate, $sortedUserIds),
+                    'existingBusinessByRep' => $this->salesTargetService->getExistingBusinessByRep($startDate, $endDate, $sortedUserIds),
                 ];
             } catch (\Exception $e) {
                 // Log the error but don't crash the page
@@ -92,15 +98,19 @@ class SalesTargetDashboardController extends Controller
             : Carbon::now();
 
         try {
+            // Get orders by rep first (sorted high to low) and extract sorted user IDs
+            $ordersByRep = $this->salesTargetService->getOrdersByRep($startDate, $endDate);
+            $sortedUserIds = $ordersByRep['sorted_user_ids'] ?? [];
+
             return response()->json([
                 'success' => true,
                 'stats' => $this->salesTargetService->getDashboardStats($startDate, $endDate),
                 'teamPerformance' => $this->salesTargetService->getTeamPerformance($startDate, $endDate),
                 'charts' => [
                     'newVsExisting' => $this->salesTargetService->getNewVsExistingByDay($startDate, $endDate),
-                    'ordersByRep' => $this->salesTargetService->getOrdersByRep($startDate, $endDate),
-                    'newBusinessByRep' => $this->salesTargetService->getNewBusinessByRep($startDate, $endDate),
-                    'existingBusinessByRep' => $this->salesTargetService->getExistingBusinessByRep($startDate, $endDate),
+                    'ordersByRep' => $ordersByRep,
+                    'newBusinessByRep' => $this->salesTargetService->getNewBusinessByRep($startDate, $endDate, $sortedUserIds),
+                    'existingBusinessByRep' => $this->salesTargetService->getExistingBusinessByRep($startDate, $endDate, $sortedUserIds),
                 ],
             ]);
         } catch (\Exception $e) {

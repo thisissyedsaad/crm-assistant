@@ -65,9 +65,14 @@ class SalesTargetService
     {
         $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
 
-        // Get all staff and admin users with their targets
+        // Get all staff and admin users with their targets for the selected month/year
+        // Filter out users who are hidden from dashboard
         $staffUsers = User::whereIn('role', ['staff', 'admin'])
-            ->with('dailyTarget')
+            ->where('hide_from_dashboard', false)
+            ->with(['dailyTarget' => function($query) use ($startDate) {
+                $query->where('year', $startDate->year)
+                      ->where('month', $startDate->month);
+            }])
             ->get();
 
         // Group sales data by CSD ID (user_id)
@@ -163,7 +168,7 @@ class SalesTargetService
     }
 
     /**
-     * Get Orders by Sales Rep for the chart
+     * Get Orders by Sales Rep for the chart (sorted high to low)
      *
      * @param Carbon $startDate
      * @param Carbon $endDate
@@ -177,31 +182,54 @@ class SalesTargetService
         $validSales = $salesData->filter(fn($row) => ($row['sale'] ?? 0) > 0);
         $byUser = $validSales->groupBy('csd_id');
 
-        // Get user names
-        $users = User::whereIn('role', ['staff', 'admin'])->pluck('name', 'id');
+        // Get user names (excluding hidden users)
+        $users = User::whereIn('role', ['staff', 'admin'])
+            ->where('hide_from_dashboard', false)
+            ->pluck('name', 'id');
 
+        // Build array with user data and counts
+        $userData = [];
+        foreach ($users as $userId => $name) {
+            $count = $byUser->get($userId, collect([]))->count();
+            $userData[] = [
+                'user_id' => $userId,
+                'name' => $name,
+                'count' => $count,
+            ];
+        }
+
+        // Sort by count descending (high to low)
+        usort($userData, function ($a, $b) {
+            return $b['count'] - $a['count'];
+        });
+
+        // Extract sorted data
         $labels = [];
         $data = [];
+        $sortedUserIds = [];
 
-        foreach ($byUser as $userId => $userSales) {
-            $labels[] = $users->get($userId, 'Unknown');
-            $data[] = $userSales->count();
+        foreach ($userData as $user) {
+            $labels[] = $user['name'];
+            $data[] = $user['count'];
+            $sortedUserIds[] = $user['user_id'];
         }
 
         return [
             'labels' => $labels,
             'data' => $data,
+            'sorted_user_ids' => $sortedUserIds, // Pass sorted order to other charts
         ];
     }
 
     /**
-     * Get New Business orders by rep
+     * Get New Business orders by rep (follows same order as total orders)
      *
      * @param Carbon $startDate
      * @param Carbon $endDate
+     * @param array $sortedUserIds Optional sorted user IDs from getOrdersByRep
      * @return array
      */
-    public function getNewBusinessByRep(Carbon $startDate, Carbon $endDate): array
+    public function getNewBusinessByRep(Carbon $startDate, Carbon $endDate, array $sortedUserIds = []): array
     {
         $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
 
@@ -211,14 +239,26 @@ class SalesTargetService
         });
 
         $byUser = $newSales->groupBy('csd_id');
-        $users = User::whereIn('role', ['staff', 'admin'])->pluck('name', 'id');
+        $users = User::whereIn('role', ['staff', 'admin'])
+            ->where('hide_from_dashboard', false)
+            ->pluck('name', 'id');
 
         $labels = [];
         $data = [];
 
-        foreach ($users as $userId => $name) {
-            $labels[] = $name;
-            $data[] = $byUser->get($userId, collect([]))->count();
+        // Use sorted order if provided, otherwise use default order
+        if (!empty($sortedUserIds)) {
+            foreach ($sortedUserIds as $userId) {
+                if ($users->has($userId)) {
+                    $labels[] = $users->get($userId);
+                    $data[] = $byUser->get($userId, collect([]))->count();
+                }
+            }
+        } else {
+            foreach ($users as $userId => $name) {
+                $labels[] = $name;
+                $data[] = $byUser->get($userId, collect([]))->count();
+            }
         }
 
         return [
@@ -228,13 +268,14 @@ class SalesTargetService
     }
 
     /**
-     * Get Existing Business orders by rep
+     * Get Existing Business orders by rep (follows same order as total orders)
      *
      * @param Carbon $startDate
      * @param Carbon $endDate
+     * @param array $sortedUserIds Optional sorted user IDs from getOrdersByRep
      * @return array
      */
-    public function getExistingBusinessByRep(Carbon $startDate, Carbon $endDate): array
+    public function getExistingBusinessByRep(Carbon $startDate, Carbon $endDate, array $sortedUserIds = []): array
     {
         $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
 
@@ -244,14 +285,26 @@ class SalesTargetService
         });
 
         $byUser = $existingSales->groupBy('csd_id');
-        $users = User::whereIn('role', ['staff', 'admin'])->pluck('name', 'id');
+        $users = User::whereIn('role', ['staff', 'admin'])
+            ->where('hide_from_dashboard', false)
+            ->pluck('name', 'id');
 
         $labels = [];
         $data = [];
 
-        foreach ($users as $userId => $name) {
-            $labels[] = $name;
-            $data[] = $byUser->get($userId, collect([]))->count();
+        // Use sorted order if provided, otherwise use default order
+        if (!empty($sortedUserIds)) {
+            foreach ($sortedUserIds as $userId) {
+                if ($users->has($userId)) {
+                    $labels[] = $users->get($userId);
+                    $data[] = $byUser->get($userId, collect([]))->count();
+                }
+            }
+        } else {
+            foreach ($users as $userId => $name) {
+                $labels[] = $name;
+                $data[] = $byUser->get($userId, collect([]))->count();
+            }
         }
 
         return [
@@ -269,9 +322,14 @@ class SalesTargetService
      */
     protected function getTargetsForPeriod(Carbon $startDate, Carbon $endDate): Collection
     {
+        // Get targets for the specific month/year of the start date
+        // Filter out users who are hidden from dashboard
         return DailyTarget::with('user')
+            ->where('year', $startDate->year)
+            ->where('month', $startDate->month)
             ->whereHas('user', function ($query) {
-                $query->whereIn('role', ['staff', 'admin']);
+                $query->whereIn('role', ['staff', 'admin'])
+                      ->where('hide_from_dashboard', false);
             })
             ->get();
     }

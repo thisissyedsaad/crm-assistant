@@ -156,14 +156,36 @@
 
 /* Progress Bar */
 .progress-mini {
-    height: 8px;
-    border-radius: 4px;
+    height: 20px;
+    border-radius: 10px;
     background: #e9ecef;
     overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
 }
 
 .progress-mini .progress-bar {
-    border-radius: 4px;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    display: block;
+    min-height: 20px;
+}
+
+/* Progress bar color variations - using background-color for better compatibility */
+.progress-mini .progress-bar.bg-success {
+    background: #28a745 !important;
+    background: linear-gradient(90deg, #28a745, #20c997) !important;
+}
+
+.progress-mini .progress-bar.bg-warning {
+    background: #ffc107 !important;
+    background: linear-gradient(90deg, #ffc107, #fd7e14) !important;
+}
+
+.progress-mini .progress-bar.bg-danger {
+    background: #dc3545 !important;
+    background: linear-gradient(90deg, #dc3545, #e74c3c) !important;
 }
 
 /* Chart Cards */
@@ -453,8 +475,8 @@
                                                         $progressClass = $progress >= 100 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
                                                     @endphp
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <div class="progress-mini flex-grow-1">
-                                                            <div class="progress-bar {{ $progressClass }}" style="width: {{ $progress }}%"></div>
+                                                        <div class="progress-mini flex-grow-1" style="min-width: 100px;">
+                                                            <div class="progress-bar {{ $progressClass }}" role="progressbar" style="width: {{ $progress }}%; min-width: {{ $progress > 0 ? '5px' : '0' }};" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                         </div>
                                                         <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $progress }}%</span>
                                                     </div>
@@ -659,10 +681,30 @@ function initializeCharts() {
             },
             fill: { opacity: 1 },
             tooltip: {
-                y: {
-                    formatter: function(val) {
-                        return val + " orders";
-                    }
+                enabled: true,
+                shared: true,
+                intersect: false,
+                followCursor: true,
+                custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                    var newOrders = series[0][dataPointIndex] || 0;
+                    var existingOrders = series[1][dataPointIndex] || 0;
+                    var totalOrders = newOrders + existingOrders;
+                    var day = w.globals.labels[dataPointIndex];
+
+                    return '<div style="padding: 12px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 180px;">' +
+                        '<div style="font-weight: 700; font-size: 14px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #eee; color: #333;">Day ' + day + '</div>' +
+                        '<div style="display: flex; align-items: center; margin-bottom: 6px;">' +
+                            '<span style="width: 12px; height: 12px; background: #28a745; border-radius: 50%; display: inline-block; margin-right: 10px;"></span>' +
+                            '<span style="color: #555;">New Business: <strong style="color: #28a745;">' + newOrders + ' orders</strong></span>' +
+                        '</div>' +
+                        '<div style="display: flex; align-items: center; margin-bottom: 10px;">' +
+                            '<span style="width: 12px; height: 12px; background: #007bff; border-radius: 50%; display: inline-block; margin-right: 10px;"></span>' +
+                            '<span style="color: #555;">Existing Business: <strong style="color: #007bff;">' + existingOrders + ' orders</strong></span>' +
+                        '</div>' +
+                        '<div style="font-weight: 700; font-size: 14px; padding-top: 8px; border-top: 2px solid #eee; color: #333; background: #f8f9fa; margin: 0 -12px -12px -12px; padding: 10px 12px; border-radius: 0 0 8px 8px;">' +
+                            '📊 Total: <strong style="color: #6f42c1;">' + totalOrders + ' orders</strong>' +
+                        '</div>' +
+                    '</div>';
                 }
             }
         }).render();

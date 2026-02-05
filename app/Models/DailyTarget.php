@@ -11,6 +11,8 @@ class DailyTarget extends Model
 
     protected $fillable = [
         'user_id',
+        'year',
+        'month',
         'daily_target_total',
         'daily_target_new',
         'daily_target_existing',
@@ -19,6 +21,8 @@ class DailyTarget extends Model
     ];
 
     protected $casts = [
+        'year' => 'integer',
+        'month' => 'integer',
         'daily_target_total' => 'integer',
         'daily_target_new' => 'integer',
         'daily_target_existing' => 'integer',

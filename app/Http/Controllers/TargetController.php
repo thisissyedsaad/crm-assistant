@@ -12,22 +12,56 @@ class TargetController extends Controller
     /**
      * Display the targets management page
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Get current month/year
-        $currentYear = now()->year;
-        $currentMonth = now()->month;
+        // Get year and month from request, default to current
+        $selectedYear = $request->get('year', now()->year);
+        $selectedMonth = $request->get('month', now()->month);
 
-        // Get all staff and admin users with their targets
+        // Get all staff and admin users with their targets for selected month/year
         $staffUsers = User::whereIn('role', ['staff', 'admin'])
-            ->with(['dailyTarget', 'workingDaysCalendar' => function($query) use ($currentYear, $currentMonth) {
-                $query->where('year', $currentYear)
-                      ->where('month', $currentMonth);
+            ->with(['dailyTarget' => function($query) use ($selectedYear, $selectedMonth) {
+                $query->where('year', $selectedYear)
+                      ->where('month', $selectedMonth);
+            }, 'workingDaysCalendar' => function($query) use ($selectedYear, $selectedMonth) {
+                $query->where('year', $selectedYear)
+                      ->where('month', $selectedMonth);
             }])
             ->orderBy('name')
             ->get();
 
-        return view('admin.targets.index', compact('staffUsers'));
+        // Check if any targets exist for the selected month
+        $hasTargetsForMonth = DailyTarget::where('year', $selectedYear)
+            ->where('month', $selectedMonth)
+            ->exists();
+
+        // Check if previous month has targets (for copy feature)
+        $prevMonth = $selectedMonth == 1 ? 12 : $selectedMonth - 1;
+        $prevYear = $selectedMonth == 1 ? $selectedYear - 1 : $selectedYear;
+        $hasPreviousMonthTargets = DailyTarget::where('year', $prevYear)
+            ->where('month', $prevMonth)
+            ->exists();
+
+        // Generate year options (current year + 1 previous year)
+        $currentYear = now()->year;
+        $yearOptions = [$currentYear, $currentYear - 1];
+
+        // Month names for dropdown
+        $monthNames = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+        ];
+
+        return view('admin.targets.index', compact(
+            'staffUsers',
+            'selectedYear',
+            'selectedMonth',
+            'hasTargetsForMonth',
+            'hasPreviousMonthTargets',
+            'yearOptions',
+            'monthNames'
+        ));
     }
 
     /**
@@ -37,6 +71,8 @@ class TargetController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
+            'year' => 'required|integer',
+            'month' => 'required|integer|min:1|max:12',
             'daily_target_total' => 'required|integer|min:0',
             'daily_target_new' => 'required|integer|min:0',
             'daily_target_existing' => 'required|integer|min:0',
@@ -46,9 +82,13 @@ class TargetController extends Controller
         // Calculate monthly target
         $monthlyTarget = $request->daily_target_total * $request->working_days;
 
-        // Update or create target
+        // Update or create target using user_id + year + month as unique key
         $target = DailyTarget::updateOrCreate(
-            ['user_id' => $request->user_id],
+            [
+                'user_id' => $request->user_id,
+                'year' => $request->year,
+                'month' => $request->month,
+            ],
             [
                 'daily_target_total' => $request->daily_target_total,
                 'daily_target_new' => $request->daily_target_new,
@@ -71,6 +111,8 @@ class TargetController extends Controller
     public function saveAll(Request $request)
     {
         $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|min:1|max:12',
             'targets' => 'required|array',
             'targets.*.user_id' => 'required|exists:users,id',
             'targets.*.daily_target_total' => 'required|integer|min:0',
@@ -79,11 +121,18 @@ class TargetController extends Controller
             'targets.*.working_days' => 'required|integer|min:0',
         ]);
 
+        $year = $request->year;
+        $month = $request->month;
+
         foreach ($request->targets as $targetData) {
             $monthlyTarget = $targetData['daily_target_total'] * $targetData['working_days'];
 
             DailyTarget::updateOrCreate(
-                ['user_id' => $targetData['user_id']],
+                [
+                    'user_id' => $targetData['user_id'],
+                    'year' => $year,
+                    'month' => $month,
+                ],
                 [
                     'daily_target_total' => $targetData['daily_target_total'],
                     'daily_target_new' => $targetData['daily_target_new'],
@@ -97,6 +146,90 @@ class TargetController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'All targets saved successfully',
+        ]);
+    }
+
+    /**
+     * Copy targets from previous month to selected month
+     */
+    public function copyFromPreviousMonth(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|min:1|max:12',
+        ]);
+
+        $targetYear = $request->year;
+        $targetMonth = $request->month;
+
+        // Calculate previous month
+        $prevMonth = $targetMonth == 1 ? 12 : $targetMonth - 1;
+        $prevYear = $targetMonth == 1 ? $targetYear - 1 : $targetYear;
+
+        // Get previous month's targets
+        $previousTargets = DailyTarget::where('year', $prevYear)
+            ->where('month', $prevMonth)
+            ->get();
+
+        if ($previousTargets->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No targets found for the previous month',
+            ], 404);
+        }
+
+        // Copy each target to the new month
+        $copiedCount = 0;
+        foreach ($previousTargets as $prevTarget) {
+            // Check if target already exists for this user in target month
+            $exists = DailyTarget::where('user_id', $prevTarget->user_id)
+                ->where('year', $targetYear)
+                ->where('month', $targetMonth)
+                ->exists();
+
+            if (!$exists) {
+                DailyTarget::create([
+                    'user_id' => $prevTarget->user_id,
+                    'year' => $targetYear,
+                    'month' => $targetMonth,
+                    'daily_target_total' => $prevTarget->daily_target_total,
+                    'daily_target_new' => $prevTarget->daily_target_new,
+                    'daily_target_existing' => $prevTarget->daily_target_existing,
+                    'working_days' => $prevTarget->working_days,
+                    'monthly_target' => $prevTarget->monthly_target,
+                ]);
+                $copiedCount++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Copied {$copiedCount} targets from previous month",
+            'copied_count' => $copiedCount,
+        ]);
+    }
+
+    /**
+     * Toggle hide from dashboard status for a user
+     */
+    public function toggleHideFromDashboard(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'hide' => 'required',
+        ]);
+
+        // Convert string 'true'/'false' to actual boolean
+        $hideValue = filter_var($request->hide, FILTER_VALIDATE_BOOLEAN);
+
+        $user = User::findOrFail($request->user_id);
+        $user->hide_from_dashboard = $hideValue;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $hideValue ? 'User hidden from dashboard' : 'User visible on dashboard',
+            'hide_from_dashboard' => $user->hide_from_dashboard,
         ]);
     }
 
@@ -129,8 +262,12 @@ class TargetController extends Controller
                 'total_working_days' => count($workingDays),
             ]);
 
-            // Also update daily_targets table
-            $target = DailyTarget::where('user_id', $request->user_id)->first();
+            // Also update daily_targets table for this month
+            $target = DailyTarget::where('user_id', $request->user_id)
+                ->where('year', $request->year)
+                ->where('month', $request->month)
+                ->first();
+
             if ($target) {
                 $target->working_days = count($workingDays);
                 $target->monthly_target = $target->daily_target_total * count($workingDays);
@@ -156,9 +293,24 @@ class TargetController extends Controller
         $weekdays = [];
 
         for ($date = $startOfMonth->copy(); $date->lte($endOfMonth); $date->addDay()) {
-            // Only include future weekdays (or today)
-            if ($date->isWeekday() && $date->gte($today)) {
-                $weekdays[] = $date->day;
+            // For current month, only include today and future weekdays
+            // For past months, include all weekdays
+            // For future months, include all weekdays
+            if ($year < $today->year || ($year == $today->year && $month < $today->month)) {
+                // Past month - include all weekdays
+                if ($date->isWeekday()) {
+                    $weekdays[] = $date->day;
+                }
+            } elseif ($year == $today->year && $month == $today->month) {
+                // Current month - only future weekdays (or today)
+                if ($date->isWeekday() && $date->gte($today)) {
+                    $weekdays[] = $date->day;
+                }
+            } else {
+                // Future month - include all weekdays
+                if ($date->isWeekday()) {
+                    $weekdays[] = $date->day;
+                }
             }
         }
 
@@ -193,8 +345,12 @@ class TargetController extends Controller
             ]
         );
 
-        // Update daily_targets table (for current calculations)
-        $target = DailyTarget::where('user_id', $request->user_id)->first();
+        // Update daily_targets table for this specific month
+        $target = DailyTarget::where('user_id', $request->user_id)
+            ->where('year', $request->year)
+            ->where('month', $request->month)
+            ->first();
+
         if ($target) {
             $target->working_days = $totalWorkingDays;
             $target->monthly_target = $target->daily_target_total * $totalWorkingDays;

@@ -6,103 +6,103 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/buttons.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/select.dataTables.min.css') }}">
-    
+
     <style>
         /* DataTable Responsive Styling */
         .dataTables_wrapper {
             overflow-x: visible !important;
             width: 100% !important;
         }
-        
+
         .dataTables_scrollBody {
             overflow-x: auto !important;
             overflow-y: visible !important;
         }
-        
+
         /* Table should use full width when columns fit, scroll when they don't */
         #datatable {
             width: 100% !important;
             table-layout: auto;
         }
-        
+
         /* Set minimum widths for columns */
-        #datatable th:nth-child(1), #datatable td:nth-child(1) { 
-            min-width: 120px; 
-            width: 15%; 
+        #datatable th:nth-child(1), #datatable td:nth-child(1) {
+            min-width: 120px;
+            width: 15%;
         } /* Team */
-        
-        #datatable th:nth-child(2), #datatable td:nth-child(2) { 
-            min-width: 280px; 
-            width: 35%; 
+
+        #datatable th:nth-child(2), #datatable td:nth-child(2) {
+            min-width: 280px;
+            width: 35%;
         } /* Daily Target */
-        
-        #datatable th:nth-child(3), #datatable td:nth-child(3) { 
-            min-width: 120px; 
-            width: 15%; 
+
+        #datatable th:nth-child(3), #datatable td:nth-child(3) {
+            min-width: 120px;
+            width: 15%;
         } /* Working Days */
-        
-        #datatable th:nth-child(4), #datatable td:nth-child(4) { 
-            min-width: 120px; 
-            width: 15%; 
+
+        #datatable th:nth-child(4), #datatable td:nth-child(4) {
+            min-width: 120px;
+            width: 15%;
         } /* Monthly Target */
-        
-        #datatable th:nth-child(5), #datatable td:nth-child(5) { 
-            min-width: 100px; 
-            width: 20%; 
+
+        #datatable th:nth-child(5), #datatable td:nth-child(5) {
+            min-width: 100px;
+            width: 20%;
         } /* Actions */
-        
+
         /* Most columns should not wrap by default */
         #datatable th,
         #datatable td {
             white-space: nowrap;
         }
-        
+
         /* Input styling */
         .table input.form-control-sm {
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
             border: 1px solid #dee2e6;
         }
-        
+
         .form-control-sm:focus {
             border-color: #007bff;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
-        
+
         .monthly-target {
             font-size: 1.2rem;
             font-weight: 600;
         }
-        
+
         .gap-2 {
             gap: 0.5rem;
         }
-        
+
         /* Separator styling */
         .align-self-center {
             color: #6c757d;
             font-weight: 500;
         }
-        
+
         .btn-success {
             min-width: 80px;
         }
-        
+
         /* Scrollbar styling */
         .dataTables_scrollBody::-webkit-scrollbar {
             height: 8px;
         }
-        
+
         .dataTables_scrollBody::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 4px;
         }
-        
+
         .dataTables_scrollBody::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 4px;
         }
-        
+
         .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
@@ -184,10 +184,22 @@
         }
 
         .calendar-day.past-day {
-            background: #e9ecef;
+            background: #f0f0f0;
             color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.5;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .calendar-day.past-day:hover {
+            border-color: #007bff;
+            opacity: 1;
+        }
+
+        .calendar-day.past-day.selected {
+            background: #6c757d !important;
+            color: white !important;
+            border-color: #495057 !important;
+            opacity: 1;
         }
 
         .calendar-day.weekend {
@@ -206,6 +218,52 @@
             font-weight: 700;
         }
 
+        /* Month/Year Selector Styling */
+        .month-year-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .month-year-selector select {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .month-year-selector select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* No targets alert styling */
+        .no-targets-alert {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .no-targets-alert .alert-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #856404;
+        }
+
+        .no-targets-alert .alert-message i {
+            font-size: 1.5rem;
+        }
+
         /* Mobile specific styling */
         @media (max-width: 767px) {
             .dataTables_filter input[type="search"] {
@@ -215,17 +273,17 @@
                 box-sizing: border-box !important;
                 display: block !important;
             }
-            
+
             .dataTables_filter {
                 width: 100% !important;
                 display: block !important;
             }
-            
+
             .dataTables_filter label {
                 width: 100% !important;
                 display: block !important;
             }
-            
+
             /* Stack action buttons on mobile */
             #datatable td:nth-child(5) .btn {
                 display: block;
@@ -233,8 +291,17 @@
                 margin-bottom: 5px;
                 margin-right: 0;
             }
+
+            .month-year-selector {
+                flex-wrap: wrap;
+            }
+
+            .no-targets-alert {
+                flex-direction: column;
+                text-align: center;
+            }
         }
-        
+
         /* Force override for DataTable search inputs */
         .dataTables_wrapper .dataTables_filter input {
             width: 200px !important;
@@ -244,7 +311,7 @@
             border-radius: 4px !important;
             margin-left: 8px !important;
         }
-        
+
         @media (max-width: 767px) {
             .dataTables_wrapper .dataTables_filter input {
                 width: 100% !important;
@@ -266,12 +333,30 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body card-breadcrumb">
-                                <div class="page-title-box d-flex align-items-center justify-content-between">
+                                <div class="page-title-box d-flex align-items-center justify-content-between flex-wrap gap-3">
                                     <h4 class="mb-0">Managing Targets</h4>
-                                    <div class="page-title-right">
-                                        <!-- <button type="button" class="btn btn-primary btn-sm" id="saveAllBtn">
-                                            <i class="bx bx-save"></i> Save All
-                                        </button> -->
+                                    <div class="page-title-right d-flex align-items-center gap-3 flex-wrap">
+                                        <!-- Month/Year Selector -->
+                                        <div class="month-year-selector">
+                                            <label class="mb-0"><strong>Period:</strong></label>
+                                            <select id="monthSelector" class="form-select form-select-sm">
+                                                @foreach($monthNames as $num => $name)
+                                                    <option value="{{ $num }}" {{ $selectedMonth == $num ? 'selected' : '' }}>
+                                                        {{ $name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <select id="yearSelector" class="form-select form-select-sm">
+                                                @foreach($yearOptions as $year)
+                                                    <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                                        {{ $year }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <button type="button" class="btn btn-primary btn-sm" id="loadPeriodBtn">
+                                                <i class="bx bx-refresh"></i> Load
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -281,6 +366,21 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
+                                <!-- No Targets Alert with Copy Button -->
+                                @if(!$hasTargetsForMonth)
+                                    <div class="no-targets-alert" id="noTargetsAlert">
+                                        <div class="alert-message">
+                                            <i class="bx bx-info-circle"></i>
+                                            <span>No targets have been set for <strong>{{ $monthNames[$selectedMonth] }} {{ $selectedYear }}</strong>.</span>
+                                        </div>
+                                        @if($hasPreviousMonthTargets)
+                                            <button type="button" class="btn btn-warning btn-sm" id="copyFromPreviousBtn">
+                                                <i class="bx bx-copy"></i> Copy from Previous Month
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endif
+
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap data-table-area">
                                     <thead>
                                         <tr>
@@ -288,6 +388,7 @@
                                             <th>Daily Target <small class="text-muted" style="color:green !important;">(Total / New / Existing)</small></th>
                                             <th># of Working Days</th>
                                             <th>Monthly Target</th>
+                                            <th>Hide</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -295,14 +396,16 @@
                                     <tbody>
                                         @foreach ($staffUsers as $user)
                                             @php
+                                                // Get the target for this user (already filtered by year/month in controller)
+                                                $userTarget = $user->dailyTarget;
+
                                                 // Get working days from calendar table if exists, otherwise from daily_targets
                                                 $currentCalendar = $user->workingDaysCalendar->first();
 
                                                 if ($currentCalendar) {
                                                     $workingDays = $currentCalendar->total_working_days;
                                                 } else {
-                                                    // Fallback: Calculate working days (weekdays) for current month
-                                                    $workingDays = $user->dailyTarget->working_days ?? 0;
+                                                    $workingDays = $userTarget->working_days ?? 0;
                                                 }
                                             @endphp
                                         <tr data-user-id="{{ $user->id }}">
@@ -310,22 +413,14 @@
                                             <td>
                                                 <div class="d-flex gap-2 align-items-center" style="white-space: nowrap;">
                                                     <strong class="">
-                                                        {{ ($user->dailyTarget->daily_target_new ?? 0) + ($user->dailyTarget->daily_target_existing ?? 0) }}
+                                                        {{ ($userTarget->daily_target_new ?? 0) + ($userTarget->daily_target_existing ?? 0) }}
                                                     </strong>
-                                                    <!-- <input
-                                                        type="text"
-                                                        class="form-control form-control-sm daily-target-total daily-target-total-display"
-                                                        placeholder="Total"
-                                                        value="{{ ($user->dailyTarget->daily_target_new ?? 0) + ($user->dailyTarget->daily_target_existing ?? 0) }}"
-                                                        readonly
-                                                        style   ="width: 70px;"
-                                                    > -->
                                                     <span class="align-self-center">/</span>
                                                     <input
                                                         type="number"
                                                         class="form-control form-control-sm daily-target-new"
                                                         placeholder="New"
-                                                        value="{{ $user->dailyTarget->daily_target_new ?? 0 }}"
+                                                        value="{{ $userTarget->daily_target_new ?? 0 }}"
                                                         min="0"
                                                         style="width: 70px;"
                                                     >
@@ -334,7 +429,7 @@
                                                         type="number"
                                                         class="form-control form-control-sm daily-target-existing"
                                                         placeholder="Existing"
-                                                        value="{{ $user->dailyTarget->daily_target_existing ?? 0 }}"
+                                                        value="{{ $userTarget->daily_target_existing ?? 0 }}"
                                                         min="0"
                                                         style="width: 70px;"
                                                     >
@@ -354,8 +449,19 @@
                                             </td>
                                             <td>
                                                 <strong class="monthly-target text-primary">
-                                                    {{ $user->dailyTarget ? $user->dailyTarget->monthly_target : 0 }}
+                                                    {{ $userTarget ? $userTarget->monthly_target : 0 }}
                                                 </strong>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="form-check-input hide-checkbox"
+                                                        data-user-id="{{ $user->id }}"
+                                                        {{ $user->hide_from_dashboard ? 'checked' : '' }}
+                                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                                    >
+                                                </div>
                                             </td>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-success save-row-btn" data-user-id="{{ $user->id }}">
@@ -388,7 +494,7 @@
             <div class="modal-body">
                 <div class="text-center mb-3">
                     <h6 class="text-muted" id="current-month-year"></h6>
-                    <small class="text-info">Click dates to select/deselect working days for current month</small>
+                    <small class="text-info">Click dates to select/deselect working days</small>
                 </div>
 
                 <!-- Color Legend -->
@@ -432,25 +538,34 @@
     <script src="{{ asset('assets/admin/js/jszip.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/dataTables-custom.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script>
         $(document).ready(function() {
+            // Selected year and month from server
+            let selectedYear = {{ $selectedYear }};
+            let selectedMonth = {{ $selectedMonth }};
+
+            // Month names for display
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+
             // Initialize DataTable with responsive options
             if ($.fn.DataTable.isDataTable('#datatable')) {
                 $('#datatable').DataTable().destroy();
             }
-            
+
             var table = $('#datatable').DataTable({
-                responsive: false, // We handle responsiveness with CSS
+                responsive: false,
                 scrollX: true,
                 scrollCollapse: false,
                 autoWidth: true,
                 columnDefs: [
-                    { targets: 0, className: 'text-nowrap' }, // Team
-                    { targets: 1, className: 'text-nowrap', orderable: false }, // Daily Target
-                    { targets: 2, className: 'text-nowrap' }, // Working Days
-                    { targets: 3, className: 'text-nowrap' }, // Monthly Target
-                    { targets: 4, className: 'text-nowrap', orderable: false } // Actions
+                    { targets: 0, className: 'text-nowrap' },
+                    { targets: 1, className: 'text-nowrap', orderable: false },
+                    { targets: 2, className: 'text-nowrap' },
+                    { targets: 3, className: 'text-nowrap' },
+                    { targets: 4, className: 'text-center', orderable: false }, // Hide
+                    { targets: 5, className: 'text-nowrap', orderable: false }  // Actions
                 ],
                 language: {
                     search: "Search Users:",
@@ -459,7 +574,7 @@
                 },
                 pageLength: 25,
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                order: [[0, 'asc']], // Sort by Team name ascending
+                order: [[0, 'asc']],
                 initComplete: function() {
                     $('.dataTables_wrapper').css('width', '100%');
                 },
@@ -468,39 +583,143 @@
                 }
             });
 
-            // Auto-calculate total and monthly target
+            // ========================================
+            // MONTH/YEAR SELECTOR FUNCTIONALITY
+            // ========================================
+
+            // Load period button - redirect with new month/year
+            $('#loadPeriodBtn').on('click', function() {
+                const month = $('#monthSelector').val();
+                const year = $('#yearSelector').val();
+                window.location.href = `{{ route('admin.targets.index') }}?year=${year}&month=${month}`;
+            });
+
+            // Copy from previous month
+            $('#copyFromPreviousBtn').on('click', function() {
+                const button = $(this);
+
+                Swal.fire({
+                    title: 'Copy Targets?',
+                    text: 'This will copy all targets from the previous month to the current selected month.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, copy them!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        button.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Copying...');
+
+                        $.ajax({
+                            url: '{{ route("admin.targets.copy-previous") }}',
+                            method: 'POST',
+                            data: {
+                                year: selectedYear,
+                                month: selectedMonth,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Copied!',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        // Reload page to show copied targets
+                                        window.location.reload();
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: xhr.responseJSON?.message || 'Failed to copy targets.',
+                                });
+                                button.prop('disabled', false).html('<i class="bx bx-copy"></i> Copy from Previous Month');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // ========================================
+            // HIDE FROM DASHBOARD FUNCTIONALITY
+            // ========================================
+
+            $(document).on('change', '.hide-checkbox', function() {
+                const checkbox = $(this);
+                const userId = checkbox.data('user-id');
+                const isHidden = checkbox.is(':checked');
+
+                $.ajax({
+                    url: '{{ route("admin.targets.toggle-hide") }}',
+                    method: 'POST',
+                    data: {
+                        user_id: userId,
+                        hide: isHidden,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: isHidden ? 'Hidden!' : 'Visible!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        // Revert checkbox on error
+                        checkbox.prop('checked', !isHidden);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to update hide status.',
+                        });
+                    }
+                });
+            });
+
+            // ========================================
+            // TARGET CALCULATION FUNCTIONALITY
+            // ========================================
+
             function calculateTargets(row) {
                 const newTarget = parseInt(row.find('.daily-target-new').val()) || 0;
                 const existingTarget = parseInt(row.find('.daily-target-existing').val()) || 0;
                 const total = newTarget + existingTarget;
 
-                // Update the total field
                 row.find('.daily-target-total').val(total);
 
-                // Calculate monthly target
                 const workingDays = parseInt(row.find('.working-days').val()) || 0;
                 const monthlyTarget = total * workingDays;
 
                 row.find('.monthly-target').text(monthlyTarget);
             }
 
-            // Listen to input changes on New, Existing, and Working Days
             $('#datatable tbody').on('input', '.daily-target-new, .daily-target-existing, .working-days', function() {
                 const row = $(this).closest('tr');
                 calculateTargets(row);
             });
 
-            // Calculate targets for all rows on page load
             $('#datatable tbody tr').each(function() {
                 calculateTargets($(this));
             });
 
-            // Save individual row
+            // ========================================
+            // SAVE INDIVIDUAL ROW
+            // ========================================
+
             $(document).on('click', '.save-row-btn', function() {
                 const button = $(this);
                 const row = button.closest('tr');
                 const userId = row.data('user-id');
-                
+
                 if (!userId) {
                     Swal.fire({
                         icon: 'error',
@@ -510,7 +729,6 @@
                     return;
                 }
 
-                // Disable button and show loading
                 button.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
 
                 const newTarget = parseInt(row.find('.daily-target-new').val()) || 0;
@@ -519,6 +737,8 @@
 
                 const data = {
                     user_id: userId,
+                    year: selectedYear,
+                    month: selectedMonth,
                     daily_target_total: total,
                     daily_target_new: newTarget,
                     daily_target_existing: existingTarget,
@@ -532,13 +752,12 @@
                     data: data,
                     success: function(response) {
                         if (response.success) {
-                            // Update the Total display (bold number in Daily Target column)
                             row.find('td:eq(1) strong').first().text(total);
-
-                            // Update monthly target
                             row.find('.monthly-target').text(response.monthly_target);
 
-                            // Show success message
+                            // Hide the no targets alert if it exists
+                            $('#noTargetsAlert').fadeOut();
+
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Saved!',
@@ -561,13 +780,16 @@
                 });
             });
 
-            // Save all targets (top button functionality)
+            // ========================================
+            // SAVE ALL TARGETS
+            // ========================================
+
             $('#saveAllBtn').on('click', function() {
                 const button = $(this);
                 button.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
 
                 const targets = [];
-                
+
                 $('#datatable tbody tr').each(function() {
                     const row = $(this);
                     const userId = row.data('user-id');
@@ -601,12 +823,13 @@
                     url: '{{ route("admin.targets.save-all") }}',
                     method: 'POST',
                     data: {
+                        year: selectedYear,
+                        month: selectedMonth,
                         targets: targets,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Show success message
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success!',
@@ -637,47 +860,35 @@
             let currentUserName = '';
             let selectedDays = [];
             const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1; // 1-12
-            const today = currentDate.getDate();
+            const todayYear = currentDate.getFullYear();
+            const todayMonth = currentDate.getMonth() + 1;
+            const todayDate = currentDate.getDate();
 
-            // Open calendar modal
             $(document).on('click', '.open-calendar-btn', function() {
                 const button = $(this);
                 currentUserId = button.data('user-id');
                 currentUserName = button.data('user-name');
 
-                // Update modal title
                 $('#modal-user-name').text(currentUserName);
+                $('#current-month-year').text(`${monthNames[selectedMonth - 1]} ${selectedYear}`);
 
-                // Set month/year display
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
-                $('#current-month-year').text(`${monthNames[currentMonth - 1]} ${currentYear}`);
-
-                // Load saved working days for this user/month
                 loadWorkingDays();
-
-                // Show modal
                 $('#workingDaysModal').modal('show');
             });
 
-            // Load working days from database
             function loadWorkingDays() {
                 $.ajax({
                     url: '{{ route("admin.targets.calendar.get") }}',
                     method: 'POST',
                     data: {
                         user_id: currentUserId,
-                        year: currentYear,
-                        month: currentMonth,
+                        year: selectedYear,
+                        month: selectedMonth,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Convert string days to integers
                             selectedDays = (response.working_days || []).map(day => parseInt(day));
-                            console.log('Loaded working days:', selectedDays);
                             renderCalendar();
                         }
                     },
@@ -688,38 +899,38 @@
                 });
             }
 
-            // Render calendar grid
             function renderCalendar() {
-                const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-                const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay(); // 0 = Sunday
+                const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+                const firstDay = new Date(selectedYear, selectedMonth - 1, 1).getDay();
                 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-                console.log('Rendering calendar with selected days:', selectedDays);
+                // Determine if we're viewing current month
+                const isCurrentMonth = (selectedYear === todayYear && selectedMonth === todayMonth);
+                const isPastMonth = (selectedYear < todayYear) || (selectedYear === todayYear && selectedMonth < todayMonth);
 
                 let html = '';
 
-                // Day headers
                 dayNames.forEach(day => {
                     html += `<div class="calendar-day day-header">${day}</div>`;
                 });
 
-                // Empty cells before first day
                 for (let i = 0; i < firstDay; i++) {
                     html += '<div class="calendar-day empty-day"></div>';
                 }
 
-                // Days of month
                 for (let day = 1; day <= daysInMonth; day++) {
-                    const date = new Date(currentYear, currentMonth - 1, day);
+                    const date = new Date(selectedYear, selectedMonth - 1, day);
                     const dayOfWeek = date.getDay();
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                    const isToday = day === today;
-                    const isPast = day < today;
-                    const isSelected = selectedDays.includes(day);
+                    const isToday = isCurrentMonth && day === todayDate;
 
-                    if (isSelected) {
-                        console.log(`Day ${day} is marked as selected`);
+                    // Past day logic: only applies to current month
+                    let isPast = false;
+                    if (isCurrentMonth && day < todayDate) {
+                        isPast = true;
                     }
+
+                    const isSelected = selectedDays.includes(day);
 
                     let classes = 'calendar-day';
                     if (isSelected) classes += ' selected';
@@ -734,17 +945,14 @@
                 updateSelectedCount();
             }
 
-            // Toggle day selection
-            $(document).on('click', '.calendar-day:not(.day-header):not(.empty-day):not(.past-day)', function() {
+            $(document).on('click', '.calendar-day:not(.day-header):not(.empty-day)', function() {
                 const day = parseInt($(this).data('day'));
                 const index = selectedDays.indexOf(day);
 
                 if (index > -1) {
-                    // Deselect
                     selectedDays.splice(index, 1);
                     $(this).removeClass('selected');
                 } else {
-                    // Select
                     selectedDays.push(day);
                     $(this).addClass('selected');
                 }
@@ -752,12 +960,10 @@
                 updateSelectedCount();
             });
 
-            // Update selected days count
             function updateSelectedCount() {
                 $('#selected-days-count').text(selectedDays.length);
             }
 
-            // Save working days
             $('#save-calendar-btn').on('click', function() {
                 const button = $(this);
                 button.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Saving...');
@@ -767,25 +973,20 @@
                     method: 'POST',
                     data: {
                         user_id: currentUserId,
-                        year: currentYear,
-                        month: currentMonth,
+                        year: selectedYear,
+                        month: selectedMonth,
                         working_days: selectedDays,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Update the button display in the table
                             const row = $(`tr[data-user-id="${currentUserId}"]`);
                             row.find('.working-days-count').text(response.total_working_days);
                             row.find('.working-days').val(response.total_working_days);
-
-                            // Update monthly target from server response (already saved in DB)
                             row.find('.monthly-target').text(response.monthly_target);
 
-                            // Close modal
                             $('#workingDaysModal').modal('hide');
 
-                            // Show success message
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Saved!',

@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'hide_from_dashboard',
         'google2fa_secret',
         'google2fa_enabled',
     ];
@@ -46,6 +47,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'google2fa_enabled' => 'boolean',
+        'hide_from_dashboard' => 'boolean',
     ];
 
     public function dailyTarget()

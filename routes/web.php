@@ -123,6 +123,8 @@ Route::middleware(['ip.whitelist'])->group(function () {
         Route::get('/targets', [TargetController::class, 'index'])->name('targets.index');
         Route::post('/targets/update', [TargetController::class, 'updateTarget'])->name('targets.update');
         Route::post('/targets/save-all', [TargetController::class, 'saveAll'])->name('targets.save-all');
+        Route::post('/targets/copy-previous', [TargetController::class, 'copyFromPreviousMonth'])->name('targets.copy-previous');
+        Route::post('/targets/toggle-hide', [TargetController::class, 'toggleHideFromDashboard'])->name('targets.toggle-hide');
         Route::post('/targets/calendar/get', [TargetController::class, 'getWorkingDaysCalendar'])->name('targets.calendar.get');
         Route::post('/targets/calendar/save', [TargetController::class, 'saveWorkingDaysCalendar'])->name('targets.calendar.save');
     });
