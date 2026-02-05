@@ -5,121 +5,121 @@
     <!-- Sidebar Menu -->
     <nav>
       <ul class="sidebar-menu" data-widget="tree">
-        <!-- <li class="menu-header-title">Main</li>
 
-        <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-          <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="bx bx-home-heart"></i> Dashboard 
+        <li class="menu-header-title">Main</li>
+
+        <!-- 1. Dashboard -->
+        <li class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.sales-dashboard.index') }}" class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
+            <i class="bx bx-home-heart"></i> Dashboard
           </a>
-        </li> -->
+        </li>
 
         <li class="menu-header-title">CRM Modules</li>
-        
+
         <li class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
           <a href="{{ route('admin.customers.index') }}" class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
             <i class="bx bx-group"></i> Companies Overview
           </a>
         </li>
-        
+
         <li class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
           <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <i class="bx bxs-cart"></i> Orders Overview
           </a>
         </li>
-        
-        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'super-admin')
-        <li class="treeview {{ request()->routeIs('admin.users.*') ? 'menu-open active' : '' }}">
-          <a href="javascript:void(0)" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-            <i class="bx bx-user-circle"></i>
-            <span>User Management</span>
-            <i class="fa fa-angle-right"></i>
-          </a>
-          <ul class="treeview-menu" style="{{ request()->routeIs('admin.users.*') ? 'display: block;' : '' }}">
-            <li class="{{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
-              <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
-                All Users
-              </a>
-            </li>
-            <li class="{{ request()->routeIs('admin.users.create') ? 'active' : '' }}">
-              <a href="{{ route('admin.users.create') }}" class="{{ request()->routeIs('admin.users.create') ? 'active' : '' }}">
-                Add New User
-              </a>
-            </li>
-          </ul>
-        </li>
 
-        <li class="{{ request()->routeIs('admin.targets.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.targets.index') }}" class="{{ request()->routeIs('admin.targets.*') ? 'active' : '' }}">
-            <i class="bx bx-target-lock"></i> Targets Management
-          </a>
-        </li>
-
-        <li class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.sales-dashboard.index') }}" class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
-            <i class="bx bx-bar-chart-alt-2"></i> Sales Dashboard
-          </a>
-        </li>
-        @endif
-
+        <!-- 4. Scheduler -->
         <li class="treeview {{ request()->routeIs('admin.schedular.*') ? 'menu-open active' : '' }}">
           <a href="javascript:void(0)" class="">
-            <i class="bx bx-user-circle"></i>
-            <span>Schedular</span>
+            <i class="bx bx-calendar"></i>
+            <span>Scheduler</span>
             <i class="fa fa-angle-right"></i>
           </a>
-          <ul class="treeview-menu" style="">
+          <ul class="treeview-menu" style="{{ request()->routeIs('admin.schedular.*') ? 'display: block;' : '' }}">
             <li class="{{ request()->routeIs('admin.schedular.current-jobs.index') ? 'active' : '' }}">
               <a href="{{ route('admin.schedular.current-jobs.index') }}" class="{{ request()->routeIs('admin.schedular.current-jobs.index') ? 'active' : '' }}">
                 Current Jobs
               </a>
             </li>
-            <!-- <li class="{{ request()->routeIs('admin.schedular.completed-jobs.index') ? 'active' : '' }}">
-              <a href="{{ route('admin.schedular.completed-jobs.index') }}" class="{{ request()->routeIs('admin.schedular.completed-jobs.index') ? 'active' : '' }}">
-                Completed Jobs
-              </a>
-            </li> -->
-            <!-- <li class="">
-              <a href="" class="">
-                Notifications
-              </a>
-            </li> -->
           </ul>
         </li>
+
+        <!-- 5. Training (renamed from Staff Training) -->
         <li class="{{ request()->routeIs('admin.trainings.*') ? 'active' : '' }}">
           <a href="{{ route('admin.trainings.index') }}" class="{{ request()->routeIs('admin.trainings.*') ? 'active' : '' }}">
-            <i class="bx bx-chalkboard"></i> Staff Training
+            <i class="bx bx-chalkboard"></i> Training
           </a>
         </li>
 
-        @if (auth()->user()->role === 'super-admin')
-        <li class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.ip-whitelist.index') }}" class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
-            <i class="bx bx-shield-alt-2"></i> Whitelist IPs
+        <!-- 6. Settings (Admin/Super-Admin only) -->
+        @if (auth()->user()->role === 'admin' || auth()->user()->role === 'super-admin')
+        <li class="treeview {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') ? 'menu-open active' : '' }}">
+          <a href="javascript:void(0)" class="{{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
+            <i class="bx bx-cog"></i>
+            <span>Settings</span>
+            <i class="fa fa-angle-right"></i>
           </a>
+          <ul class="treeview-menu" style="{{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') ? 'display: block;' : '' }}">
+            <!-- Users -->
+            <li class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="bx bx-user-circle"></i> Users
+              </a>
+            </li>
+            <!-- Targets -->
+            <li class="{{ request()->routeIs('admin.targets.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.targets.index') }}" class="{{ request()->routeIs('admin.targets.*') ? 'active' : '' }}">
+                <i class="bx bx-target-lock"></i> Targets
+              </a>
+            </li>
+            <!-- Whitelist IPs (Super-Admin only) -->
+            @if (auth()->user()->role === 'super-admin')
+            <li class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.ip-whitelist.index') }}" class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
+                <i class="bx bx-shield-alt-2"></i> Whitelist IPs
+              </a>
+            </li>
+            @endif
+          </ul>
         </li>
         @endif
-        
-        <!-- 2FA Link -->
-        <li class="menu-header-title">
-          2F - Authentication 
+
+      </ul>
+    </nav>
+
+    <!-- Two-Factor Auth (Fixed at Bottom) -->
+    <div class="sidebar-bottom-fixed">
+      <a href="{{ route('2fa.show') }}" class="security-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}">
+        <i class="bx bx-shield"></i> Two-Factor Auth
+        <div class="security-header">
+          <!-- Security -->
           @if(auth()->user()->google2fa_enabled)
             <i class="bx bx-check-circle" style="color: #28a745; font-size: 15px; margin-left: 5px; vertical-align: middle;"></i>
           @else
             <i class="bx bx-x-circle" style="color: #dc3545; font-size: 15px; margin-left: 5px; vertical-align: middle;"></i>
           @endif
-        </li>       
-        <li class="{{ request()->routeIs('2fa.*') ? 'active' : '' }}">
-          <a href="{{ route('2fa.show') }}" class="{{ request()->routeIs('2fa.*') ? 'active' : '' }}">
-            <i class="bx bx-shield"></i> Two-Factor Auth
-          </a>
-        </li>
-
-      </ul>
-    </nav>
+        </div>
+      </a>
+    </div>
   </div>
 </div>
 
 <style>
+/* DISABLE SIDEBAR SCROLLING */
+.flapt-sidenav,
+.side-menu-area,
+.side-menu-area > nav {
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+}
+
+.side-menu-area {
+    position: relative;
+    height: 100%;
+}
+
 /* Enhanced Active States for Sidebar */
 .sidebar-menu li.active > a,
 .sidebar-menu li > a.active {
@@ -202,6 +202,7 @@
 /* Better spacing */
 .sidebar-menu li {
     margin-bottom: 2px;
+    position: relative;
 }
 
 .sidebar-menu li > a {
@@ -242,7 +243,61 @@
     border-radius: 0 4px 4px 0;
 }
 
-.sidebar-menu li {
-    position: relative;
+/* Submenu icons styling */
+.sidebar-menu .treeview-menu li > a i {
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+/* ========================================
+   FIXED BOTTOM 2FA SECTION
+   ======================================== */
+.sidebar-bottom-fixed {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    right: 0;
+    padding: 0 10px;
+}
+
+
+.sidebar-bottom-fixed .security-header {
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 5px 10px 5px;
+}
+
+.sidebar-bottom-fixed .security-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-bottom-fixed .security-link i {
+    margin-right: 10px;
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-bottom-fixed .security-link:hover {
+    background-color: #f8f9fa !important;
+    color: #007bff !important;
+}
+
+.sidebar-bottom-fixed .security-link.active {
+    background-color: #007bff !important;
+    color: #ffffff !important;
+}
+
+.sidebar-bottom-fixed .security-link.active i {
+    color: #ffffff !important;
 }
 </style>
