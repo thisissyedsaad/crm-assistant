@@ -380,7 +380,7 @@
                                     <i class="bx bx-target-lock"></i>
                                 </div>
                                 <div class="stats-value" id="totalTarget">{{ $stats['total_target'] ?? 0 }}</div>
-                                <p class="stats-label">Total Target</p>
+                                <p class="stats-label">TOTAL TARGET</p>
                             </div>
                         </div>
                     </div>
@@ -393,7 +393,7 @@
                                     <i class="bx bx-check-circle"></i>
                                 </div>
                                 <div class="stats-value" id="ordersDone">{{ $stats['orders_done'] ?? 0 }}</div>
-                                <p class="stats-label">Orders Done</p>
+                                <p class="stats-label">ORDERS COMPLETED</p>
                             </div>
                         </div>
                     </div>
@@ -406,7 +406,7 @@
                                     <i class="bx bx-trending-{{ ($stats['off_target'] ?? 0) > 0 ? 'down' : 'up' }}"></i>
                                 </div>
                                 <div class="stats-value" id="offTarget">{{ $stats['off_target'] ?? 0 }}</div>
-                                <p class="stats-label">Off Target</p>
+                                <p class="stats-label">OFF TARGET</p>
                             </div>
                         </div>
                     </div>
@@ -419,7 +419,7 @@
                                     <i class="bx bx-percentage"></i>
                                 </div>
                                 <div class="stats-value" id="conversionRate">{{ $stats['conversion_rate'] ?? 0 }}%</div>
-                                <p class="stats-label">Conversion Rate</p>
+                                <p class="stats-label">CONV. RATE</p>
                             </div>
                         </div>
                     </div>
@@ -437,13 +437,13 @@
                                     <table class="table table-hover mb-0" id="performanceTable">
                                         <thead>
                                             <tr>
-                                                <th>Rep</th>
+                                                <th>Staff Member</th>
                                                 <th class="text-center">Target (M/N/E)</th>
                                                 <th class="text-center">Actual (M/N/E)</th>
                                                 <th class="text-center">Off Target</th>
                                                 <th class="text-center" style="min-width: 150px;">Progress</th>
-                                                <th class="text-center">Conv. %</th>
-                                                <th class="text-center">New Business Rate</th>
+                                                <!-- <th class="text-center">Conv. %</th> -->
+                                                <th class="text-center">Conv. Rate (New Business)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -484,9 +484,9 @@
                                                 <td class="text-center">
                                                     <span style="color: #6c757d;">-</span>
                                                 </td>
-                                                <td class="text-center">
+                                                <!-- <td class="text-center">
                                                     <span class="badge bg-primary" style="font-size: 0.85rem;">{{ $member['new_business_rate'] }}%</span>
-                                                </td>
+                                                </td> -->
                                             </tr>
                                             @empty
                                             <tr>
@@ -510,7 +510,7 @@
                     <div class="col-lg-12">
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h5><i class="bx bx-bar-chart-alt-2 me-2"></i>New vs Existing Orders (Month to Date)</h5>
+                                <h5><i class="bx bx-bar-chart-alt-2 me-2"></i>NEW vs EXISTING ORDERS (MTD)</h5>
                             </div>
                             <div class="card-body">
                                 <div id="newVsExistingChart" style="height: 350px;"></div>
@@ -525,7 +525,7 @@
                     <div class="col-lg-4">
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h5><i class="bx bx-user me-2"></i>Orders by Sales Rep (MTD)</h5>
+                                <h5><i class="bx bx-user me-2"></i>ORDERS BY SALES REP (MTD)</h5>
                             </div>
                             <div class="card-body">
                                 <div id="ordersByRepChart" style="height: 300px;"></div>
@@ -537,7 +537,7 @@
                     <div class="col-lg-4">
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h5><i class="bx bx-trending-up me-2"></i>New Business</h5>
+                                <h5><i class="bx bx-trending-up me-2"></i>NEW BUSINESS</h5>
                             </div>
                             <div class="card-body">
                                 <div id="newBusinessChart" style="height: 300px;"></div>
@@ -549,7 +549,7 @@
                     <div class="col-lg-4">
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h5><i class="bx bx-repeat me-2"></i>Existing Business</h5>
+                                <h5><i class="bx bx-repeat me-2"></i>EXISTING BUSINESS</h5>
                             </div>
                             <div class="card-body">
                                 <div id="existingBusinessChart" style="height: 300px;"></div>
