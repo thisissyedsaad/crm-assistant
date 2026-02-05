@@ -113,54 +113,6 @@
 .stats-card:nth-child(3) { animation-delay: 0.3s; }
 .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
-
-/* Make cards slightly compact */
-.stats-card {
-    min-height: 95px;
-}
-
-/* Horizontal layout */
-.stats-card .card-body {
-    padding: 14px 16px;                 /* smaller padding */
-    display: flex;
-    align-items: center;
-    /* gap: 14px; */
-    gap: 240px;
-}
-
-/* Icon on left */
-.stats-card .stats-icon {
-    width: 46px;
-    height: 46px;
-    font-size: 1.4rem;
-    margin-bottom: 0;                   /* remove vertical spacing */
-    flex-shrink: 0;
-}
-
-/* Text container */
-.stats-card .stats-value {
-    font-size: 1.4rem;                  /* balanced size */
-    font-weight: 700;
-    margin-bottom: 2px;
-    line-height: 1.2;
-}
-
-.stats-card .stats-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-}
-
-/* Disable upward jump conflict on hover */
-.stats-card:hover {
-    transform: translateY(-4px);
-}
-
-/* Prevent animation clash with flex */
-.stats-card {
-    will-change: transform;
-}
-
 /* Team Performance Table */
 .performance-table {
     border-radius: 12px;
@@ -418,77 +370,60 @@
                 </div>
                 @else
 
-<!-- Stats Cards Row -->
-<div class="row g-3 mb-4">
-    <!-- Total Target -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card stats-card blue">
-            <div class="card-body d-flex align-items-center">
-                <div class="stats-icon">
-                    <i class="bx bx-target-lock"></i>
-                </div>
-                <div class="stats-content">
-                    <div class="stats-value" id="totalTarget">
-                        {{ $stats['total_target'] ?? 0 }}
+                <!-- Stats Cards Row -->
+                <div class="row g-4 mb-4">
+                    <!-- Total Target -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card blue">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-target-lock"></i>
+                                </div>
+                                <div class="stats-value" id="totalTarget">{{ $stats['total_target'] ?? 0 }}</div>
+                                <p class="stats-label">TOTAL TARGET</p>
+                            </div>
+                        </div>
                     </div>
-                    <p class="stats-label">TOTAL TARGET</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Orders Completed -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card stats-card green">
-            <div class="card-body d-flex align-items-center">
-                <div class="stats-icon">
-                    <i class="bx bx-check-circle"></i>
-                </div>
-                <div class="stats-content">
-                    <div class="stats-value" id="ordersDone">
-                        {{ $stats['orders_done'] ?? 0 }}
+                    <!-- Orders Done -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card green">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-check-circle"></i>
+                                </div>
+                                <div class="stats-value" id="ordersDone">{{ $stats['orders_done'] ?? 0 }}</div>
+                                <p class="stats-label">ORDERS COMPLETED</p>
+                            </div>
+                        </div>
                     </div>
-                    <p class="stats-label">ORDERS COMPLETED</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Off Target -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card stats-card {{ ($stats['off_target'] ?? 0) > 0 ? 'red' : 'yellow' }}">
-            <div class="card-body d-flex align-items-center">
-                <div class="stats-icon">
-                    <i class="bx bx-trending-{{ ($stats['off_target'] ?? 0) > 0 ? 'down' : 'up' }}"></i>
-                </div>
-                <div class="stats-content">
-                    <div class="stats-value" id="offTarget">
-                        {{ $stats['off_target'] ?? 0 }}
+                    <!-- Off Target -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card {{ ($stats['off_target'] ?? 0) > 0 ? 'red' : 'yellow' }}">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-trending-{{ ($stats['off_target'] ?? 0) > 0 ? 'down' : 'up' }}"></i>
+                                </div>
+                                <div class="stats-value" id="offTarget">{{ $stats['off_target'] ?? 0 }}</div>
+                                <p class="stats-label">OFF TARGET</p>
+                            </div>
+                        </div>
                     </div>
-                    <p class="stats-label">OFF TARGET</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Conversion Rate -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card stats-card gray">
-            <div class="card-body d-flex align-items-center">
-                <div class="stats-icon">
-                    <i class="bx bx-percentage"></i>
-                </div>
-                <div class="stats-content">
-                    <div class="stats-value" id="conversionRate">
-                        {{ $stats['conversion_rate'] ?? 0 }}%
+                    <!-- Conversion Rate -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card gray">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-percentage"></i>
+                                </div>
+                                <div class="stats-value" id="conversionRate">{{ $stats['conversion_rate'] ?? 0 }}%</div>
+                                <p class="stats-label">CONV. RATE</p>
+                            </div>
+                        </div>
                     </div>
-                    <p class="stats-label">CONV. RATE</p>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 
                 <!-- Team Performance Table -->
                 <div class="row g-4 mb-4">
