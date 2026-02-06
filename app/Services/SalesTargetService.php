@@ -46,13 +46,17 @@ class SalesTargetService
         // Off Target - Target - Orders Done
         $offTarget = $totalTarget - $ordersDone;
 
-        // Overall Conversion Rate = (Total New Orders ÷ Total Orders) × 100
+        // Get total leads from Leads tab for the date range
+        $totalLeads = $this->googleSheetsService->getTotalLeadsCount($startDate, $endDate);
+
+        // Total New Orders
         $totalNewOrders = $validSales->filter(function ($row) {
             return ($row['business_type'] ?? '') === 'NEW';
         })->count();
 
-        $conversionRate = $ordersDone > 0
-            ? round(($totalNewOrders / $ordersDone) * 100, 1)
+        // Overall Conversion Rate = (Total New Orders ÷ Total Leads from Leads tab) × 100
+        $conversionRate = $totalLeads > 0
+            ? round(($totalNewOrders / $totalLeads) * 100, 1)
             : 0;
 
         return [

@@ -229,6 +229,7 @@ class GoogleSheetsService
     public function clearCache(): void
     {
         Cache::forget('google_sheets_sales_data');
+        Cache::forget('google_sheets_leads_data');
         Log::info('Google Sheets cache cleared');
     }
 
@@ -253,5 +254,136 @@ class GoogleSheetsService
         $sheetId = config('google-sheets.sheet_id');
 
         return !empty($sheetId) && file_exists($credentialsPath);
+    }
+
+    /**
+     * Get leads data from Google Sheets "Leads" tab with caching
+     *
+     * @param Carbon|null $startDate
+     * @param Carbon|null $endDate
+     * @return Collection
+     */
+    public function getLeadsData(?Carbon $startDate = null, ?Carbon $endDate = null): Collection
+    {
+        $cacheKey = 'google_sheets_leads_data';
+
+        // Get all data from cache or fetch fresh
+        $allData = Cache::remember($cacheKey, $this->cacheTtl, function () {
+            return $this->fetchLeadsFromGoogleSheets();
+        });
+
+        // Filter by date if provided
+        if ($startDate || $endDate) {
+            $allData = $allData->filter(function ($row) use ($startDate, $endDate) {
+                $rowDate = $row['date'] ?? null;
+                if (!$rowDate) {
+                    return false;
+                }
+
+                if ($startDate && $rowDate->lt($startDate->startOfDay())) {
+                    return false;
+                }
+
+                if ($endDate && $rowDate->gt($endDate->endOfDay())) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        return $allData->values();
+    }
+
+    /**
+     * Get total leads count for a date range
+     *
+     * @param Carbon|null $startDate
+     * @param Carbon|null $endDate
+     * @return int
+     */
+    public function getTotalLeadsCount(?Carbon $startDate = null, ?Carbon $endDate = null): int
+    {
+        $leadsData = $this->getLeadsData($startDate, $endDate);
+
+        return $leadsData->sum('orders');
+    }
+
+    /**
+     * Fetch leads data from Google Sheets "Leads" tab
+     *
+     * @return Collection
+     */
+    protected function fetchLeadsFromGoogleSheets(): Collection
+    {
+        try {
+            $this->initializeClient();
+
+            // Fetch from "Leads" tab - columns A (Order Date) and B (Orders count)
+            $range = 'Leads!A:B';
+            $response = $this->sheetsService->spreadsheets_values->get(
+                $this->spreadsheetId,
+                $range
+            );
+
+            $values = $response->getValues();
+
+            if (empty($values)) {
+                return collect([]);
+            }
+
+            // Skip header row and parse data
+            $data = collect(array_slice($values, 1))
+                ->map(function ($row) {
+                    return $this->parseLeadsRow($row);
+                })
+                ->filter(function ($row) {
+                    // Filter out invalid rows (must have date)
+                    return $row['date'] !== null;
+                });
+
+            Log::info("Fetched {$data->count()} rows from Google Sheets Leads tab");
+
+            return $data;
+
+        } catch (Exception $e) {
+            Log::error('Google Sheets Leads API Error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Parse a single row from the Leads tab
+     *
+     * @param array $row
+     * @return array
+     */
+    protected function parseLeadsRow(array $row): array
+    {
+        // Column A = Order Date, Column B = Orders count
+        $dateValue = $row[0] ?? null;
+        $parsedDate = null;
+
+        if ($dateValue) {
+            try {
+                $parsedDate = Carbon::createFromFormat('d/m/Y', $dateValue)->startOfDay();
+            } catch (Exception $e) {
+                // Try alternative format
+                try {
+                    $parsedDate = Carbon::parse($dateValue)->startOfDay();
+                } catch (Exception $e) {
+                    $parsedDate = null;
+                }
+            }
+        }
+
+        // Parse orders count
+        $ordersValue = $row[1] ?? '0';
+        $orders = (int) preg_replace('/[^0-9]/', '', $ordersValue);
+
+        return [
+            'date' => $parsedDate,
+            'orders' => $orders,
+        ];
     }
 }
