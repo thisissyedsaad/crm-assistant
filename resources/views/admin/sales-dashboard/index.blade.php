@@ -441,7 +441,7 @@
                                                 <th class="text-center">Target (M/N/E)</th>
                                                 <th class="text-center">Actual (M/N/E)</th>
                                                 <th class="text-center">Off Target (MTD)</th>
-                                                <th class="text-center" style="min-width: 150px;">Progress</th>
+                                                <th class="text-center" style="min-width: 150px;">Progress %</th>
                                                 <!-- <th class="text-center">Conv. %</th> -->
                                                 <th class="text-center">Conv. Rate (New Business)</th>
                                             </tr>
@@ -478,17 +478,16 @@
                                                 </td>
                                                 <td>
                                                     @php
-                                                        // Old progress calculation: actual/target_total (monthly)
-                                                        $progress = $member['target_total'] > 0
-                                                            ? min(100, round(($member['actual_total'] / $member['target_total']) * 100))
-                                                            : 0;
-                                                        $progressClass = $progress >= 100 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
+                                                        // MTD Progress: Orders Converted ÷ Expected Orders MTD × 100
+                                                        $onTargetPercent = $member['on_target_percent'] ?? 0;
+                                                        $progressBarWidth = min(100, $onTargetPercent); // Cap bar at 100%
+                                                        $progressClass = $onTargetPercent >= 100 ? 'bg-success' : ($onTargetPercent >= 50 ? 'bg-warning' : 'bg-danger');
                                                     @endphp
                                                     <div class="d-flex align-items-center gap-2">
                                                         <div class="progress-mini flex-grow-1" style="min-width: 100px;">
-                                                            <div class="progress-bar {{ $progressClass }}" role="progressbar" style="width: {{ $progress }}%; min-width: {{ $progress > 0 ? '5px' : '0' }};" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                            <div class="progress-bar {{ $progressClass }}" role="progressbar" style="width: {{ $progressBarWidth }}%; min-width: {{ $progressBarWidth > 0 ? '5px' : '0' }};" aria-valuenow="{{ $onTargetPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                         </div>
-                                                        <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $progress }}%</span>
+                                                        <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $onTargetPercent }}%</span>
                                                     </div>
                                                 </td>
                                                 <td class="text-center">
