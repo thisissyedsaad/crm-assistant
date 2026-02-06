@@ -443,7 +443,7 @@
                                                 <th class="text-center">Off Target (MTD)</th>
                                                 <th class="text-center" style="min-width: 150px;">Progress %</th>
                                                 <!-- <th class="text-center">Conv. %</th> -->
-                                                <th class="text-center" style="min-width: 150px;">Conv. Rate (New Business)</th>
+                                                <!-- <th class="text-center" style="min-width: 150px;">Conv. Rate (New Business)</th> -->
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -484,13 +484,13 @@
                                                         $progressClass = $onTargetPercent >= 100 ? 'bg-success' : ($onTargetPercent >= 50 ? 'bg-warning' : 'bg-danger');
                                                     @endphp
                                                     <div class="d-flex align-items-center gap-2">
+                                                        <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $onTargetPercent }}%</span>
                                                         <div class="progress-mini flex-grow-1" style="min-width: 100px;">
                                                             <div class="progress-bar {{ $progressClass }}" role="progressbar" style="width: {{ $progressBarWidth }}%; min-width: {{ $progressBarWidth > 0 ? '5px' : '0' }};" aria-valuenow="{{ $onTargetPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                         </div>
-                                                        <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $onTargetPercent }}%</span>
                                                     </div>
                                                 </td>
-                                                <td>
+                                                <!-- <td>
                                                     @php
                                                         // Conv. Rate (New Business) = (New Orders ÷ Total Orders) × 100
                                                         $newBusinessRate = $member['new_business_rate'] ?? 0;
@@ -504,7 +504,7 @@
                                                         </div>
                                                         <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $newBusinessRate }}%</span>
                                                     </div>
-                                                </td>
+                                                </td> -->
                                             </tr>
                                             @empty
                                             <tr>
