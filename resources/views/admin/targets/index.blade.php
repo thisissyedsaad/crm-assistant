@@ -222,21 +222,39 @@
         .month-year-selector {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+
+        .month-year-selector label {
+            margin: 0;
+            white-space: nowrap;
+            font-size: 14px;
         }
 
         .month-year-selector select {
-            padding: 6px 12px;
+            padding: 8px 12px;
             border: 1px solid #ced4da;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 14px;
             cursor: pointer;
+            min-width: 110px;
+            height: 38px;
         }
 
         .month-year-selector select:focus {
             border-color: #007bff;
             outline: none;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .month-year-selector .btn {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 16px;
+            border-radius: 6px;
         }
 
         /* No targets alert styling */
@@ -354,7 +372,7 @@
                                                 @endforeach
                                             </select>
                                             <button type="button" class="btn btn-primary btn-sm" id="loadPeriodBtn">
-                                                <i class="bx bx-refresh"></i> Load
+                                                <i class="bx bx-filter"></i> Filter
                                             </button>
                                         </div>
                                     </div>
