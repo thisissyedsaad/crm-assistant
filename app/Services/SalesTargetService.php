@@ -35,16 +35,25 @@ class SalesTargetService
             return $target->daily_target_total * $target->working_days;
         });
 
-        // Orders Done - count orders where sale > 0
-        $ordersDone = $salesData->filter(function ($row) {
+        // Filter valid sales (sale > 0)
+        $validSales = $salesData->filter(function ($row) {
             return ($row['sale'] ?? 0) > 0;
-        })->count();
+        });
+
+        // Orders Done - count orders where sale > 0
+        $ordersDone = $validSales->count();
 
         // Off Target - Target - Orders Done
         $offTarget = $totalTarget - $ordersDone;
 
-        // Conversion Rate - placeholder for now
-        $conversionRate = 0;
+        // Overall Conversion Rate = (Total New Orders ÷ Total Orders) × 100
+        $totalNewOrders = $validSales->filter(function ($row) {
+            return ($row['business_type'] ?? '') === 'NEW';
+        })->count();
+
+        $conversionRate = $ordersDone > 0
+            ? round(($totalNewOrders / $ordersDone) * 100, 1)
+            : 0;
 
         return [
             'total_target' => $totalTarget,

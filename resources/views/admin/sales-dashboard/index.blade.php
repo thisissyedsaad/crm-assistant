@@ -443,7 +443,7 @@
                                                 <th class="text-center">Off Target (MTD)</th>
                                                 <th class="text-center" style="min-width: 150px;">Progress %</th>
                                                 <!-- <th class="text-center">Conv. %</th> -->
-                                                <th class="text-center">Conv. Rate (New Business)</th>
+                                                <th class="text-center" style="min-width: 150px;">Conv. Rate (New Business)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -490,12 +490,21 @@
                                                         <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $onTargetPercent }}%</span>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">
-                                                    <span style="color: #6c757d;">-</span>
+                                                <td>
+                                                    @php
+                                                        // Conv. Rate (New Business) = (New Orders ÷ Total Orders) × 100
+                                                        $newBusinessRate = $member['new_business_rate'] ?? 0;
+                                                        $convBarWidth = min(100, $newBusinessRate); // Cap bar at 100%
+                                                        // Color based on new business rate: higher is better
+                                                        $convClass = $newBusinessRate >= 50 ? 'bg-success' : ($newBusinessRate >= 25 ? 'bg-warning' : 'bg-danger');
+                                                    @endphp
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress-mini flex-grow-1" style="min-width: 80px;">
+                                                            <div class="progress-bar {{ $convClass }}" role="progressbar" style="width: {{ $convBarWidth }}%; min-width: {{ $convBarWidth > 0 ? '5px' : '0' }};" aria-valuenow="{{ $newBusinessRate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $newBusinessRate }}%</span>
+                                                    </div>
                                                 </td>
-                                                <!-- <td class="text-center">
-                                                    <span class="badge bg-primary" style="font-size: 0.85rem;">{{ $member['new_business_rate'] }}%</span>
-                                                </td> -->
                                             </tr>
                                             @empty
                                             <tr>
