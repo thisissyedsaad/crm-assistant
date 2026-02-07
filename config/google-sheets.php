@@ -67,4 +67,15 @@ return [
         'drivers_saved' => 8,  // Column I - DRIVERS COST SAVED
         'csd_id' => 9,         // Column J - CSD ID
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Excluded User IDs
+    |--------------------------------------------------------------------------
+    |
+    | User IDs to exclude from the Off Target card calculation.
+    | Comma-separated list of user IDs (e.g., "24,10")
+    |
+    */
+    'excluded_user_ids' => array_filter(array_map('intval', explode(',', env('DASHBOARD_EXCLUDED_USER_IDS', '')))),
 ];

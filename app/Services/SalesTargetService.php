@@ -43,9 +43,70 @@ class SalesTargetService
         // Orders Done - count orders where sale > 0
         $ordersDone = $validSales->count();
 
-        // Off Target - Target - Orders Done
-        $offTarget = $totalTarget - $ordersDone;
+        // =========================================
+        // OFF TARGET CALCULATION (MTD-based)
+        // =========================================
+        // Get excluded user IDs from config
+        $excludedUserIds = config('google-sheets.excluded_user_ids', []);
 
+        // Get all staff/admin users who are NOT hidden and NOT excluded
+        $includedUsers = User::whereIn('role', ['staff', 'admin'])
+            ->where('hide_from_dashboard', false)
+            ->whereNotIn('id', $excludedUserIds)
+            ->with(['dailyTarget' => function($query) use ($startDate) {
+                $query->where('year', $startDate->year)
+                      ->where('month', $startDate->month);
+            }])
+            ->get();
+
+        // Get working days calendars for included users
+        $workingDaysCalendars = WorkingDaysCalendar::where('year', $startDate->year)
+            ->where('month', $startDate->month)
+            ->whereIn('user_id', $includedUsers->pluck('id'))
+            ->get()
+            ->keyBy('user_id');
+
+        // Group sales by user
+        $salesByUser = $validSales->groupBy('csd_id');
+
+        // Calculate totals for included users only
+        $totalExpectedOrders = 0;
+        $totalOrdersConverted = 0;
+
+        foreach ($includedUsers as $user) {
+            $target = $user->dailyTarget;
+            $workingDaysInMonth = $target ? $target->working_days : 0;
+            $monthlyTarget = $target ? $target->monthly_target : 0;
+
+            // Daily Target = Monthly Target ÷ Working Days in Month
+            $dailyTarget = $workingDaysInMonth > 0
+                ? $monthlyTarget / $workingDaysInMonth
+                : 0;
+
+            // Get Working Days in Range for this user
+            $workingDaysInRange = $this->getWorkingDaysInRange(
+                $user->id,
+                $startDate,
+                $endDate,
+                $workingDaysCalendars->get($user->id),
+                $workingDaysInMonth
+            );
+
+            // Expected Orders = Daily Target × Working Days in Range
+            $expectedOrders = $dailyTarget * $workingDaysInRange;
+            $totalExpectedOrders += $expectedOrders;
+
+            // Orders Converted for this user
+            $userOrders = $salesByUser->get($user->id, collect([]))->count();
+            $totalOrdersConverted += $userOrders;
+        }
+
+        // Off Target = Total Orders Converted - Total Expected Orders
+        $offTarget = round($totalOrdersConverted - $totalExpectedOrders);
+
+        // =========================================
+        // CONVERSION RATE CALCULATION
+        // =========================================
         // Get total leads from Leads tab for the date range
         $totalLeads = $this->googleSheetsService->getTotalLeadsCount($startDate, $endDate);
 
