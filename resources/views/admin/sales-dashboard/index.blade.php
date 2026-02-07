@@ -464,21 +464,22 @@
                                                 </td>
                                                 <td class="text-center">
                                                     @php
-                                                        // Off Target MTD: negative = behind, positive = ahead
+                                                        // Off Target (Range) = Orders Converted − Expected Orders
+                                                        // Negative = behind target, Positive = ahead of target
                                                         $offTarget = $member['off_target'];
-                                                        $expectedMtd = $member['expected_mtd'] ?? 0;
+                                                        $expectedRange = $member['expected_range'] ?? 0;
                                                     @endphp
                                                     <span class="{{ $offTarget >= 0 ? 'off-target-positive' : 'off-target-negative' }}"
-                                                          title="Expected: {{ $expectedMtd }} | Actual: {{ $member['actual_total'] }}">
+                                                          title="Expected: {{ $expectedRange }} | Actual: {{ $member['actual_total'] }}">
                                                         {{ $offTarget >= 0 ? '+' : '' }}{{ $offTarget }}
                                                     </span>
                                                     <small class="d-block text-muted" style="font-size: 0.7rem;">
-                                                        ({{ $member['actual_total'] }}/{{ $expectedMtd }} exp.)
+                                                        ({{ $member['actual_total'] }}/{{ $expectedRange }} exp.)
                                                     </small>
                                                 </td>
                                                 <td>
                                                     @php
-                                                        // MTD Progress: Orders Converted ÷ Expected Orders MTD × 100
+                                                        // Progress (%) = Orders Converted ÷ Expected Orders × 100
                                                         $onTargetPercent = $member['on_target_percent'] ?? 0;
                                                         $progressBarWidth = min(100, $onTargetPercent); // Cap bar at 100%
                                                         $progressClass = $onTargetPercent >= 100 ? 'bg-success' : ($onTargetPercent >= 50 ? 'bg-warning' : 'bg-danger');

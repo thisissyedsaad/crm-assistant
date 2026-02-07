@@ -101,21 +101,30 @@ class SalesTargetService
             $userSales = $salesByUser->get($user->id, collect([]));
             $target = $user->dailyTarget;
 
-            // Monthly targets calculated fresh from daily targets × working days
+            // Get working days in month (user-defined)
             $workingDaysInMonth = $target ? $target->working_days : 0;
-            $dailyTarget = $target ? $target->daily_target_total : 0;
-            $targetTotal = $dailyTarget * $workingDaysInMonth;
+
+            // Monthly Target (stored in database)
+            $monthlyTarget = $target ? $target->monthly_target : 0;
+
+            // Daily Target = Monthly Target ÷ Working Days in Month
+            $dailyTarget = $workingDaysInMonth > 0
+                ? round($monthlyTarget / $workingDaysInMonth, 2)
+                : 0;
+
+            // Monthly targets for display (M/N/E columns)
+            $targetTotal = $monthlyTarget;
             $targetNew = $target ? $target->daily_target_new * $workingDaysInMonth : 0;
             $targetExisting = $target ? $target->daily_target_existing * $workingDaysInMonth : 0;
 
-            // Actual orders (filter by sale > 0)
+            // Actual orders (filter by sale > 0) - Orders Converted in Range
             $validSales = $userSales->filter(fn($row) => ($row['sale'] ?? 0) > 0);
             $actualTotal = $validSales->count();
             $actualNew = $validSales->filter(fn($row) => ($row['business_type'] ?? '') === 'NEW')->count();
             $actualExisting = $validSales->filter(fn($row) => ($row['business_type'] ?? '') === 'EXISTING')->count();
 
-            // Calculate Working Days Elapsed (MTD)
-            $workingDaysElapsed = $this->getWorkingDaysElapsed(
+            // Working Days in Range = working days within selected date range
+            $workingDaysInRange = $this->getWorkingDaysInRange(
                 $user->id,
                 $startDate,
                 $endDate,
@@ -123,16 +132,16 @@ class SalesTargetService
                 $workingDaysInMonth
             );
 
-            // Expected Orders MTD = Daily Target × Working Days Elapsed
-            $expectedOrdersMtd = $dailyTarget * $workingDaysElapsed;
+            // Expected Orders (Range) = Daily Target × Working Days in Range
+            $expectedOrdersRange = $dailyTarget * $workingDaysInRange;
 
-            // Off Target (MTD) = Actual Orders - Expected Orders MTD
+            // Off Target (Range) = Orders Converted (Range) − Expected Orders (Range)
             // Negative means behind target, Positive means ahead of target
-            $offTargetMtd = $actualTotal - $expectedOrdersMtd;
+            $offTargetRange = $actualTotal - $expectedOrdersRange;
 
-            // On Target % = (Actual Orders / Expected Orders MTD) × 100
-            $onTargetPercent = $expectedOrdersMtd > 0
-                ? round(($actualTotal / $expectedOrdersMtd) * 100, 1)
+            // Progress (%) = Orders Converted (Range) ÷ Expected Orders (Range) × 100
+            $progressPercent = $expectedOrdersRange > 0
+                ? round(($actualTotal / $expectedOrdersRange) * 100, 1)
                 : 0;
 
             // New Business Conversion Rate
@@ -149,12 +158,12 @@ class SalesTargetService
                 'actual_total' => $actualTotal,
                 'actual_new' => $actualNew,
                 'actual_existing' => $actualExisting,
-                'off_target' => $offTargetMtd, // Now MTD based
-                'expected_mtd' => $expectedOrdersMtd, // Expected orders so far
-                'working_days_elapsed' => $workingDaysElapsed,
+                'off_target' => $offTargetRange,
+                'expected_range' => $expectedOrdersRange,
+                'working_days_in_range' => $workingDaysInRange,
                 'working_days_total' => $workingDaysInMonth,
                 'daily_target' => $dailyTarget,
-                'on_target_percent' => $onTargetPercent, // Progress percentage
+                'on_target_percent' => $progressPercent,
                 'conversion_rate' => 0, // Placeholder
                 'new_business_rate' => $newBusinessRate,
             ];
@@ -162,7 +171,7 @@ class SalesTargetService
     }
 
     /**
-     * Calculate working days elapsed up to the end date
+     * Calculate working days within the selected date range
      *
      * @param int $userId
      * @param Carbon $startDate
@@ -171,34 +180,36 @@ class SalesTargetService
      * @param int $fallbackWorkingDays
      * @return int
      */
-    protected function getWorkingDaysElapsed(
+    protected function getWorkingDaysInRange(
         int $userId,
         Carbon $startDate,
         Carbon $endDate,
         ?WorkingDaysCalendar $calendar,
         int $fallbackWorkingDays
     ): int {
-        // Use today if endDate is in the future
+        // Use today if endDate is in the future (can't have orders for future days)
         $today = Carbon::now();
         $effectiveEndDate = $endDate->gt($today) ? $today : $endDate;
 
         if ($calendar && !empty($calendar->working_days)) {
-            // Count working days that have elapsed (up to effective end date)
+            // Count working days WITHIN the date range (>= startDate AND <= effectiveEndDate)
             $workingDays = collect($calendar->working_days);
 
             return $workingDays->filter(function ($day) use ($startDate, $effectiveEndDate) {
                 $dayDate = Carbon::create($startDate->year, $startDate->month, $day);
-                return $dayDate->lte($effectiveEndDate);
+                // Must be >= startDate AND <= effectiveEndDate
+                return $dayDate->gte($startDate->startOfDay()) && $dayDate->lte($effectiveEndDate);
             })->count();
         }
 
-        // Fallback: estimate based on proportion of month elapsed
-        // This is a rough estimate if no calendar is set
+        // Fallback: estimate based on proportion of range within the month
         $daysInMonth = $startDate->daysInMonth;
-        $dayOfMonth = min($effectiveEndDate->day, $daysInMonth);
-        $proportionElapsed = $dayOfMonth / $daysInMonth;
+        $rangeStart = $startDate->day;
+        $rangeEnd = min($effectiveEndDate->day, $daysInMonth);
+        $daysInRange = max(0, $rangeEnd - $rangeStart + 1);
+        $proportionOfMonth = $daysInRange / $daysInMonth;
 
-        return (int) round($fallbackWorkingDays * $proportionElapsed);
+        return (int) round($fallbackWorkingDays * $proportionOfMonth);
     }
 
     /**
