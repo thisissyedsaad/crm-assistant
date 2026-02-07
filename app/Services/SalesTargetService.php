@@ -120,11 +120,78 @@ class SalesTargetService
             ? round(($totalNewOrders / $totalLeads) * 100, 1)
             : 0;
 
+        // =========================================
+        // NEW METRICS CALCULATIONS
+        // =========================================
+
+        // # OF INSURANCE SOLD - Count of rows where insurance_added > 0
+        $insuranceSoldCount = $validSales->filter(function ($row) {
+            return ($row['insurance_added'] ?? 0) > 0;
+        })->count();
+
+        // DRIVERS COST SAVED - Sum of drivers_cost_saved column
+        $driversCostSavedTotal = $validSales->sum('drivers_cost_saved');
+
+        // # OF NEW/EXISTING - Count of NEW and EXISTING orders
+        $totalExistingOrders = $validSales->filter(function ($row) {
+            return ($row['business_type'] ?? '') === 'EXISTING';
+        })->count();
+
+        // ORDERS NEEDED - (Total Daily Target × Working Days in Range) − Orders Completed
+        // Calculate total expected orders for all users with targets
+        $totalExpectedForOrdersNeeded = 0;
+
+        // Get all staff/admin users who have targets (not hidden)
+        $usersWithTargets = User::whereIn('role', ['staff', 'admin'])
+            ->where('hide_from_dashboard', false)
+            ->with(['dailyTarget' => function($query) use ($startDate) {
+                $query->where('year', $startDate->year)
+                      ->where('month', $startDate->month);
+            }])
+            ->get();
+
+        // Get working days calendars for all users
+        $allWorkingDaysCalendars = WorkingDaysCalendar::where('year', $startDate->year)
+            ->where('month', $startDate->month)
+            ->whereIn('user_id', $usersWithTargets->pluck('id'))
+            ->get()
+            ->keyBy('user_id');
+
+        foreach ($usersWithTargets as $user) {
+            $target = $user->dailyTarget;
+            if (!$target || $target->daily_target_total <= 0) {
+                continue; // Skip users without targets
+            }
+
+            $workingDaysInMonth = $target->working_days;
+            $dailyTargetTotal = $target->daily_target_total;
+
+            // Get Working Days in Range for this user
+            $workingDaysInRange = $this->getWorkingDaysInRange(
+                $user->id,
+                $startDate,
+                $endDate,
+                $allWorkingDaysCalendars->get($user->id),
+                $workingDaysInMonth
+            );
+
+            // Expected Orders in Range = Daily Target × Working Days in Range
+            $totalExpectedForOrdersNeeded += ($dailyTargetTotal * $workingDaysInRange);
+        }
+
+        // Orders Needed = Expected Orders in Range − Orders Completed
+        $ordersNeeded = max(0, round($totalExpectedForOrdersNeeded) - $ordersDone);
+
         return [
             'total_target' => $totalTarget,
             'orders_done' => $ordersDone,
             'off_target' => $offTarget,
             'conversion_rate' => $conversionRate,
+            'insurance_sold_count' => $insuranceSoldCount,
+            'drivers_cost_saved_total' => $driversCostSavedTotal,
+            'new_orders_count' => $totalNewOrders,
+            'existing_orders_count' => $totalExistingOrders,
+            'orders_needed' => $ordersNeeded,
         ];
     }
 

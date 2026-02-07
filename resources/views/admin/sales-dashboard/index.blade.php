@@ -8,47 +8,61 @@
 <!-- DataTables CSS -->
 <link rel="stylesheet" href="{{ asset('assets/admin/css/dataTables.bootstrap5.min.css') }}">
 <style>
-/* Stats Cards */
+/* Stats Cards - Compact Horizontal Layout */
 .stats-card {
     transition: all 0.3s ease;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     animation: fadeInUp 0.5s ease forwards;
     opacity: 0;
     transform: translateY(20px);
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .stats-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .stats-card .card-body {
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .stats-card .stats-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+.stats-card .stats-content {
+    flex: 1;
+    text-align: right;
 }
 
 .stats-card .stats-value {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
 }
 
 .stats-card .stats-label {
     color: #6c757d;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 /* Card Color Themes */
@@ -112,6 +126,67 @@
 .stats-card:nth-child(2) { animation-delay: 0.2s; }
 .stats-card:nth-child(3) { animation-delay: 0.3s; }
 .stats-card:nth-child(4) { animation-delay: 0.4s; }
+.stats-card:nth-child(5) { animation-delay: 0.5s; }
+.stats-card:nth-child(6) { animation-delay: 0.6s; }
+.stats-card:nth-child(7) { animation-delay: 0.7s; }
+.stats-card:nth-child(8) { animation-delay: 0.8s; }
+
+/* Purple theme for new cards */
+.stats-card.purple {
+    border-left: 4px solid #6f42c1;
+}
+.stats-card.purple .stats-icon {
+    background: rgba(111, 66, 193, 0.1);
+    color: #6f42c1;
+}
+.stats-card.purple .stats-value {
+    color: #6f42c1;
+}
+
+/* Cyan/Teal theme */
+.stats-card.cyan {
+    border-left: 4px solid #17a2b8;
+}
+.stats-card.cyan .stats-icon {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+.stats-card.cyan .stats-value {
+    color: #17a2b8;
+}
+
+/* Orange theme */
+.stats-card.orange {
+    border-left: 4px solid #fd7e14;
+}
+.stats-card.orange .stats-icon {
+    background: rgba(253, 126, 20, 0.1);
+    color: #fd7e14;
+}
+.stats-card.orange .stats-value {
+    color: #fd7e14;
+}
+
+/* New/Existing card special styling */
+.stats-card .stats-value-split {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.2rem;
+    line-height: 1.2;
+    margin-bottom: 0.1rem;
+}
+.stats-card .stats-value-split .new-count {
+    color: #28a745;
+}
+.stats-card .stats-value-split .separator {
+    color: #6c757d;
+}
+.stats-card .stats-value-split .existing-count {
+    color: #007bff;
+}
 
 /* Team Performance Table */
 .performance-table {
@@ -298,8 +373,27 @@
         width: 100%;
     }
 
+    .stats-card .card-body {
+        padding: 0.875rem 1rem;
+    }
+
+    .stats-card .stats-icon {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        font-size: 1.25rem;
+    }
+
     .stats-card .stats-value {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
+    }
+
+    .stats-card .stats-value-split {
+        font-size: 1.25rem;
+    }
+
+    .stats-card .stats-label {
+        font-size: 0.7rem;
     }
 
     .performance-table {
@@ -370,43 +464,38 @@
                 </div>
                 @else
 
-                <!-- Stats Cards Row -->
-                <div class="row g-4 mb-4">
-                    <!-- Total Target -->
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="card stats-card blue">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="bx bx-target-lock"></i>
-                                </div>
-                                <div class="stats-value" id="totalTarget">{{ $stats['total_target'] ?? 0 }}</div>
-                                <p class="stats-label">TOTAL TARGET</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Orders Done -->
+                <!-- Stats Cards Row 1 -->
+                <div class="row g-3 mb-3">
+                    <!-- Orders Completed -->
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card green">
                             <div class="card-body">
                                 <div class="stats-icon">
                                     <i class="bx bx-check-circle"></i>
                                 </div>
-                                <div class="stats-value" id="ordersDone">{{ $stats['orders_done'] ?? 0 }}</div>
-                                <p class="stats-label">ORDERS COMPLETED</p>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="ordersDone">{{ $stats['orders_done'] ?? 0 }}</div>
+                                    <p class="stats-label">ORDERS COMPLETED</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Off Target -->
+                    <!-- # of New/Existing -->
                     <div class="col-sm-6 col-lg-3">
-                        <div class="card stats-card {{ ($stats['off_target'] ?? 0) > 0 ? 'red' : 'yellow' }}">
+                        <div class="card stats-card purple">
                             <div class="card-body">
                                 <div class="stats-icon">
-                                    <i class="bx bx-trending-{{ ($stats['off_target'] ?? 0) > 0 ? 'down' : 'up' }}"></i>
+                                    <i class="bx bx-transfer-alt"></i>
                                 </div>
-                                <div class="stats-value" id="offTarget">{{ $stats['off_target'] ?? 0 }}</div>
-                                <p class="stats-label">OFF TARGET</p>
+                                <div class="stats-content">
+                                    <div class="stats-value-split">
+                                        <span class="new-count">{{ $stats['new_orders_count'] ?? 0 }}</span>
+                                        <span class="separator">/</span>
+                                        <span class="existing-count">{{ $stats['existing_orders_count'] ?? 0 }}</span>
+                                    </div>
+                                    <p class="stats-label"># OF NEW/EXISTING</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -418,8 +507,88 @@
                                 <div class="stats-icon">
                                     <i class="bx bx-percentage"></i>
                                 </div>
-                                <div class="stats-value" id="conversionRate">{{ $stats['conversion_rate'] ?? 0 }}%</div>
-                                <p class="stats-label">CONV. RATE</p>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="conversionRate">{{ $stats['conversion_rate'] ?? 0 }}%</div>
+                                    <p class="stats-label">CONV. RATE</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Needed -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card {{ ($stats['orders_needed'] ?? 0) > 0 ? 'orange' : 'green' }}">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-{{ ($stats['orders_needed'] ?? 0) > 0 ? 'error' : 'check-double' }}"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="ordersNeeded">{{ $stats['orders_needed'] ?? 0 }}</div>
+                                    <p class="stats-label">ORDERS NEEDED</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards Row 2 -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Target -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card blue">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-target-lock"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="totalTarget">{{ $stats['total_target'] ?? 0 }}</div>
+                                    <p class="stats-label">TOTAL TARGET</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Off Target -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card {{ ($stats['off_target'] ?? 0) >= 0 ? 'green' : 'red' }}">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-trending-{{ ($stats['off_target'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="offTarget">{{ ($stats['off_target'] ?? 0) >= 0 ? '+' : '' }}{{ $stats['off_target'] ?? 0 }}</div>
+                                    <p class="stats-label">OFF TARGET</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- # of Insurance Sold -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card cyan">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-shield-plus"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="insuranceSold">{{ $stats['insurance_sold_count'] ?? 0 }}</div>
+                                    <p class="stats-label"># OF INSURANCE SOLD</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drivers Cost Saved -->
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card stats-card yellow">
+                            <div class="card-body">
+                                <div class="stats-icon">
+                                    <i class="bx bx-pound"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value" id="driversCostSaved">£{{ number_format($stats['drivers_cost_saved_total'] ?? 0, 2) }}</div>
+                                    <p class="stats-label">DRIVERS COST SAVED</p>
+                                </div>
                             </div>
                         </div>
                     </div>
