@@ -581,6 +581,225 @@ class SalesTargetService
     }
 
     /**
+     * Get dashboard stats for a specific user (Staff Dashboard)
+     *
+     * @param int $userId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return array
+     */
+    public function getUserDashboardStats(int $userId, Carbon $startDate, Carbon $endDate): array
+    {
+        $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
+
+        // Filter sales data for this specific user
+        $userSales = $salesData->filter(function ($row) use ($userId) {
+            return ($row['csd_id'] ?? null) == $userId && ($row['sale'] ?? 0) > 0;
+        });
+
+        // Get user's target for this month
+        $userTarget = DailyTarget::where('user_id', $userId)
+            ->where('year', $startDate->year)
+            ->where('month', $startDate->month)
+            ->first();
+
+        // Get working days calendar
+        $workingDaysCalendar = WorkingDaysCalendar::where('user_id', $userId)
+            ->where('year', $startDate->year)
+            ->where('month', $startDate->month)
+            ->first();
+
+        $workingDaysInMonth = $userTarget ? $userTarget->working_days : 0;
+
+        // TOTAL stats
+        $monthlyTargetTotal = $userTarget ? $userTarget->monthly_target : 0;
+        $dailyTargetTotal = $userTarget ? $userTarget->daily_target_total : 0;
+        $ordersConvertedTotal = $userSales->count();
+        $onTargetPercentTotal = $monthlyTargetTotal > 0
+            ? round(($ordersConvertedTotal / $monthlyTargetTotal) * 100, 1)
+            : 0;
+
+        // NEW stats
+        $newSales = $userSales->filter(fn($row) => ($row['business_type'] ?? '') === 'NEW');
+        $monthlyTargetNew = $userTarget ? ($userTarget->daily_target_new * $workingDaysInMonth) : 0;
+        $dailyTargetNew = $userTarget ? $userTarget->daily_target_new : 0;
+        $ordersConvertedNew = $newSales->count();
+        $onTargetPercentNew = $monthlyTargetNew > 0
+            ? round(($ordersConvertedNew / $monthlyTargetNew) * 100, 1)
+            : 0;
+
+        // EXISTING stats
+        $existingSales = $userSales->filter(fn($row) => ($row['business_type'] ?? '') === 'EXISTING');
+        $monthlyTargetExisting = $userTarget ? ($userTarget->daily_target_existing * $workingDaysInMonth) : 0;
+        $dailyTargetExisting = $userTarget ? $userTarget->daily_target_existing : 0;
+        $ordersConvertedExisting = $existingSales->count();
+        $onTargetPercentExisting = $monthlyTargetExisting > 0
+            ? round(($ordersConvertedExisting / $monthlyTargetExisting) * 100, 1)
+            : 0;
+
+        // Insurance Sold (MTD) - count where insurance_added > 0
+        $insuranceSoldCount = $userSales->filter(fn($row) => ($row['insurance_added'] ?? 0) > 0)->count();
+
+        // Drivers Cost Saved (MTD) - count where drivers_cost_saved > 0
+        $driversCostSavedCount = $userSales->filter(fn($row) => ($row['drivers_cost_saved'] ?? 0) > 0)->count();
+
+        // Orders Needed This Week
+        $ordersNeededThisWeek = $this->getUserOrdersNeededThisWeek($userId, $userTarget, $workingDaysCalendar);
+
+        return [
+            'total' => [
+                'monthly_target' => $monthlyTargetTotal,
+                'daily_target' => $dailyTargetTotal,
+                'orders_converted' => $ordersConvertedTotal,
+                'on_target_percent' => $onTargetPercentTotal,
+            ],
+            'new' => [
+                'monthly_target' => $monthlyTargetNew,
+                'daily_target' => $dailyTargetNew,
+                'orders_converted' => $ordersConvertedNew,
+                'on_target_percent' => $onTargetPercentNew,
+            ],
+            'existing' => [
+                'monthly_target' => $monthlyTargetExisting,
+                'daily_target' => $dailyTargetExisting,
+                'orders_converted' => $ordersConvertedExisting,
+                'on_target_percent' => $onTargetPercentExisting,
+            ],
+            'insurance_sold_count' => $insuranceSoldCount,
+            'drivers_cost_saved_count' => $driversCostSavedCount,
+            'orders_needed_this_week' => $ordersNeededThisWeek,
+        ];
+    }
+
+    /**
+     * Calculate orders needed this week for a user
+     *
+     * @param int $userId
+     * @param DailyTarget|null $userTarget
+     * @param WorkingDaysCalendar|null $workingDaysCalendar
+     * @return int
+     */
+    protected function getUserOrdersNeededThisWeek(int $userId, ?DailyTarget $userTarget, ?WorkingDaysCalendar $workingDaysCalendar): int
+    {
+        if (!$userTarget || $userTarget->daily_target_total <= 0) {
+            return 0;
+        }
+
+        $today = Carbon::now();
+        $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
+
+        // Count remaining working days from today to end of week
+        $remainingWorkingDays = 0;
+
+        if ($workingDaysCalendar && !empty($workingDaysCalendar->working_days)) {
+            $workingDays = collect($workingDaysCalendar->working_days);
+            $currentDate = $today->copy();
+
+            while ($currentDate->lte($endOfWeek)) {
+                if ($workingDays->contains($currentDate->day)) {
+                    $remainingWorkingDays++;
+                }
+                $currentDate->addDay();
+            }
+        } else {
+            // Fallback: count weekdays (Mon-Fri) remaining this week
+            $currentDate = $today->copy();
+            while ($currentDate->lte($endOfWeek)) {
+                if (!$currentDate->isWeekend()) {
+                    $remainingWorkingDays++;
+                }
+                $currentDate->addDay();
+            }
+        }
+
+        return $userTarget->daily_target_total * $remainingWorkingDays;
+    }
+
+    /**
+     * Get chart data for user's MTD Orders vs Target
+     *
+     * @param int $userId
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return array
+     */
+    public function getUserOrdersVsTargetChart(int $userId, Carbon $startDate, Carbon $endDate): array
+    {
+        $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
+
+        // Filter sales data for this specific user
+        $userSales = $salesData->filter(function ($row) use ($userId) {
+            return ($row['csd_id'] ?? null) == $userId && ($row['sale'] ?? 0) > 0;
+        });
+
+        // Get user's target
+        $userTarget = DailyTarget::where('user_id', $userId)
+            ->where('year', $startDate->year)
+            ->where('month', $startDate->month)
+            ->first();
+
+        // Get working days calendar
+        $workingDaysCalendar = WorkingDaysCalendar::where('user_id', $userId)
+            ->where('year', $startDate->year)
+            ->where('month', $startDate->month)
+            ->first();
+
+        $dailyTarget = $userTarget ? $userTarget->daily_target_total : 0;
+        $workingDays = $workingDaysCalendar ? collect($workingDaysCalendar->working_days) : collect([]);
+
+        // Group sales by date
+        $salesByDate = $userSales->groupBy(function ($row) {
+            return $row['date']->format('Y-m-d');
+        });
+
+        // Generate data for each day of the month
+        $labels = [];
+        $targetData = [];
+        $actualData = [];
+        $cumulativeActual = 0;
+        $cumulativeTarget = 0;
+
+        $today = Carbon::now();
+        $currentDate = $startDate->copy();
+
+        while ($currentDate->lte($endDate)) {
+            $dateKey = $currentDate->format('Y-m-d');
+            $dayNumber = $currentDate->day;
+            $labels[] = $currentDate->format('d');
+
+            // Check if this is a working day
+            $isWorkingDay = false;
+            if ($workingDays->isNotEmpty()) {
+                $isWorkingDay = $workingDays->contains($dayNumber);
+            } else {
+                // Fallback: weekdays are working days
+                $isWorkingDay = !$currentDate->isWeekend();
+            }
+
+            // Target line: cumulative target (only add on working days)
+            if ($isWorkingDay && $currentDate->lte($today)) {
+                $cumulativeTarget += $dailyTarget;
+            }
+            $targetData[] = round($cumulativeTarget, 1);
+
+            // Actual orders: cumulative count
+            if ($currentDate->lte($today)) {
+                $dayOrders = $salesByDate->get($dateKey, collect([]))->count();
+                $cumulativeActual += $dayOrders;
+            }
+            $actualData[] = $cumulativeActual;
+
+            $currentDate->addDay();
+        }
+
+        return [
+            'labels' => $labels,
+            'target' => $targetData,
+            'actual' => $actualData,
+        ];
+    }
+
+    /**
      * Clear the Google Sheets cache
      *
      * @return void

@@ -619,7 +619,12 @@
                                             @forelse($teamPerformance as $member)
                                             <tr>
                                                 <td>
-                                                    <strong>{{ $member['name'] }}</strong>
+                                                    <a href="{{ route('admin.staff-sales-dashboard.index', ['user_id' => $member['user_id']]) }}"
+                                                       class="text-decoration-none"
+                                                       title="View {{ $member['name'] }}'s Dashboard">
+                                                        <strong class="text-primary" style="cursor: pointer;">{{ $member['name'] }}</strong>
+                                                        <i class="bx bx-link-external ms-1" style="font-size: 0.8rem;"></i>
+                                                    </a>
                                                 </td>
                                                 <td class="text-center">
                                                     <span class="target-badge total">{{ $member['target_total'] }}</span>

@@ -36,7 +36,12 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('2fa.verify');
         }
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        // Role-based redirect: Staff goes to staff dashboard, Admin to team dashboard
+        $redirectUrl = $user->role === 'staff'
+            ? '/admin/staff-sales-dashboard'
+            : RouteServiceProvider::HOME;
+
+        return redirect()->intended($redirectUrl);
     }
 
     /**

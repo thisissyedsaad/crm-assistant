@@ -427,7 +427,14 @@
                                                 }
                                             @endphp
                                         <tr data-user-id="{{ $user->id }}">
-                                            <td><strong>{{ $user->name }}</strong></td>
+                                            <td>
+                                                <a href="{{ route('admin.staff-sales-dashboard.index', ['user_id' => $user->id]) }}"
+                                                   class="text-decoration-none"
+                                                   title="View {{ $user->name }}'s Dashboard">
+                                                    <strong class="text-primary">{{ $user->name }}</strong>
+                                                    <i class="bx bx-link-external ms-1" style="font-size: 0.8rem;"></i>
+                                                </a>
+                                            </td>
                                             <td>
                                                 <div class="d-flex gap-2 align-items-center" style="white-space: nowrap;">
                                                     <strong class="">

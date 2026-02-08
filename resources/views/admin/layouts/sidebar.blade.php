@@ -8,12 +8,22 @@
 
         <li class="menu-header-title">Main</li>
 
-        <!-- 1. Dashboard -->
+        <!-- Dashboard - Role-based -->
+        @if (auth()->user()->role === 'staff')
+        <!-- Staff users see their personal dashboard -->
+        <li class="{{ request()->routeIs('admin.staff-sales-dashboard.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.staff-sales-dashboard.index') }}" class="{{ request()->routeIs('admin.staff-sales-dashboard.*') ? 'active' : '' }}">
+            <i class="bx bx-home-heart"></i> Dashboard
+          </a>
+        </li>
+        @else
+        <!-- Admin/Super-admin see Team Dashboard -->
         <li class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
           <a href="{{ route('admin.sales-dashboard.index') }}" class="{{ request()->routeIs('admin.sales-dashboard.*') ? 'active' : '' }}">
             <i class="bx bx-home-heart"></i> Dashboard
           </a>
         </li>
+        @endif
 
         <li class="menu-header-title">CRM Modules</li>
 

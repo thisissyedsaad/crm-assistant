@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\TargetController;
 use App\Http\Controllers\Admin\SalesTargetDashboardController;
+use App\Http\Controllers\Staff\StaffSalesDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +93,15 @@ Route::middleware(['ip.whitelist'])->group(function () {
             Route::get('/chart-data', [SalesTargetDashboardController::class, 'getChartData'])->name('chart-data');
             Route::post('/refresh', [SalesTargetDashboardController::class, 'refresh'])->name('refresh');
         });
+
+        Route::get('/targets', [TargetController::class, 'index'])->name('targets.index');
+        Route::post('/targets/update', [TargetController::class, 'updateTarget'])->name('targets.update');
+        Route::post('/targets/save-all', [TargetController::class, 'saveAll'])->name('targets.save-all');
+        Route::post('/targets/copy-previous', [TargetController::class, 'copyFromPreviousMonth'])->name('targets.copy-previous');
+        Route::post('/targets/toggle-hide', [TargetController::class, 'toggleHideFromDashboard'])->name('targets.toggle-hide');
+        Route::post('/targets/calendar/get', [TargetController::class, 'getWorkingDaysCalendar'])->name('targets.calendar.get');
+        Route::post('/targets/calendar/save', [TargetController::class, 'saveWorkingDaysCalendar'])->name('targets.calendar.save');
+
     });
 
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'ensure2fa'])->group(function () {
@@ -119,16 +129,15 @@ Route::middleware(['ip.whitelist'])->group(function () {
         });
 
         Route::resource('trainings', TrainingController::class);
-
-        Route::get('/targets', [TargetController::class, 'index'])->name('targets.index');
-        Route::post('/targets/update', [TargetController::class, 'updateTarget'])->name('targets.update');
-        Route::post('/targets/save-all', [TargetController::class, 'saveAll'])->name('targets.save-all');
-        Route::post('/targets/copy-previous', [TargetController::class, 'copyFromPreviousMonth'])->name('targets.copy-previous');
-        Route::post('/targets/toggle-hide', [TargetController::class, 'toggleHideFromDashboard'])->name('targets.toggle-hide');
-        Route::post('/targets/calendar/get', [TargetController::class, 'getWorkingDaysCalendar'])->name('targets.calendar.get');
-        Route::post('/targets/calendar/save', [TargetController::class, 'saveWorkingDaysCalendar'])->name('targets.calendar.save');
     });
     
+});
+
+// Staff Sales Dashboard Routes (accessible by all authenticated users for their own data)
+// Admin/Super-admin can view any user's dashboard by passing user_id parameter
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'ensure2fa', 'ip.whitelist'])->group(function () {
+    Route::get('/staff-sales-dashboard/{user_id?}', [StaffSalesDashboardController::class, 'index'])->name('staff-sales-dashboard.index');
+    Route::get('/staff-sales-dashboard/chart-data/{user_id?}', [StaffSalesDashboardController::class, 'getChartData'])->name('staff-sales-dashboard.chart-data');
 });
 
     require __DIR__.'/auth.php';

@@ -212,7 +212,14 @@
                                         <tbody>
                                                 @foreach ($users as $user)
                                                 <tr>
-                                                        <td>{{ $user->name }}</td>
+                                                        <td>
+                                                        <a href="{{ route('admin.staff-sales-dashboard.index', ['user_id' => $user->id]) }}"
+                                                           class="text-decoration-none"
+                                                           title="View {{ $user->name }}'s Dashboard">
+                                                            <strong class="text-primary">{{ $user->name }}</strong>
+                                                            <i class="bx bx-link-external ms-1" style="font-size: 0.8rem;"></i>
+                                                        </a>
+                                                        </td>
                                                         <td>{{ $user->email }}</td>
                                                         <td>{{ ucfirst($user->role) }}</td>
                                                         <td>{{ $user->created_at->format('Y-m-d') }}</td>

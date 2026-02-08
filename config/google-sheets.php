@@ -78,4 +78,15 @@ return [
     |
     */
     'excluded_user_ids' => array_filter(array_map('intval', explode(',', env('DASHBOARD_EXCLUDED_USER_IDS', '')))),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Staff Dashboard - Mask Numbers
+    |--------------------------------------------------------------------------
+    |
+    | If true, numbers on staff dashboard will be masked with asterisks (*).
+    | Hovering over the card will reveal the actual numbers.
+    |
+    */
+    'staff_dashboard_mask_numbers' => env('STAFF_DASHBOARD_MASK_NUMBERS', false),
 ];

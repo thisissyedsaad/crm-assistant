@@ -106,7 +106,13 @@ class TwoFactorController extends Controller
 
         if ($valid) {
             session(['2fa_verified' => true]);
-            return redirect()->intended('/admin/orders');
+
+            // Role-based redirect: Staff goes to staff dashboard, Admin to team dashboard
+            $redirectUrl = $user->role === 'staff'
+                ? '/admin/staff-sales-dashboard'
+                : '/admin/sales-dashboard';
+
+            return redirect()->intended($redirectUrl);
         }
 
         return back()->withErrors(['one_time_password' => 'Invalid OTP code']);
