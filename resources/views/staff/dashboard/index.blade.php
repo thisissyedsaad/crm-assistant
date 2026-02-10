@@ -727,12 +727,11 @@ function initializeChart() {
                 }
             },
             yaxis: {
-                title: { text: 'Cumulative Orders' },
+                show: false,
+                title: { text: '' },
                 min: 0,
                 labels: {
-                    formatter: function(val) {
-                        return Math.round(val);
-                    }
+                    show: false
                 }
             },
             legend: {

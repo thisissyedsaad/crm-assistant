@@ -10,6 +10,14 @@ use Illuminate\Http\Request;
 class TargetController extends Controller
 {
     /**
+     * Constructor - restrict access to admin and super-admin only
+     */
+    public function __construct()
+    {
+        $this->middleware('role:admin|super-admin');
+    }
+
+    /**
      * Display the targets management page
      */
     public function index(Request $request)

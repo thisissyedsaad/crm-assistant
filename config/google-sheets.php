@@ -70,14 +70,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Dashboard Excluded User IDs
+    | Dashboard Card Exclusions - Orders Completed
     |--------------------------------------------------------------------------
     |
-    | User IDs to exclude from the Off Target card calculation.
+    | User IDs to exclude from "Orders Completed" card calculation.
+    | Comma-separated list of user IDs (e.g., "24,15,10,6,4")
+    |
+    */
+    'excluded_orders_completed' => array_filter(array_map('intval', explode(',', env('DASHBOARD_EXCLUDE_ORDERS_COMPLETED', '')))),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Card Exclusions - # of New/Existing
+    |--------------------------------------------------------------------------
+    |
+    | User IDs to exclude from "# of New/Existing" card calculation.
+    | Comma-separated list of user IDs (e.g., "24,15,10,6,4")
+    |
+    */
+    'excluded_new_existing' => array_filter(array_map('intval', explode(',', env('DASHBOARD_EXCLUDE_NEW_EXISTING', '')))),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Card Exclusions - Off Target
+    |--------------------------------------------------------------------------
+    |
+    | User IDs to exclude from "Off Target" card calculation.
     | Comma-separated list of user IDs (e.g., "24,10")
     |
     */
-    'excluded_user_ids' => array_filter(array_map('intval', explode(',', env('DASHBOARD_EXCLUDED_USER_IDS', '')))),
+    'excluded_off_target' => array_filter(array_map('intval', explode(',', env('DASHBOARD_EXCLUDE_OFF_TARGET', '')))),
 
     /*
     |--------------------------------------------------------------------------

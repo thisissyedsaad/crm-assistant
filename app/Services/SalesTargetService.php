@@ -40,14 +40,22 @@ class SalesTargetService
             return ($row['sale'] ?? 0) > 0;
         });
 
-        // Orders Done - count orders where sale > 0
-        $ordersDone = $validSales->count();
+        // =========================================
+        // ORDERS COMPLETED CALCULATION (with exclusions)
+        // =========================================
+        $excludedOrdersCompleted = config('google-sheets.excluded_orders_completed', []);
+
+        // Filter out excluded users for Orders Completed card
+        $ordersCompletedSales = $validSales->filter(function ($row) use ($excludedOrdersCompleted) {
+            return !in_array($row['csd_id'] ?? null, $excludedOrdersCompleted);
+        });
+        $ordersDone = $ordersCompletedSales->count();
 
         // =========================================
         // OFF TARGET CALCULATION (MTD-based)
         // =========================================
         // Get excluded user IDs from config
-        $excludedUserIds = config('google-sheets.excluded_user_ids', []);
+        $excludedUserIds = config('google-sheets.excluded_off_target', []);
 
         // Get all staff/admin users who are NOT hidden and NOT excluded
         $includedUsers = User::whereIn('role', ['staff', 'admin'])
@@ -110,14 +118,14 @@ class SalesTargetService
         // Get total leads from Leads tab for the date range
         $totalLeads = $this->googleSheetsService->getTotalLeadsCount($startDate, $endDate);
 
-        // Total New Orders
-        $totalNewOrders = $validSales->filter(function ($row) {
+        // Total New Orders for Conversion Rate (uses ALL orders, no exclusion)
+        $newOrdersForConversion = $validSales->filter(function ($row) {
             return ($row['business_type'] ?? '') === 'NEW';
         })->count();
 
         // Overall Conversion Rate = (Total New Orders ÷ Total Leads from Leads tab) × 100
         $conversionRate = $totalLeads > 0
-            ? round(($totalNewOrders / $totalLeads) * 100, 1)
+            ? round(($newOrdersForConversion / $totalLeads) * 100, 1)
             : 0;
 
         // =========================================
@@ -132,8 +140,22 @@ class SalesTargetService
         // DRIVERS COST SAVED - Sum of drivers_cost_saved column
         $driversCostSavedTotal = $validSales->sum('drivers_cost_saved');
 
-        // # OF NEW/EXISTING - Count of NEW and EXISTING orders
-        $totalExistingOrders = $validSales->filter(function ($row) {
+        // =========================================
+        // # OF NEW/EXISTING CALCULATION (with exclusions)
+        // =========================================
+        $excludedNewExisting = config('google-sheets.excluded_new_existing', []);
+
+        // Filter out excluded users for New/Existing card
+        $newExistingSales = $validSales->filter(function ($row) use ($excludedNewExisting) {
+            return !in_array($row['csd_id'] ?? null, $excludedNewExisting);
+        });
+
+        // # OF NEW/EXISTING - Count of NEW and EXISTING orders (excluding specified users)
+        $totalNewOrders = $newExistingSales->filter(function ($row) {
+            return ($row['business_type'] ?? '') === 'NEW';
+        })->count();
+
+        $totalExistingOrders = $newExistingSales->filter(function ($row) {
             return ($row['business_type'] ?? '') === 'EXISTING';
         })->count();
 
@@ -180,7 +202,8 @@ class SalesTargetService
         }
 
         // Orders Needed = Expected Orders in Range − Orders Completed
-        $ordersNeeded = max(0, round($totalExpectedForOrdersNeeded) - $ordersDone);
+        // Negative value means ahead of target (completed more than expected)
+        $ordersNeeded = round($totalExpectedForOrdersNeeded) - $ordersDone;
 
         return [
             'total_target' => $totalTarget,
@@ -611,30 +634,45 @@ class SalesTargetService
 
         $workingDaysInMonth = $userTarget ? $userTarget->working_days : 0;
 
+        // Calculate Working Days in Date Range
+        $workingDaysInRange = $this->getWorkingDaysInRange(
+            $userId,
+            $startDate,
+            $endDate,
+            $workingDaysCalendar,
+            $workingDaysInMonth
+        );
+
         // TOTAL stats
+        // On Target % = Orders in Range / (Daily Target × Working Days in Range) × 100
         $monthlyTargetTotal = $userTarget ? $userTarget->monthly_target : 0;
         $dailyTargetTotal = $userTarget ? $userTarget->daily_target_total : 0;
         $ordersConvertedTotal = $userSales->count();
-        $onTargetPercentTotal = $monthlyTargetTotal > 0
-            ? round(($ordersConvertedTotal / $monthlyTargetTotal) * 100, 1)
+        $expectedTotalInRange = $dailyTargetTotal * $workingDaysInRange;
+        $onTargetPercentTotal = $expectedTotalInRange > 0
+            ? round(($ordersConvertedTotal / $expectedTotalInRange) * 100, 1)
             : 0;
 
         // NEW stats
+        // On Target % = NEW Orders in Range / (NEW Daily Target × Working Days in Range) × 100
         $newSales = $userSales->filter(fn($row) => ($row['business_type'] ?? '') === 'NEW');
         $monthlyTargetNew = $userTarget ? ($userTarget->daily_target_new * $workingDaysInMonth) : 0;
         $dailyTargetNew = $userTarget ? $userTarget->daily_target_new : 0;
         $ordersConvertedNew = $newSales->count();
-        $onTargetPercentNew = $monthlyTargetNew > 0
-            ? round(($ordersConvertedNew / $monthlyTargetNew) * 100, 1)
+        $expectedNewInRange = $dailyTargetNew * $workingDaysInRange;
+        $onTargetPercentNew = $expectedNewInRange > 0
+            ? round(($ordersConvertedNew / $expectedNewInRange) * 100, 1)
             : 0;
 
         // EXISTING stats
+        // On Target % = EXISTING Orders in Range / (EXISTING Daily Target × Working Days in Range) × 100
         $existingSales = $userSales->filter(fn($row) => ($row['business_type'] ?? '') === 'EXISTING');
         $monthlyTargetExisting = $userTarget ? ($userTarget->daily_target_existing * $workingDaysInMonth) : 0;
         $dailyTargetExisting = $userTarget ? $userTarget->daily_target_existing : 0;
         $ordersConvertedExisting = $existingSales->count();
-        $onTargetPercentExisting = $monthlyTargetExisting > 0
-            ? round(($ordersConvertedExisting / $monthlyTargetExisting) * 100, 1)
+        $expectedExistingInRange = $dailyTargetExisting * $workingDaysInRange;
+        $onTargetPercentExisting = $expectedExistingInRange > 0
+            ? round(($ordersConvertedExisting / $expectedExistingInRange) * 100, 1)
             : 0;
 
         // Insurance Sold (MTD) - count where insurance_added > 0
