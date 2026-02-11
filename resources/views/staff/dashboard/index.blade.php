@@ -117,6 +117,7 @@
 .stats-card .stats-content {
     flex: 1;
     text-align: right;
+    margin-right: 15px;
 }
 
 .stats-card .stats-value {
@@ -295,6 +296,51 @@
 }
 @endif
 
+/* Info Icon Tooltip */
+.info-icon {
+    display: inline-flex;
+    /* align-items: center;
+    justify-content: center; */
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    font-size: 0.7rem;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+}
+
+.stats-card .info-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    color: #6c757d;
+}
+
+.stats-card .info-icon:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.stats-card .card-body {
+    position: relative;
+}
+
+.chart-card .info-icon {
+    background: rgba(0, 0, 0, 0.1);
+    color: #6c757d;
+}
+
+.chart-card .info-icon:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
 /* Animations */
 @keyframes fadeInUp {
     to {
@@ -321,6 +367,10 @@
     .stats-card .stats-value {
         font-size: 1.25rem;
     }
+}
+
+i.bx.bxs-info-circle {
+    font-size: 20px;
 }
 </style>
 @endpush
@@ -386,6 +436,9 @@
                         <div class="card dashboard-column total">
                             <div class="column-header">
                                 <i class="bx bx-chart me-2"></i> TOTAL
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Overall performance across both new and existing business, measured against target pace.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                             </div>
                             <div class="column-body">
                                 <div class="metric-item">
@@ -441,6 +494,9 @@
                         <div class="card dashboard-column new">
                             <div class="column-header">
                                 <i class="bx bx-plus-circle me-2"></i> NEW
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Performance for new business orders compared to target expectations.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                             </div>
                             <div class="column-body">
                                 <div class="metric-item">
@@ -496,6 +552,9 @@
                         <div class="card dashboard-column existing">
                             <div class="column-header">
                                 <i class="bx bx-refresh me-2"></i> EXISTING
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Performance for repeat and existing customer orders against target pace.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                             </div>
                             <div class="column-body">
                                 <div class="metric-item">
@@ -553,6 +612,9 @@
                     <div class="col-md-4">
                         <div class="card stats-card cyan">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Total insurance add-ons sold so far this month.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-shield-plus"></i>
                                 </div>
@@ -575,6 +637,9 @@
                     <div class="col-md-4">
                         <div class="card stats-card yellow">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of total cost savings generated on driver bookings this month.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-car"></i>
                                 </div>
@@ -597,6 +662,9 @@
                     <div class="col-md-4">
                         <div class="card stats-card orange">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Remaining orders required this week to stay on track with target.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-calendar-week"></i>
                                 </div>
@@ -621,7 +689,12 @@
                     <div class="col-12">
                         <div class="card chart-card">
                             <div class="card-header">
-                                <h5><i class="bx bx-line-chart me-2"></i>MTD Orders vs Target</h5>
+                                <h5>
+                                    <i class="bx bx-line-chart me-2"></i>MTD Orders vs Target
+                                    <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Comparison of actual month-to-date orders against expected target pace.">
+                                        <i class="bx bxs-info-circle"></i>
+                                    </span>
+                                </h5>
                             </div>
                             <div class="card-body">
                                 <div id="ordersVsTargetChart" style="height: 350px;"></div>
@@ -648,6 +721,12 @@
 
 <script>
 $(document).ready(function() {
+    // Initialize Bootstrap tooltips for info icons
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
     @if($maskNumbers)
     // Auto-hide masked numbers after 10 seconds of no mouse movement
     const MASK_TIMEOUT = 10000; // 10 seconds

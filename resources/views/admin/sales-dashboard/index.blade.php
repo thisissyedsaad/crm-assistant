@@ -47,6 +47,7 @@
 .stats-card .stats-content {
     flex: 1;
     text-align: right;
+    margin-right: 15px;
 }
 
 .stats-card .stats-value {
@@ -364,6 +365,36 @@
     }
 }
 
+/* Info Icon Tooltip */
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    font-size: 0.7rem;
+    cursor: pointer;
+    color: #6c757d;
+    transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.stats-card .info-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.stats-card .card-body {
+    position: relative;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .date-range-container {
@@ -401,6 +432,10 @@
     .performance-table {
         overflow-x: auto;
     }
+}
+
+i.bx.bxs-info-circle {
+    font-size: 20px;
 }
 </style>
 @endpush
@@ -472,6 +507,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card green">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Total confirmed orders within the selected date range.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-check-circle"></i>
                                 </div>
@@ -487,6 +525,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card purple">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Breakdown of orders in the selected date range split between new and existing customers.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-transfer-alt"></i>
                                 </div>
@@ -506,6 +547,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card gray">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Percentage of new deals converted into confirmed orders against total leads within the selected date range.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-percentage"></i>
                                 </div>
@@ -521,6 +565,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card {{ ($stats['orders_needed'] ?? 0) > 0 ? 'orange' : 'green' }}">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Additional orders required within the selected date range to stay on pace with target.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-{{ ($stats['orders_needed'] ?? 0) > 0 ? 'error' : 'check-double' }}"></i>
                                 </div>
@@ -539,6 +586,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card blue">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Total expected orders for the selected date range, based on daily targets and enabled working days.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-target-lock"></i>
                                 </div>
@@ -554,6 +604,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card {{ ($stats['off_target'] ?? 0) >= 0 ? 'green' : 'red' }}">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Difference between actual orders and expected orders within the selected date range. Positive = ahead of pace, Negative = behind pace.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-trending-{{ ($stats['off_target'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
                                 </div>
@@ -569,6 +622,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card cyan">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of insurance sold within the selected date range.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-shield-plus"></i>
                                 </div>
@@ -584,6 +640,9 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stats-card yellow">
                             <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Total driver cost savings generated within the selected date range.">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
                                 <div class="stats-icon">
                                     <i class="bx bx-pound"></i>
                                 </div>
@@ -771,6 +830,12 @@
 
 <script>
 $(document).ready(function() {
+    // Initialize Bootstrap tooltips for info icons
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
     // Initialize Date Range Picker
     $('#daterange').daterangepicker({
         opens: 'left',
