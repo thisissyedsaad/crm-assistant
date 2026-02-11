@@ -37,6 +37,18 @@
     letter-spacing: 0.5px;
     text-align: center;
     color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.dashboard-column .column-header .info-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0;
 }
 
 .dashboard-column.total .column-header { background: linear-gradient(135deg, #326E53, #326E53); }
@@ -370,7 +382,7 @@
 }
 
 i.bx.bxs-info-circle {
-    font-size: 20px;
+    font-size: 15px;
 }
 </style>
 @endpush
