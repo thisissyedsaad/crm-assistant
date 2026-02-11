@@ -85,7 +85,7 @@
     color: #28a745;
 }
 .stats-card.green .stats-value {
-    color: #28a745;
+    color: #326E53;
 }
 
 .stats-card.red {
@@ -185,7 +185,7 @@
     color: #6c757d;
 }
 .stats-card .stats-value-split .existing-count {
-    color: #007bff;
+    color: #0D65D9;
 }
 
 /* Team Performance Table */
@@ -202,7 +202,7 @@
     background: #f8f9fa;
     border-bottom: 2px solid #dee2e6;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 16px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 1rem 0.75rem;
@@ -212,19 +212,21 @@
 .performance-table td {
     padding: 1rem 0.75rem;
     vertical-align: middle;
+    font-size: 16px !important;
 }
 
 .target-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
     border-radius: 6px;
-    font-size: 0.8rem;
+    /* font-size: 0.8rem; */
+    font-size: 16px;
     font-weight: 600;
 }
 
-.target-badge.total { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+.target-badge.total { background: rgb(19 100 0 / 10%); color: #326E53; }
 .target-badge.new { background: rgba(40, 167, 69, 0.1); color: #28a745; }
-.target-badge.existing { background: rgba(255, 193, 7, 0.1); color: #856404; }
+.target-badge.existing { background: rgb(0 123 255 / 9%); color: #0D65D9; }
 
 .off-target-positive { color: #28a745; font-weight: 600; }
 .off-target-negative { color: #dc3545; font-weight: 600; }
@@ -659,7 +661,7 @@
                                                         $progressClass = $onTargetPercent >= 100 ? 'bg-success' : ($onTargetPercent >= 50 ? 'bg-warning' : 'bg-danger');
                                                     @endphp
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <span style="font-size: 0.85rem; font-weight: 600; min-width: 45px;">{{ $onTargetPercent }}%</span>
+                                                        <span style="font-size: 16px; font-weight: 600; min-width: 45px;">{{ $onTargetPercent }}%</span>
                                                         <div class="progress-mini flex-grow-1" style="min-width: 100px;">
                                                             <div class="progress-bar {{ $progressClass }}" role="progressbar" style="width: {{ $progressBarWidth }}%; min-width: {{ $progressBarWidth > 0 ? '5px' : '0' }};" aria-valuenow="{{ $onTargetPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                         </div>

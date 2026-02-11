@@ -39,9 +39,9 @@
     color: #fff;
 }
 
-.dashboard-column.total .column-header { background: linear-gradient(135deg, #007bff, #0056b3); }
-.dashboard-column.new .column-header { background: linear-gradient(135deg, #28a745, #1e7e34); }
-.dashboard-column.existing .column-header { background: linear-gradient(135deg, #6f42c1, #563d7c); }
+.dashboard-column.total .column-header { background: linear-gradient(135deg, #326E53, #326E53); }
+.dashboard-column.new .column-header { background: linear-gradient(135deg, #28a745, #28a745); }
+.dashboard-column.existing .column-header { background: linear-gradient(135deg, #0D65D9, #0D65D9); }
 
 .dashboard-column .column-body {
     padding: 1.25rem;
@@ -71,9 +71,9 @@
     font-weight: 700;
 }
 
-.dashboard-column.total .metric-value { color: #007bff; }
+.dashboard-column.total .metric-value { color: #326E53; }
 .dashboard-column.new .metric-value { color: #28a745; }
-.dashboard-column.existing .metric-value { color: #6f42c1; }
+.dashboard-column.existing .metric-value { color: #0D65D9; }
 
 /* Stats Cards - Second Row */
 .stats-card {
@@ -281,6 +281,17 @@
 .dashboard-column:hover .masked-value .mask-stars,
 .stats-card:hover .masked-value .mask-stars {
     display: none;
+}
+
+/* Auto-hide after timeout - force stars even on hover */
+.dashboard-column.mask-timeout .masked-value .actual-value,
+.stats-card.mask-timeout .masked-value .actual-value {
+    display: none !important;
+}
+
+.dashboard-column.mask-timeout .masked-value .mask-stars,
+.stats-card.mask-timeout .masked-value .mask-stars {
+    display: inline !important;
 }
 @endif
 
@@ -637,6 +648,56 @@
 
 <script>
 $(document).ready(function() {
+    @if($maskNumbers)
+    // Auto-hide masked numbers after 10 seconds of no mouse movement
+    const MASK_TIMEOUT = 10000; // 10 seconds
+    let maskTimeouts = new Map();
+
+    function setupMaskAutoHide(cards) {
+        cards.each(function() {
+            const card = $(this);
+            let timeoutId = null;
+
+            // Start timeout when mouse enters
+            card.on('mouseenter', function() {
+                card.removeClass('mask-timeout');
+                resetMaskTimeout();
+            });
+
+            // Reset timeout on mouse movement
+            card.on('mousemove', function() {
+                if (card.hasClass('mask-timeout')) {
+                    card.removeClass('mask-timeout');
+                }
+                resetMaskTimeout();
+            });
+
+            // Clear timeout when mouse leaves
+            card.on('mouseleave', function() {
+                clearMaskTimeout();
+                card.removeClass('mask-timeout');
+            });
+
+            function resetMaskTimeout() {
+                clearMaskTimeout();
+                timeoutId = setTimeout(function() {
+                    card.addClass('mask-timeout');
+                }, MASK_TIMEOUT);
+            }
+
+            function clearMaskTimeout() {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+            }
+        });
+    }
+
+    // Apply to all masked cards
+    setupMaskAutoHide($('.dashboard-column, .stats-card'));
+    @endif
+
     @if($isAdmin)
     // Initialize Date Range Picker (Admin only)
     $('#daterange').daterangepicker({

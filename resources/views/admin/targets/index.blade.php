@@ -338,6 +338,15 @@
                 margin-top: 5px !important;
             }
         }
+        tr > th {
+            font-size: 16px !important;
+        }
+        tr > td {
+            font-size: 16px !important;
+        }
+        tr > td > button.btn {
+            font-size: 16px;
+        }
     </style>
 @endpush
 
