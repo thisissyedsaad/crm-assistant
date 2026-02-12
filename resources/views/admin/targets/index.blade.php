@@ -168,6 +168,30 @@
             background: #0056b3 !important;
         }
 
+        /* Half-day styling */
+        .calendar-day.half-day {
+            background: linear-gradient(135deg, #007bff 50%, #fff 50%) !important;
+            color: #007bff !important;
+            border-color: #007bff !important;
+            font-weight: 700;
+        }
+
+        .calendar-day.half-day:hover {
+            background: linear-gradient(135deg, #0056b3 50%, #f0f0f0 50%) !important;
+        }
+
+        .calendar-day.weekend.half-day {
+            background: linear-gradient(135deg, #ffc107 50%, #fff3cd 50%) !important;
+            color: #856404 !important;
+            border-color: #ffc107 !important;
+        }
+
+        .calendar-day.past-day.half-day {
+            background: linear-gradient(135deg, #6c757d 50%, #e9ecef 50%) !important;
+            color: #495057 !important;
+            border-color: #6c757d !important;
+        }
+
         .calendar-day.day-header {
             background: #007bff;
             color: white;
@@ -533,10 +557,14 @@
 
                 <!-- Color Legend -->
                 <div class="d-flex justify-content-center gap-3 mb-3 flex-wrap" style="font-size: 0.85rem;">
-                    <span><span style="display:inline-block; width:15px; height:15px; background:#007bff; border-radius:3px;"></span> Selected</span>
+                    <span><span style="display:inline-block; width:15px; height:15px; background:#007bff; border-radius:3px;"></span> Full Day</span>
+                    <span><span style="display:inline-block; width:15px; height:15px; background:linear-gradient(135deg, #007bff 50%, #fff 50%); border-radius:3px; border:1px solid #007bff;"></span> Half Day</span>
                     <span><span style="display:inline-block; width:15px; height:15px; background:#fff3cd; border-radius:3px; border:1px solid #ddd;"></span> Weekend</span>
                     <span><span style="display:inline-block; width:15px; height:15px; background:#e9ecef; border-radius:3px;"></span> Past Day</span>
                     <span><span style="display:inline-block; width:15px; height:15px; background:white; border:3px solid #28a745; border-radius:3px;"></span> Today</span>
+                </div>
+                <div class="text-center mb-2">
+                    <small class="text-muted">Click: Off → Full Day → Half Day → Off</small>
                 </div>
 
                 <!-- Calendar Grid -->
@@ -892,7 +920,8 @@
 
             let currentUserId = null;
             let currentUserName = '';
-            let selectedDays = [];
+            // Changed from array to object: { day: value } where value is 0, 0.5, or 1
+            let workingDaysData = {};
             const currentDate = new Date();
             const todayYear = currentDate.getFullYear();
             const todayMonth = currentDate.getMonth() + 1;
@@ -922,12 +951,27 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            selectedDays = (response.working_days || []).map(day => parseInt(day));
+                            // Handle both old format (array) and new format (object)
+                            const rawData = response.working_days || {};
+
+                            if (Array.isArray(rawData)) {
+                                // Old format: convert array to object with value 1
+                                workingDaysData = {};
+                                rawData.forEach(day => {
+                                    workingDaysData[parseInt(day)] = 1;
+                                });
+                            } else {
+                                // New format: object with day => value
+                                workingDaysData = {};
+                                Object.keys(rawData).forEach(day => {
+                                    workingDaysData[parseInt(day)] = parseFloat(rawData[day]);
+                                });
+                            }
                             renderCalendar();
                         }
                     },
                     error: function() {
-                        selectedDays = [];
+                        workingDaysData = {};
                         renderCalendar();
                     }
                 });
@@ -964,38 +1008,69 @@
                         isPast = true;
                     }
 
-                    const isSelected = selectedDays.includes(day);
+                    // Get value for this day (0, 0.5, or 1)
+                    const dayValue = workingDaysData[day] || 0;
+                    const isFullDay = dayValue === 1;
+                    const isHalfDay = dayValue === 0.5;
 
                     let classes = 'calendar-day';
-                    if (isSelected) classes += ' selected';
+                    if (isFullDay) classes += ' selected';
+                    if (isHalfDay) classes += ' half-day';
                     if (isWeekend) classes += ' weekend';
                     if (isToday) classes += ' today';
                     if (isPast) classes += ' past-day';
 
-                    html += `<div class="${classes}" data-day="${day}">${day}</div>`;
+                    html += `<div class="${classes}" data-day="${day}" data-value="${dayValue}">${day}</div>`;
                 }
 
                 $('#calendar-grid').html(html);
                 updateSelectedCount();
             }
 
+            // Click cycling: 0 → 1 → 0.5 → 0
             $(document).on('click', '.calendar-day:not(.day-header):not(.empty-day)', function() {
                 const day = parseInt($(this).data('day'));
-                const index = selectedDays.indexOf(day);
+                const currentValue = workingDaysData[day] || 0;
 
-                if (index > -1) {
-                    selectedDays.splice(index, 1);
-                    $(this).removeClass('selected');
+                let newValue;
+                if (currentValue === 0) {
+                    newValue = 1; // Off → Full Day
+                } else if (currentValue === 1) {
+                    newValue = 0.5; // Full Day → Half Day
                 } else {
-                    selectedDays.push(day);
+                    newValue = 0; // Half Day → Off
+                }
+
+                // Update data
+                if (newValue === 0) {
+                    delete workingDaysData[day];
+                } else {
+                    workingDaysData[day] = newValue;
+                }
+
+                // Update UI
+                $(this).removeClass('selected half-day');
+                $(this).data('value', newValue);
+
+                if (newValue === 1) {
                     $(this).addClass('selected');
+                } else if (newValue === 0.5) {
+                    $(this).addClass('half-day');
                 }
 
                 updateSelectedCount();
             });
 
             function updateSelectedCount() {
-                $('#selected-days-count').text(selectedDays.length);
+                // Sum all values (full day = 1, half day = 0.5)
+                let total = 0;
+                Object.values(workingDaysData).forEach(value => {
+                    total += parseFloat(value);
+                });
+
+                // Display with one decimal if needed
+                const displayValue = total % 1 === 0 ? total : total.toFixed(1);
+                $('#selected-days-count').text(displayValue);
             }
 
             $('#save-calendar-btn').on('click', function() {
@@ -1009,13 +1084,17 @@
                         user_id: currentUserId,
                         year: selectedYear,
                         month: selectedMonth,
-                        working_days: selectedDays,
+                        working_days: JSON.stringify(workingDaysData),
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
                         if (response.success) {
                             const row = $(`tr[data-user-id="${currentUserId}"]`);
-                            row.find('.working-days-count').text(response.total_working_days);
+                            // Display with one decimal if needed
+                            const displayValue = response.total_working_days % 1 === 0
+                                ? response.total_working_days
+                                : parseFloat(response.total_working_days).toFixed(1);
+                            row.find('.working-days-count').text(displayValue);
                             row.find('.working-days').val(response.total_working_days);
                             row.find('.monthly-target').text(response.monthly_target);
 

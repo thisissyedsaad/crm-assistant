@@ -26,8 +26,8 @@ class DailyTarget extends Model
         'daily_target_total' => 'integer',
         'daily_target_new' => 'integer',
         'daily_target_existing' => 'integer',
-        'working_days' => 'integer',
-        'monthly_target' => 'integer',
+        'working_days' => 'float', // Supports decimal values like 18.5 for half days
+        'monthly_target' => 'float', // Supports decimal calculations
     ];
 
     /**

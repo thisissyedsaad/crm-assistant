@@ -20,10 +20,10 @@ class WorkingDaysCalendar extends Model
     ];
 
     protected $casts = [
-        'working_days' => 'array',
+        'working_days' => 'array', // Stores day => value mapping (e.g., {"1": 1, "2": 0.5, "15": 1})
         'year' => 'integer',
         'month' => 'integer',
-        'total_working_days' => 'integer',
+        'total_working_days' => 'float', // Supports decimal values like 18.5
     ];
 
     /**

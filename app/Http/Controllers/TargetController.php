@@ -243,6 +243,7 @@ class TargetController extends Controller
 
     /**
      * Get working days calendar for a specific user/month/year
+     * Supports half-day (0.5) values
      */
     public function getWorkingDaysCalendar(Request $request)
     {
@@ -260,14 +261,15 @@ class TargetController extends Controller
         // If no calendar record exists, auto-populate with weekdays from current month
         if (!$calendar) {
             $workingDays = $this->getWeekdaysForMonth($request->year, $request->month);
+            $totalWorkingDays = $this->calculateTotalWorkingDays($workingDays);
 
-            // Create the record with all weekdays pre-selected
+            // Create the record with all weekdays pre-selected (full days)
             $calendar = WorkingDaysCalendar::create([
                 'user_id' => $request->user_id,
                 'year' => $request->year,
                 'month' => $request->month,
                 'working_days' => $workingDays,
-                'total_working_days' => count($workingDays),
+                'total_working_days' => $totalWorkingDays,
             ]);
 
             // Also update daily_targets table for this month
@@ -277,8 +279,8 @@ class TargetController extends Controller
                 ->first();
 
             if ($target) {
-                $target->working_days = count($workingDays);
-                $target->monthly_target = $target->daily_target_total * count($workingDays);
+                $target->working_days = $totalWorkingDays;
+                $target->monthly_target = $target->daily_target_total * $totalWorkingDays;
                 $target->save();
             }
         }
@@ -292,6 +294,7 @@ class TargetController extends Controller
 
     /**
      * Get all weekdays (Mon-Fri) for a given month/year
+     * Returns object format { day: value } for half-day support
      */
     private function getWeekdaysForMonth($year, $month)
     {
@@ -307,17 +310,17 @@ class TargetController extends Controller
             if ($year < $today->year || ($year == $today->year && $month < $today->month)) {
                 // Past month - include all weekdays
                 if ($date->isWeekday()) {
-                    $weekdays[] = $date->day;
+                    $weekdays[$date->day] = 1; // Full day
                 }
             } elseif ($year == $today->year && $month == $today->month) {
                 // Current month - only future weekdays (or today)
                 if ($date->isWeekday() && $date->gte($today)) {
-                    $weekdays[] = $date->day;
+                    $weekdays[$date->day] = 1; // Full day
                 }
             } else {
                 // Future month - include all weekdays
                 if ($date->isWeekday()) {
-                    $weekdays[] = $date->day;
+                    $weekdays[$date->day] = 1; // Full day
                 }
             }
         }
@@ -326,7 +329,32 @@ class TargetController extends Controller
     }
 
     /**
+     * Calculate total working days from working_days data
+     * Supports both old format (array) and new format (object with values)
+     */
+    private function calculateTotalWorkingDays($workingDays)
+    {
+        if (empty($workingDays)) {
+            return 0;
+        }
+
+        // Check if it's old format (sequential array) or new format (associative with values)
+        if (is_array($workingDays) && array_keys($workingDays) === range(0, count($workingDays) - 1)) {
+            // Old format: simple array of days - each day = 1
+            return count($workingDays);
+        }
+
+        // New format: object with day => value (0, 0.5, or 1)
+        $total = 0;
+        foreach ($workingDays as $day => $value) {
+            $total += floatval($value);
+        }
+        return $total;
+    }
+
+    /**
      * Save working days calendar for a specific user/month/year
+     * Supports half-day (0.5) values
      */
     public function saveWorkingDaysCalendar(Request $request)
     {
@@ -334,11 +362,17 @@ class TargetController extends Controller
             'user_id' => 'required|exists:users,id',
             'year' => 'required|integer',
             'month' => 'required|integer|min:1|max:12',
-            'working_days' => 'required|array',
+            'working_days' => 'required',
         ]);
 
-        $workingDaysArray = $request->working_days;
-        $totalWorkingDays = count($workingDaysArray);
+        // Parse the working_days - it comes as JSON string from frontend
+        $workingDaysData = $request->working_days;
+        if (is_string($workingDaysData)) {
+            $workingDaysData = json_decode($workingDaysData, true) ?? [];
+        }
+
+        // Calculate total working days (sum of all values: 1 for full day, 0.5 for half day)
+        $totalWorkingDays = $this->calculateTotalWorkingDays($workingDaysData);
 
         // Save to working_days_calendar table (for history)
         WorkingDaysCalendar::updateOrCreate(
@@ -348,7 +382,7 @@ class TargetController extends Controller
                 'month' => $request->month,
             ],
             [
-                'working_days' => $workingDaysArray,
+                'working_days' => $workingDaysData,
                 'total_working_days' => $totalWorkingDays,
             ]
         );

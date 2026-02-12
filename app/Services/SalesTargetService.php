@@ -323,34 +323,48 @@ class SalesTargetService
 
     /**
      * Calculate working days within the selected date range
+     * Supports half-day (0.5) values
      *
      * @param int $userId
      * @param Carbon $startDate
      * @param Carbon $endDate
      * @param WorkingDaysCalendar|null $calendar
-     * @param int $fallbackWorkingDays
-     * @return int
+     * @param float $fallbackWorkingDays
+     * @return float
      */
     protected function getWorkingDaysInRange(
         int $userId,
         Carbon $startDate,
         Carbon $endDate,
         ?WorkingDaysCalendar $calendar,
-        int $fallbackWorkingDays
-    ): int {
+        float $fallbackWorkingDays
+    ): float {
         // Use today if endDate is in the future (can't have orders for future days)
         $today = Carbon::now();
         $effectiveEndDate = $endDate->gt($today) ? $today : $endDate;
 
         if ($calendar && !empty($calendar->working_days)) {
-            // Count working days WITHIN the date range (>= startDate AND <= effectiveEndDate)
-            $workingDays = collect($calendar->working_days);
+            $workingDays = $calendar->working_days;
 
-            return $workingDays->filter(function ($day) use ($startDate, $effectiveEndDate) {
-                $dayDate = Carbon::create($startDate->year, $startDate->month, $day);
-                // Must be >= startDate AND <= effectiveEndDate
-                return $dayDate->gte($startDate->startOfDay()) && $dayDate->lte($effectiveEndDate);
-            })->count();
+            // Handle both old format (array) and new format (object with values)
+            if (is_array($workingDays) && array_keys($workingDays) === range(0, count($workingDays) - 1)) {
+                // Old format: sequential array - count days within range
+                return collect($workingDays)->filter(function ($day) use ($startDate, $effectiveEndDate) {
+                    $dayDate = Carbon::create($startDate->year, $startDate->month, $day);
+                    return $dayDate->gte($startDate->startOfDay()) && $dayDate->lte($effectiveEndDate);
+                })->count();
+            }
+
+            // New format: object with day => value (0, 0.5, or 1)
+            // Sum values for days within the date range
+            $total = 0;
+            foreach ($workingDays as $day => $value) {
+                $dayDate = Carbon::create($startDate->year, $startDate->month, intval($day));
+                if ($dayDate->gte($startDate->startOfDay()) && $dayDate->lte($effectiveEndDate)) {
+                    $total += floatval($value);
+                }
+            }
+            return $total;
         }
 
         // Fallback: estimate based on proportion of range within the month
@@ -360,7 +374,7 @@ class SalesTargetService
         $daysInRange = max(0, $rangeEnd - $rangeStart + 1);
         $proportionOfMonth = $daysInRange / $daysInMonth;
 
-        return (int) round($fallbackWorkingDays * $proportionOfMonth);
+        return round($fallbackWorkingDays * $proportionOfMonth, 1);
     }
 
     /**
@@ -575,13 +589,14 @@ class SalesTargetService
 
     /**
      * Get working days count for a user in the specified period
+     * Supports half-day (0.5) values
      *
      * @param int $userId
      * @param Carbon $startDate
      * @param Carbon $endDate
-     * @return int
+     * @return float
      */
-    protected function getWorkingDaysForPeriod(int $userId, Carbon $startDate, Carbon $endDate): int
+    protected function getWorkingDaysForPeriod(int $userId, Carbon $startDate, Carbon $endDate): float
     {
         $calendar = WorkingDaysCalendar::where('user_id', $userId)
             ->where('year', $startDate->year)
@@ -589,18 +604,31 @@ class SalesTargetService
             ->first();
 
         if ($calendar && !empty($calendar->working_days)) {
-            // Count working days within the date range
-            $workingDays = collect($calendar->working_days);
+            $workingDays = $calendar->working_days;
 
-            return $workingDays->filter(function ($day) use ($startDate, $endDate) {
-                $dayDate = Carbon::create($startDate->year, $startDate->month, $day);
-                return $dayDate->gte($startDate) && $dayDate->lte($endDate);
-            })->count();
+            // Handle both old format (array) and new format (object with values)
+            if (is_array($workingDays) && array_keys($workingDays) === range(0, count($workingDays) - 1)) {
+                // Old format: sequential array
+                return collect($workingDays)->filter(function ($day) use ($startDate, $endDate) {
+                    $dayDate = Carbon::create($startDate->year, $startDate->month, $day);
+                    return $dayDate->gte($startDate) && $dayDate->lte($endDate);
+                })->count();
+            }
+
+            // New format: object with day => value
+            $total = 0;
+            foreach ($workingDays as $day => $value) {
+                $dayDate = Carbon::create($startDate->year, $startDate->month, intval($day));
+                if ($dayDate->gte($startDate) && $dayDate->lte($endDate)) {
+                    $total += floatval($value);
+                }
+            }
+            return $total;
         }
 
         // Fallback: use the working_days from daily_target
         $target = DailyTarget::where('user_id', $userId)->first();
-        return $target ? $target->working_days : 0;
+        return $target ? floatval($target->working_days) : 0;
     }
 
     /**
@@ -711,13 +739,14 @@ class SalesTargetService
 
     /**
      * Calculate orders needed this week for a user
+     * Supports half-day (0.5) values
      *
      * @param int $userId
      * @param DailyTarget|null $userTarget
      * @param WorkingDaysCalendar|null $workingDaysCalendar
-     * @return int
+     * @return float
      */
-    protected function getUserOrdersNeededThisWeek(int $userId, ?DailyTarget $userTarget, ?WorkingDaysCalendar $workingDaysCalendar): int
+    protected function getUserOrdersNeededThisWeek(int $userId, ?DailyTarget $userTarget, ?WorkingDaysCalendar $workingDaysCalendar): float
     {
         if (!$userTarget || $userTarget->daily_target_total <= 0) {
             return 0;
@@ -726,18 +755,30 @@ class SalesTargetService
         $today = Carbon::now();
         $endOfWeek = $today->copy()->endOfWeek(Carbon::SUNDAY);
 
-        // Count remaining working days from today to end of week
+        // Count remaining working days from today to end of week (with half-day support)
         $remainingWorkingDays = 0;
 
         if ($workingDaysCalendar && !empty($workingDaysCalendar->working_days)) {
-            $workingDays = collect($workingDaysCalendar->working_days);
+            $workingDays = $workingDaysCalendar->working_days;
             $currentDate = $today->copy();
 
-            while ($currentDate->lte($endOfWeek)) {
-                if ($workingDays->contains($currentDate->day)) {
-                    $remainingWorkingDays++;
+            // Handle both old format (array) and new format (object with values)
+            if (is_array($workingDays) && array_keys($workingDays) === range(0, count($workingDays) - 1)) {
+                // Old format: sequential array
+                $workingDaysCollection = collect($workingDays);
+                while ($currentDate->lte($endOfWeek)) {
+                    if ($workingDaysCollection->contains($currentDate->day)) {
+                        $remainingWorkingDays++;
+                    }
+                    $currentDate->addDay();
                 }
-                $currentDate->addDay();
+            } else {
+                // New format: object with day => value
+                while ($currentDate->lte($endOfWeek)) {
+                    $dayValue = $workingDays[$currentDate->day] ?? $workingDays[strval($currentDate->day)] ?? 0;
+                    $remainingWorkingDays += floatval($dayValue);
+                    $currentDate->addDay();
+                }
             }
         } else {
             // Fallback: count weekdays (Mon-Fri) remaining this week
@@ -783,7 +824,7 @@ class SalesTargetService
             ->first();
 
         $dailyTarget = $userTarget ? $userTarget->daily_target_total : 0;
-        $workingDays = $workingDaysCalendar ? collect($workingDaysCalendar->working_days) : collect([]);
+        $workingDaysData = $workingDaysCalendar ? $workingDaysCalendar->working_days : [];
 
         // Group sales by date
         $salesByDate = $userSales->groupBy(function ($row) {
@@ -800,23 +841,33 @@ class SalesTargetService
         $today = Carbon::now();
         $currentDate = $startDate->copy();
 
+        // Determine if old format (array) or new format (object)
+        $isOldFormat = is_array($workingDaysData) && !empty($workingDaysData) &&
+                       array_keys($workingDaysData) === range(0, count($workingDaysData) - 1);
+
         while ($currentDate->lte($endDate)) {
             $dateKey = $currentDate->format('Y-m-d');
             $dayNumber = $currentDate->day;
             $labels[] = $currentDate->format('d');
 
-            // Check if this is a working day
-            $isWorkingDay = false;
-            if ($workingDays->isNotEmpty()) {
-                $isWorkingDay = $workingDays->contains($dayNumber);
+            // Get working day value for this day (0, 0.5, or 1)
+            $dayValue = 0;
+            if (!empty($workingDaysData)) {
+                if ($isOldFormat) {
+                    // Old format: array of day numbers
+                    $dayValue = in_array($dayNumber, $workingDaysData) ? 1 : 0;
+                } else {
+                    // New format: object with day => value
+                    $dayValue = floatval($workingDaysData[$dayNumber] ?? $workingDaysData[strval($dayNumber)] ?? 0);
+                }
             } else {
-                // Fallback: weekdays are working days
-                $isWorkingDay = !$currentDate->isWeekend();
+                // Fallback: weekdays are full working days
+                $dayValue = !$currentDate->isWeekend() ? 1 : 0;
             }
 
-            // Target line: cumulative target (only add on working days)
-            if ($isWorkingDay && $currentDate->lte($today)) {
-                $cumulativeTarget += $dailyTarget;
+            // Target line: cumulative target (add proportional target based on day value)
+            if ($dayValue > 0 && $currentDate->lte($today)) {
+                $cumulativeTarget += $dailyTarget * $dayValue;
             }
             $targetData[] = round($cumulativeTarget, 1);
 
