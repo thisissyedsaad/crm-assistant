@@ -264,7 +264,7 @@ class SalesTargetService
                 : 0;
 
             // Monthly targets for display (M/N/E columns) - rounded
-            $targetTotal = $monthlyTarget;
+            $targetTotal = round($monthlyTarget);
             $targetNew = $target ? round($target->daily_target_new * $workingDaysInMonth) : 0;
             $targetExisting = $target ? round($target->daily_target_existing * $workingDaysInMonth) : 0;
 
@@ -673,7 +673,7 @@ class SalesTargetService
 
         // TOTAL stats
         // On Target % = Orders in Range / (Daily Target × Working Days in Range) × 100
-        $monthlyTargetTotal = $userTarget ? $userTarget->monthly_target : 0;
+        $monthlyTargetTotal = $userTarget ? round($userTarget->monthly_target) : 0;
         $dailyTargetTotal = $userTarget ? $userTarget->daily_target_total : 0;
         $ordersConvertedTotal = $userSales->count();
         $expectedTotalInRange = round($dailyTargetTotal * $workingDaysInRange);
