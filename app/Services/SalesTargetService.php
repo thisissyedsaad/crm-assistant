@@ -30,9 +30,9 @@ class SalesTargetService
         $salesData = $this->googleSheetsService->getSalesData($startDate, $endDate);
         $targets = $this->getTargetsForPeriod($startDate, $endDate);
 
-        // Total Target - sum of all staff targets (calculated fresh: daily_target_total × working_days)
+        // Total Target - sum of all staff targets (calculated fresh: daily_target_total × working_days, rounded)
         $totalTarget = $targets->sum(function ($target) {
-            return $target->daily_target_total * $target->working_days;
+            return round($target->daily_target_total * $target->working_days);
         });
 
         // Filter valid sales (sale > 0)
@@ -100,8 +100,8 @@ class SalesTargetService
                 $workingDaysInMonth
             );
 
-            // Expected Orders = Daily Target × Working Days in Range
-            $expectedOrders = $dailyTarget * $workingDaysInRange;
+            // Expected Orders = Daily Target × Working Days in Range (rounded)
+            $expectedOrders = round($dailyTarget * $workingDaysInRange);
             $totalExpectedOrders += $expectedOrders;
 
             // Orders Converted for this user
@@ -197,8 +197,8 @@ class SalesTargetService
                 $workingDaysInMonth
             );
 
-            // Expected Orders in Range = Daily Target × Working Days in Range
-            $totalExpectedForOrdersNeeded += ($dailyTargetTotal * $workingDaysInRange);
+            // Expected Orders in Range = Daily Target × Working Days in Range (rounded)
+            $totalExpectedForOrdersNeeded += round($dailyTargetTotal * $workingDaysInRange);
         }
 
         // Orders Needed = Expected Orders in Range − Orders Completed
@@ -263,10 +263,10 @@ class SalesTargetService
                 ? round($monthlyTarget / $workingDaysInMonth, 2)
                 : 0;
 
-            // Monthly targets for display (M/N/E columns)
+            // Monthly targets for display (M/N/E columns) - rounded
             $targetTotal = $monthlyTarget;
-            $targetNew = $target ? $target->daily_target_new * $workingDaysInMonth : 0;
-            $targetExisting = $target ? $target->daily_target_existing * $workingDaysInMonth : 0;
+            $targetNew = $target ? round($target->daily_target_new * $workingDaysInMonth) : 0;
+            $targetExisting = $target ? round($target->daily_target_existing * $workingDaysInMonth) : 0;
 
             // Actual orders (filter by sale > 0) - Orders Converted in Range
             $validSales = $userSales->filter(fn($row) => ($row['sale'] ?? 0) > 0);
@@ -283,8 +283,8 @@ class SalesTargetService
                 $workingDaysInMonth
             );
 
-            // Expected Orders (Range) = Daily Target × Working Days in Range
-            $expectedOrdersRange = $dailyTarget * $workingDaysInRange;
+            // Expected Orders (Range) = Daily Target × Working Days in Range (rounded)
+            $expectedOrdersRange = round($dailyTarget * $workingDaysInRange);
 
             // Off Target (Range) = Orders Converted (Range) − Expected Orders (Range)
             // Negative means behind target, Positive means ahead of target
@@ -676,7 +676,7 @@ class SalesTargetService
         $monthlyTargetTotal = $userTarget ? $userTarget->monthly_target : 0;
         $dailyTargetTotal = $userTarget ? $userTarget->daily_target_total : 0;
         $ordersConvertedTotal = $userSales->count();
-        $expectedTotalInRange = $dailyTargetTotal * $workingDaysInRange;
+        $expectedTotalInRange = round($dailyTargetTotal * $workingDaysInRange);
         $onTargetPercentTotal = $expectedTotalInRange > 0
             ? round(($ordersConvertedTotal / $expectedTotalInRange) * 100, 1)
             : 0;
@@ -684,10 +684,10 @@ class SalesTargetService
         // NEW stats
         // On Target % = NEW Orders in Range / (NEW Daily Target × Working Days in Range) × 100
         $newSales = $userSales->filter(fn($row) => ($row['business_type'] ?? '') === 'NEW');
-        $monthlyTargetNew = $userTarget ? ($userTarget->daily_target_new * $workingDaysInMonth) : 0;
+        $monthlyTargetNew = $userTarget ? round($userTarget->daily_target_new * $workingDaysInMonth) : 0;
         $dailyTargetNew = $userTarget ? $userTarget->daily_target_new : 0;
         $ordersConvertedNew = $newSales->count();
-        $expectedNewInRange = $dailyTargetNew * $workingDaysInRange;
+        $expectedNewInRange = round($dailyTargetNew * $workingDaysInRange);
         $onTargetPercentNew = $expectedNewInRange > 0
             ? round(($ordersConvertedNew / $expectedNewInRange) * 100, 1)
             : 0;
@@ -695,10 +695,10 @@ class SalesTargetService
         // EXISTING stats
         // On Target % = EXISTING Orders in Range / (EXISTING Daily Target × Working Days in Range) × 100
         $existingSales = $userSales->filter(fn($row) => ($row['business_type'] ?? '') === 'EXISTING');
-        $monthlyTargetExisting = $userTarget ? ($userTarget->daily_target_existing * $workingDaysInMonth) : 0;
+        $monthlyTargetExisting = $userTarget ? round($userTarget->daily_target_existing * $workingDaysInMonth) : 0;
         $dailyTargetExisting = $userTarget ? $userTarget->daily_target_existing : 0;
         $ordersConvertedExisting = $existingSales->count();
-        $expectedExistingInRange = $dailyTargetExisting * $workingDaysInRange;
+        $expectedExistingInRange = round($dailyTargetExisting * $workingDaysInRange);
         $onTargetPercentExisting = $expectedExistingInRange > 0
             ? round(($ordersConvertedExisting / $expectedExistingInRange) * 100, 1)
             : 0;
@@ -791,7 +791,7 @@ class SalesTargetService
             }
         }
 
-        return $userTarget->daily_target_total * $remainingWorkingDays;
+        return round($userTarget->daily_target_total * $remainingWorkingDays);
     }
 
     /**
@@ -865,11 +865,11 @@ class SalesTargetService
                 $dayValue = !$currentDate->isWeekend() ? 1 : 0;
             }
 
-            // Target line: cumulative target (add proportional target based on day value)
+            // Target line: cumulative target (add proportional target based on day value, rounded)
             if ($dayValue > 0 && $currentDate->lte($today)) {
-                $cumulativeTarget += $dailyTarget * $dayValue;
+                $cumulativeTarget += round($dailyTarget * $dayValue);
             }
-            $targetData[] = round($cumulativeTarget, 1);
+            $targetData[] = $cumulativeTarget;
 
             // Actual orders: cumulative count
             if ($currentDate->lte($today)) {

@@ -87,8 +87,8 @@ class TargetController extends Controller
             'working_days' => 'required|integer|min:0',
         ]);
 
-        // Calculate monthly target
-        $monthlyTarget = $request->daily_target_total * $request->working_days;
+        // Calculate monthly target (rounded to whole number)
+        $monthlyTarget = round($request->daily_target_total * $request->working_days);
 
         // Update or create target using user_id + year + month as unique key
         $target = DailyTarget::updateOrCreate(
@@ -133,7 +133,7 @@ class TargetController extends Controller
         $month = $request->month;
 
         foreach ($request->targets as $targetData) {
-            $monthlyTarget = $targetData['daily_target_total'] * $targetData['working_days'];
+            $monthlyTarget = round($targetData['daily_target_total'] * $targetData['working_days']);
 
             DailyTarget::updateOrCreate(
                 [
@@ -280,7 +280,7 @@ class TargetController extends Controller
 
             if ($target) {
                 $target->working_days = $totalWorkingDays;
-                $target->monthly_target = $target->daily_target_total * $totalWorkingDays;
+                $target->monthly_target = round($target->daily_target_total * $totalWorkingDays);
                 $target->save();
             }
         }
@@ -395,7 +395,7 @@ class TargetController extends Controller
 
         if ($target) {
             $target->working_days = $totalWorkingDays;
-            $target->monthly_target = $target->daily_target_total * $totalWorkingDays;
+            $target->monthly_target = round($target->daily_target_total * $totalWorkingDays);
             $target->save();
         }
 
