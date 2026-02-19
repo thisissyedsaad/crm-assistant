@@ -594,7 +594,7 @@ i.bx.bxs-info-circle {
                                 </div>
                                 <div class="stats-content">
                                     <div class="stats-value" id="totalTarget">{{ $stats['total_target'] ?? 0 }}</div>
-                                    <p class="stats-label">TOTAL TARGET</p>
+                                    <p class="stats-label">TOTAL TARGET (MTD)</p>
                                 </div>
                             </div>
                         </div>
@@ -668,8 +668,8 @@ i.bx.bxs-info-circle {
                                         <thead>
                                             <tr>
                                                 <th>Staff Member</th>
-                                                <th class="text-center">Target (M/N/E)</th>
-                                                <th class="text-center">Actual (M/N/E)</th>
+                                                <th class="text-center">Target (T/N/E)</th>
+                                                <th class="text-center">Actual (T/N/E)</th>
                                                 <th class="text-center">Off Target </th>
                                                 <th class="text-center" style="min-width: 150px;">Progress %</th>
                                                 <!-- <th class="text-center">Conv. %</th> -->
