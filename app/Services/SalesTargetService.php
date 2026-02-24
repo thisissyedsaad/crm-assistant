@@ -712,6 +712,26 @@ class SalesTargetService
         // Orders Needed This Week
         $ordersNeededThisWeek = $this->getUserOrdersNeededThisWeek($userId, $userTarget, $workingDaysCalendar);
 
+        // =========================================
+        // TODAY STATS (always today, regardless of selected range)
+        // =========================================
+        $todayStart = Carbon::today();
+        $todayEnd   = Carbon::today()->endOfDay();
+        $todaySalesData = $this->googleSheetsService->getSalesData($todayStart, $todayEnd);
+        $todayUserSales = $todaySalesData->filter(function ($row) use ($userId) {
+            return ($row['csd_id'] ?? null) == $userId && ($row['sale'] ?? 0) > 0;
+        });
+
+        // Insurance Sold Today - count where insurance_added > 0
+        $insuranceSoldToday = $todayUserSales->filter(fn($row) => ($row['insurance_added'] ?? 0) > 0)->count();
+
+        // Drivers Cost Saved Today - sum of drivers_cost_saved (£ value)
+        $driversCostSavedToday = $todayUserSales->sum('drivers_cost_saved');
+
+        // Orders Needed Today = Daily Target - Orders Converted Today
+        $ordersConvertedToday = $todayUserSales->count();
+        $ordersNeededToday = $dailyTargetTotal - $ordersConvertedToday;
+
         return [
             'total' => [
                 'monthly_target' => $monthlyTargetTotal,
@@ -734,6 +754,9 @@ class SalesTargetService
             'insurance_sold_count' => $insuranceSoldCount,
             'drivers_cost_saved_count' => $driversCostSavedCount,
             'orders_needed_this_week' => $ordersNeededThisWeek,
+            'insurance_sold_today' => $insuranceSoldToday,
+            'drivers_cost_saved_today' => $driversCostSavedToday,
+            'orders_needed_today' => $ordersNeededToday,
         ];
     }
 

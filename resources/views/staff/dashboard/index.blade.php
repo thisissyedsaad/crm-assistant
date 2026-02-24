@@ -3,10 +3,8 @@
 @section('title', 'Sales Staff Dashboard | CSD Assistant')
 
 @push('links')
-<!-- Date Range Picker CSS (Admin only) -->
-@if($isAdmin)
+<!-- Date Range Picker CSS -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-@endif
 <style>
 /* Staff Dashboard Column Cards */
 .dashboard-column {
@@ -107,6 +105,113 @@
 .stats-card:nth-child(1) { animation-delay: 0.4s; }
 .stats-card:nth-child(2) { animation-delay: 0.5s; }
 .stats-card:nth-child(3) { animation-delay: 0.6s; }
+
+/* Today Cards - 3rd row */
+.today-card:nth-child(1) { animation-delay: 0.4s; }
+.today-card:nth-child(2) { animation-delay: 0.5s; }
+.today-card:nth-child(3) { animation-delay: 0.6s; }
+
+.today-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 10px;
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.today-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.today-card .card-body {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+.today-card .stats-icon {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.today-card .stats-content {
+    flex: 1;
+    text-align: right;
+    margin-right: 15px;
+}
+
+.today-card .stats-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
+}
+
+.today-card .stats-label {
+    color: #6c757d;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.today-card.green {
+    border-left: 4px solid #20c997;
+}
+.today-card.green .stats-icon {
+    background: rgba(32, 201, 151, 0.1);
+    color: #20c997;
+}
+.today-card.green .stats-value {
+    color: #20c997;
+}
+
+.today-card.purple {
+    border-left: 4px solid #6f42c1;
+}
+.today-card.purple .stats-icon {
+    background: rgba(111, 66, 193, 0.1);
+    color: #6f42c1;
+}
+.today-card.purple .stats-value {
+    color: #6f42c1;
+}
+
+.today-card.red {
+    border-left: 4px solid #dc3545;
+}
+.today-card.red .stats-icon {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+.today-card.red .stats-value {
+    color: #dc3545;
+}
+
+.today-card .info-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    color: #6c757d;
+}
+
+.today-card .info-icon:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
 
 .stats-card .card-body {
     padding: 1rem 1.25rem;
@@ -287,23 +392,27 @@
 
 /* Card-wise hover - reveal all numbers in the card */
 .dashboard-column:hover .masked-value .actual-value,
-.stats-card:hover .masked-value .actual-value {
+.stats-card:hover .masked-value .actual-value,
+.today-card:hover .masked-value .actual-value {
     display: inline;
 }
 
 .dashboard-column:hover .masked-value .mask-stars,
-.stats-card:hover .masked-value .mask-stars {
+.stats-card:hover .masked-value .mask-stars,
+.today-card:hover .masked-value .mask-stars {
     display: none;
 }
 
 /* Auto-hide after timeout - force stars even on hover */
 .dashboard-column.mask-timeout .masked-value .actual-value,
-.stats-card.mask-timeout .masked-value .actual-value {
+.stats-card.mask-timeout .masked-value .actual-value,
+.today-card.mask-timeout .masked-value .actual-value {
     display: none !important;
 }
 
 .dashboard-column.mask-timeout .masked-value .mask-stars,
-.stats-card.mask-timeout .masked-value .mask-stars {
+.stats-card.mask-timeout .masked-value .mask-stars,
+.today-card.mask-timeout .masked-value .mask-stars {
     display: inline !important;
 }
 @endif
@@ -416,12 +525,10 @@ i.bx.bxs-info-circle {
                                             <span>Auto-refresh every {{ floor($cacheTtl / 60) }} minutes</span>
                                         </div>
                                     </div>
-                                    @if($isAdmin)
                                     <div class="date-range-container">
                                         <input type="text" id="daterange" class="form-control"
                                                value="{{ $startDate->format('d/m/Y') }} - {{ $endDate->format('d/m/Y') }}" />
                                     </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -696,6 +803,84 @@ i.bx.bxs-info-circle {
                     </div>
                 </div>
 
+                <!-- Third Row - Today Cards -->
+                <div class="row g-3 mb-4">
+                    <!-- Insurance Sold Today -->
+                    <div class="col-md-4">
+                        <div class="card today-card green">
+                            <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of insurance add-ons sold today." style="display:none;">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
+                                <div class="stats-icon">
+                                    <i class="bx bx-shield-quarter"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value @if($maskNumbers) masked-value @endif">
+                                        @if($maskNumbers)
+                                            <span class="mask-stars">***</span>
+                                            <span class="actual-value">{{ $stats['insurance_sold_today'] }}</span>
+                                        @else
+                                            {{ $stats['insurance_sold_today'] }}
+                                        @endif
+                                    </div>
+                                    <p class="stats-label">Insurance Sold Today</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drivers Cost Saved Today -->
+                    <div class="col-md-4">
+                        <div class="card today-card purple">
+                            <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Total drivers cost savings generated today." style="display:none;">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
+                                <div class="stats-icon">
+                                    <i class="bx bx-car"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value @if($maskNumbers) masked-value @endif">
+                                        @if($maskNumbers)
+                                            <span class="mask-stars">***</span>
+                                            <span class="actual-value">{{ number_format($stats['drivers_cost_saved_today'], 2) }}</span>
+                                        @else
+                                            {{ number_format($stats['drivers_cost_saved_today'], 2) }}
+                                        @endif
+                                    </div>
+                                    <p class="stats-label">Drivers Cost Saved Today</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Needed Today -->
+                    <div class="col-md-4">
+                        <div class="card today-card red">
+                            <div class="card-body">
+                                <span class="info-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Orders still needed today to meet your daily target. Negative means you're ahead of today's target." style="display:none;">
+                                    <i class="bx bxs-info-circle"></i>
+                                </span>
+                                <div class="stats-icon">
+                                    <i class="bx bx-target-lock"></i>
+                                </div>
+                                <div class="stats-content">
+                                    <div class="stats-value @if($maskNumbers) masked-value @endif">
+                                        @if($maskNumbers)
+                                            <span class="mask-stars">***</span>
+                                            <span class="actual-value">{{ $stats['orders_needed_today'] }}</span>
+                                        @else
+                                            {{ $stats['orders_needed_today'] }}
+                                        @endif
+                                    </div>
+                                    <p class="stats-label">Orders Needed Today</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Chart Row - MTD Orders vs Target -->
                 <div class="row g-4 mb-4">
                     <div class="col-12">
@@ -724,12 +909,10 @@ i.bx.bxs-info-circle {
 @endsection
 
 @push('scripts')
-@if($isAdmin)
 <!-- Moment.js -->
 <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
 <!-- Date Range Picker -->
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-@endif
 
 <script>
 $(document).ready(function() {
@@ -786,16 +969,14 @@ $(document).ready(function() {
     }
 
     // Apply to all masked cards
-    setupMaskAutoHide($('.dashboard-column, .stats-card'));
+    setupMaskAutoHide($('.dashboard-column, .stats-card, .today-card'));
     @endif
 
+    // Initialize Date Range Picker
     @if($isAdmin)
-    // Initialize Date Range Picker (Admin only)
     $('#daterange').daterangepicker({
         opens: 'left',
-        locale: {
-            format: 'DD/MM/YYYY'
-        },
+        locale: { format: 'DD/MM/YYYY' },
         startDate: moment('{{ $startDate->format("Y-m-d") }}'),
         endDate: moment('{{ $endDate->format("Y-m-d") }}'),
         ranges: {
@@ -807,12 +988,28 @@ $(document).ready(function() {
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         }
     }, function(start, end) {
-        // Reload page with new date range (include user_id if viewing another user's dashboard)
         @if($viewingOtherUser && $viewingUser)
         window.location.href = '{{ route("admin.staff-sales-dashboard.index", ["user_id" => $viewingUser->id]) }}?start_date=' + start.format('YYYY-MM-DD') + '&end_date=' + end.format('YYYY-MM-DD');
         @else
         window.location.href = '{{ route("admin.staff-sales-dashboard.index") }}?start_date=' + start.format('YYYY-MM-DD') + '&end_date=' + end.format('YYYY-MM-DD');
         @endif
+    });
+    @else
+    // Staff: date filter restricted to current month only
+    $('#daterange').daterangepicker({
+        opens: 'left',
+        locale: { format: 'DD/MM/YYYY' },
+        startDate: moment('{{ $startDate->format("Y-m-d") }}'),
+        endDate: moment('{{ $endDate->format("Y-m-d") }}'),
+        minDate: moment().startOf('month'),
+        maxDate: moment(),
+        ranges: {
+            'Today': [moment(), moment()],
+            'This Week': [moment().startOf('isoWeek'), moment()],
+            'This Month': [moment().startOf('month'), moment()]
+        }
+    }, function(start, end) {
+        window.location.href = '{{ route("admin.staff-sales-dashboard.index") }}?start_date=' + start.format('YYYY-MM-DD') + '&end_date=' + end.format('YYYY-MM-DD');
     });
     @endif
 

@@ -78,15 +78,25 @@ class StaffSalesDashboardController extends Controller
         $startDate = Carbon::now()->startOfMonth();
         $endDate = Carbon::now();
 
-        // Admin users can use date filter
-        if ($isAdmin && $request->has('start_date') && $request->has('end_date')) {
+        // All users can use date filter; staff is clamped to current month
+        if ($request->has('start_date') && $request->has('end_date')) {
             try {
-                $startDate = Carbon::parse($request->input('start_date'));
-                $endDate = Carbon::parse($request->input('end_date'));
+                $requestedStart = Carbon::parse($request->input('start_date'));
+                $requestedEnd   = Carbon::parse($request->input('end_date'));
+
+                if ($isAdmin) {
+                    $startDate = $requestedStart;
+                    $endDate   = $requestedEnd;
+                } else {
+                    // Staff: clamp within current month
+                    $monthStart = Carbon::now()->startOfMonth();
+                    $today      = Carbon::now();
+                    $startDate  = $requestedStart->gte($monthStart) ? $requestedStart : $monthStart;
+                    $endDate    = $requestedEnd->lte($today) ? $requestedEnd : $today;
+                }
             } catch (\Exception $e) {
-                // Keep default dates if parsing fails
                 $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now();
+                $endDate   = Carbon::now();
             }
         }
 
