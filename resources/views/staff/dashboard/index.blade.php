@@ -766,9 +766,9 @@ i.bx.bxs-info-circle {
                                     <div class="stats-value @if($maskNumbers) masked-value @endif">
                                         @if($maskNumbers)
                                             <span class="mask-stars">***</span>
-                                            <span class="actual-value">{{ $stats['drivers_cost_saved_count'] }}</span>
+                                            <span class="actual-value">€{{ $stats['drivers_cost_saved_count'] }}</span>
                                         @else
-                                            {{ $stats['drivers_cost_saved_count'] }}
+                                            €{{ $stats['drivers_cost_saved_count'] }}
                                         @endif
                                     </div>
                                     <p class="stats-label">Drivers Cost Saved (MTD)</p>
@@ -844,9 +844,9 @@ i.bx.bxs-info-circle {
                                     <div class="stats-value @if($maskNumbers) masked-value @endif">
                                         @if($maskNumbers)
                                             <span class="mask-stars">***</span>
-                                            <span class="actual-value">{{ number_format($stats['drivers_cost_saved_today'], 2) }}</span>
+                                            <span class="actual-value">€{{ number_format($stats['drivers_cost_saved_today'], 2) }}</span>
                                         @else
-                                            {{ number_format($stats['drivers_cost_saved_today'], 2) }}
+                                            €{{ number_format($stats['drivers_cost_saved_today'], 2) }}
                                         @endif
                                     </div>
                                     <p class="stats-label">Drivers Cost Saved Today</p>
