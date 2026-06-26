@@ -638,11 +638,14 @@ $(document).ready(function() {
 });
 
 function initializeNotifications() {
-    // Initial load
-    fetchNotifications();
+    // Initial load on page open — commented, now handled by bell click & 10-min interval
+    // fetchNotifications();
     
     // Set up auto-refresh every 30 seconds
-    notificationInterval = setInterval(fetchNotifications, 30000);
+    // notificationInterval = setInterval(fetchNotifications, 30000);
+    
+    // Set up auto-refresh every 10 mins
+    notificationInterval = setInterval(fetchNotifications, 600000);
     
     // Refresh notifications when dropdown is opened
     $('#notificationBell').on('click', function() {
