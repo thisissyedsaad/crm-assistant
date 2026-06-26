@@ -131,7 +131,7 @@ Route::middleware(['ip.whitelist'])->group(function () {
 
         Route::resource('trainings', TrainingController::class);
 
-        Route::get('api-logs', [ApiRequestLogController::class, 'index'])->name('api-logs.index');
+        Route::get('api-logs', [ApiRequestLogController::class, 'index'])->name('api-logs.index')->middleware('role:super-admin');
     });
     
 });

@@ -64,13 +64,13 @@
 
         <!-- 6. Settings (Admin/Super-Admin only) -->
         @if (auth()->user()->role === 'admin' || auth()->user()->role === 'super-admin')
-        <li class="treeview {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') ? 'menu-open active' : '' }}">
-          <a href="javascript:void(0)" class="{{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
+        <li class="treeview {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') || request()->routeIs('admin.api-logs.*') ? 'menu-open active' : '' }}">
+          <a href="javascript:void(0)" class="{{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') || request()->routeIs('admin.api-logs.*') ? 'active' : '' }}">
             <i class="bx bx-cog"></i>
             <span>Settings</span>
             <i class="fa fa-angle-right"></i>
           </a>
-          <ul class="treeview-menu" style="{{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') ? 'display: block;' : '' }}">
+          <ul class="treeview-menu" style="{{ request()->routeIs('admin.users.*') || request()->routeIs('admin.targets.*') || request()->routeIs('admin.ip-whitelist.*') || request()->routeIs('admin.api-logs.*') ? 'display: block;' : '' }}">
             <!-- Users -->
             <li class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
               <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
@@ -88,6 +88,12 @@
             <li class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
               <a href="{{ route('admin.ip-whitelist.index') }}" class="{{ request()->routeIs('admin.ip-whitelist.*') ? 'active' : '' }}">
                 <i class="bx bx-shield-alt-2"></i> Whitelist IPs
+              </a>
+            </li>
+            <!-- API Monitor (Super-Admin only) -->
+            <li class="{{ request()->routeIs('admin.api-logs.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.api-logs.index') }}" class="{{ request()->routeIs('admin.api-logs.*') ? 'active' : '' }}">
+                <i class="bx bx-pulse"></i> API Monitor
               </a>
             </li>
             @endif
