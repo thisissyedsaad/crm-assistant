@@ -100,6 +100,47 @@
             </div>
         </div>
 
+        {{-- Daily Breakdown --}}
+        @php $maxDaily = $dailyBreakdown->max('total') ?: 1; @endphp
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold bg-white border-bottom d-flex justify-content-between align-items-center">
+                <span>Daily Requests <small class="text-muted fw-normal">(last 30 days)</small></span>
+            </div>
+            <div class="card-body p-0">
+                @if($dailyBreakdown->isEmpty())
+                    <p class="text-center text-muted py-4 mb-0">No data yet</p>
+                @else
+                <table class="table table-sm table-hover mb-0 log-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:140px">Date</th>
+                            <th>Requests</th>
+                            <th class="text-end" style="width:80px">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($dailyBreakdown as $day)
+                        <tr>
+                            <td style="white-space:nowrap;font-weight:600">
+                                {{ \Carbon\Carbon::parse($day->date)->format('d M Y') }}
+                                @if($day->date === now()->toDateString())
+                                    <span class="badge bg-primary ms-1" style="font-size:.65rem">Today</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="hourly-bar-wrap" style="max-width:500px;">
+                                    <div class="hourly-bar" style="width:{{ round(($day->total / $maxDaily) * 100) }}%"></div>
+                                </div>
+                            </td>
+                            <td class="text-end fw-bold">{{ number_format($day->total) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @endif
+            </div>
+        </div>
+
         <div class="row g-3 mb-4">
 
             {{-- By Trigger --}}
@@ -108,7 +149,7 @@
                     <div class="card-header fw-semibold bg-white border-bottom">
                         Requests by Source <small class="text-muted">(today)</small>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0" style="max-height:320px;overflow-y:auto;">
                         <table class="table table-sm mb-0 log-table">
                             <thead class="table-light">
                                 <tr><th>Source</th><th class="text-end">Count</th></tr>
@@ -138,7 +179,7 @@
                     <div class="card-header fw-semibold bg-white border-bottom">
                         Requests by Endpoint <small class="text-muted">(today)</small>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0" style="max-height:320px;overflow-y:auto;">
                         <table class="table table-sm mb-0 log-table">
                             <thead class="table-light">
                                 <tr><th>Endpoint</th><th class="text-end">Count</th></tr>
@@ -169,7 +210,10 @@
                         @foreach($hourlyData as $h)
                         @if($h['total'] > 0)
                         <div class="d-flex align-items-center gap-2 mb-1" style="font-size:.78rem;">
-                            <span style="width:38px;flex-shrink:0;color:#555">{{ $h['hour'] }}</span>
+                            <span style="width:80px;flex-shrink:0;">
+                                <span style="color:#333;font-weight:600">{{ $h['hour'] }}</span>
+                                <span style="color:#aaa;font-size:.7rem"> / {{ $h['pkt_hour'] }} PKT</span>
+                            </span>
                             <div class="hourly-bar-wrap flex-grow-1">
                                 <div class="hourly-bar" style="width:{{ round(($h['total']/$maxHourly)*100) }}%"></div>
                             </div>

@@ -27,11 +27,14 @@ class ApiRequestLogController extends Controller
             ->get()
             ->keyBy('hour');
 
+        // DB stores UTC; PKT = UTC+5
         $hourlyData = [];
         for ($h = 0; $h <= 23; $h++) {
+            $pktH = ($h + 5) % 24;
             $hourlyData[] = [
-                'hour'  => str_pad($h, 2, '0', STR_PAD_LEFT) . ':00',
-                'total' => $hourlyRaw->get($h)?->total ?? 0,
+                'hour'     => str_pad($h, 2, '0', STR_PAD_LEFT) . ':00',
+                'pkt_hour' => str_pad($pktH, 2, '0', STR_PAD_LEFT) . ':00',
+                'total'    => $hourlyRaw->get($h)?->total ?? 0,
             ];
         }
 
@@ -55,6 +58,13 @@ class ApiRequestLogController extends Controller
         // Average response time today (ms)
         $avgResponseMs = ApiRequestLog::today()->avg('response_time_ms');
 
+        // Daily breakdown — last 30 days
+        $dailyBreakdown = ApiRequestLog::selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->where('created_at', '>=', Carbon::now($tz)->subDays(29)->startOfDay())
+            ->groupByRaw('DATE(created_at)')
+            ->orderByDesc('date')
+            ->get();
+
         return view('admin.api-logs.index', compact(
             'todayCount',
             'weekCount',
@@ -64,6 +74,7 @@ class ApiRequestLogController extends Controller
             'byEndpoint',
             'recent',
             'avgResponseMs',
+            'dailyBreakdown',
             'now'
         ));
     }
