@@ -9,7 +9,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Schedular\CurrentJobsController;
 use App\Http\Controllers\Schedular\CompletedJobsController;
 use App\Http\Controllers\TrainingController;
-use App\Http\Controllers\Admin\IpWhitelistController; // Add this import
+use App\Http\Controllers\Admin\IpWhitelistController;
+use App\Http\Controllers\Admin\ApiRequestLogController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\TargetController;
@@ -129,6 +130,8 @@ Route::middleware(['ip.whitelist'])->group(function () {
         });
 
         Route::resource('trainings', TrainingController::class);
+
+        Route::get('api-logs', [ApiRequestLogController::class, 'index'])->name('api-logs.index');
     });
     
 });

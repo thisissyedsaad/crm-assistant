@@ -9,7 +9,8 @@ use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Log;
 use App\Models\CurrentJobsTracking;
-use App\Models\HiddenCurrentJob; // NEW: Model for hidden jobs
+use App\Models\HiddenCurrentJob;
+use App\Models\ApiRequestLog;
 
 class CurrentJobsController extends Controller
 {
@@ -60,7 +61,7 @@ class CurrentJobsController extends Controller
                 $apiQuery['filter[status]'] = 'planned';
                 $today = Carbon::now('Europe/London')->format('Y-m-d');
 
-                $response = $client->get($apiUrl . 'orders', [
+                $response = $this->apiGet($client, $apiUrl . 'orders', [
                     'headers' => [
                         'Authorization' => 'Basic ' . $apiKey,
                         'Content-Type'  => 'application/json',
@@ -68,7 +69,7 @@ class CurrentJobsController extends Controller
                     ],
                     'query' => $apiQuery,
                     'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-                ]);
+                ], 'datatable');
 
                 $res = json_decode($response->getBody()->getContents(), true);
                 $records = collect($res['data'] ?? []);
@@ -391,7 +392,7 @@ class CurrentJobsController extends Controller
             $apiQuery['filter[status]'] = 'planned';
             $today = Carbon::now('Europe/London')->format('Y-m-d');
 
-            $response = $client->get($apiUrl . 'orders', [
+            $response = $this->apiGet($client, $apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
@@ -399,7 +400,7 @@ class CurrentJobsController extends Controller
                 ],
                 'query' => $apiQuery,
                 'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-            ]);
+            ], 'counters');
 
             $res = json_decode($response->getBody()->getContents(), true);
             $records = collect($res['data'] ?? []);
@@ -535,6 +536,26 @@ class CurrentJobsController extends Controller
         }
     }
 
+    private function apiGet(Client $client, string $url, array $options = [], string $triggeredBy = 'unknown'): \Psr\Http\Message\ResponseInterface
+    {
+        $start = microtime(true);
+        $response = $client->get($url, $options);
+        $ms = (int) round((microtime(true) - $start) * 1000);
+
+        $fullUrl = $url;
+        if (!empty($options['query']) && is_array($options['query'])) {
+            $fullUrl .= '?' . http_build_query($options['query']);
+        }
+
+        try {
+            ApiRequestLog::record($fullUrl, $triggeredBy, $response->getStatusCode(), $ms);
+        } catch (\Exception $e) {
+            // never break the app just because logging failed
+        }
+
+        return $response;
+    }
+
     // Existing methods remain unchanged...
     public function updateOrderStatus(Request $request)
     {
@@ -548,14 +569,14 @@ class CurrentJobsController extends Controller
             $apiUrl = env('TRANSPORT_API_URL');
             $apiKey = env('TRANSPORT_API_KEY');
 
-            $response = $client->get($apiUrl . 'orders/' . $orderId, [
+            $response = $this->apiGet($client, $apiUrl . 'orders/' . $orderId, [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
                 'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-            ]);
+            ], 'update-status');
 
             $orderData = json_decode($response->getBody()->getContents(), true);
             
@@ -622,20 +643,20 @@ class CurrentJobsController extends Controller
             $apiUrl = env('TRANSPORT_API_URL');
             $apiKey = env('TRANSPORT_API_KEY');
 
-            $response = $client->get($apiUrl . "customers/{$customerNo}", [
+            $response = $this->apiGet($client, $apiUrl . "customers/{$customerNo}", [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
                 'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-            ]);
+            ], 'get-customer');
 
             $customerData = json_decode($response->getBody()->getContents(), true);
             $companyName = $customerData['data']['attributes']['companyName'] ? $customerData['data']['attributes']['companyName'] . " ($customerNo)" :  " - {$customerNo}";
 
             // For getting total Order Counts
-            $response3 = $client->get($apiUrl . 'orders', [
+            $response3 = $this->apiGet($client, $apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
@@ -645,15 +666,15 @@ class CurrentJobsController extends Controller
                     'filter[customerNo]' => $customerNo,
                 ],
                 'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-            ]);
+            ], 'get-customer');
 
             $res = json_decode($response3->getBody()->getContents(), true);
             $orders = $res['meta'] ?? [];
             $totalOrders = $orders['total'];
-            
+
             // For getting carrier/driver name
             if(!empty($carrierNo)){
-                $response2 = $client->get($apiUrl . 'carriers', [
+                $response2 = $this->apiGet($client, $apiUrl . 'carriers', [
                     'headers' => [
                         'Authorization' => 'Basic ' . $apiKey,
                         'Content-Type'  => 'application/json',
@@ -663,7 +684,7 @@ class CurrentJobsController extends Controller
                         'filter[carrierNo]' => $carrierNo,
                     ],
                     'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-                ]);
+                ], 'get-customer');
 
                 $carrierData = json_decode($response2->getBody()->getContents(), true);
                 $carrierName = $carrierData['data'][0]['attributes']['name'] ?? "-";
@@ -692,13 +713,13 @@ class CurrentJobsController extends Controller
 
         try {
             // Fetch order from API
-            $response = $client->get($apiUrl . 'orders/' . $id, [
+            $response = $this->apiGet($client, $apiUrl . 'orders/' . $id, [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
                 ],
-            ]);
+            ], 'order-show');
 
             $data = json_decode($response->getBody()->getContents(), true);
             $order = $data['data'] ?? null;
@@ -716,14 +737,14 @@ class CurrentJobsController extends Controller
             if ($customerNo) {
                 try {
                     // Fetch customer data
-                    $customerResponse = $client->get($apiUrl . "customers/{$customerNo}", [
+                    $customerResponse = $this->apiGet($client, $apiUrl . "customers/{$customerNo}", [
                         'headers' => [
                             'Authorization' => 'Basic ' . $apiKey,
                             'Content-Type'  => 'application/json',
                             'Accept'        => 'application/json',
                         ],
                         'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-                    ]);
+                    ], 'order-show');
 
                     $customerData = json_decode($customerResponse->getBody()->getContents(), true);
                     $customer = $customerData['data']['attributes'] ?? [];
@@ -741,7 +762,7 @@ class CurrentJobsController extends Controller
 
                 try {
                     // Fetch total orders count for this customer
-                    $ordersResponse = $client->get($apiUrl . 'orders', [
+                    $ordersResponse = $this->apiGet($client, $apiUrl . 'orders', [
                         'headers' => [
                             'Authorization' => 'Basic ' . $apiKey,
                             'Content-Type'  => 'application/json',
@@ -752,7 +773,7 @@ class CurrentJobsController extends Controller
                             'sort' => '-createdAt'
                         ],
                         'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-                    ]);
+                    ], 'order-show');
                     $ordersData = json_decode($ordersResponse->getBody()->getContents(), true);
                     
                     // Get FIRST (oldest) order
@@ -817,7 +838,7 @@ class CurrentJobsController extends Controller
             $apiUrl = env('TRANSPORT_API_URL'); 
             $apiKey = env('TRANSPORT_API_KEY');
 
-            $response = $client->get($apiUrl . 'orders', [
+            $response = $this->apiGet($client, $apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
@@ -827,7 +848,7 @@ class CurrentJobsController extends Controller
                     'filter[customerNo]' => $customerNo,
                 ],
                 'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-            ]);
+            ], 'order-count');
 
             $res = json_decode($response->getBody()->getContents(), true);
             $orders = $res['meta'] ?? [];
@@ -856,7 +877,7 @@ class CurrentJobsController extends Controller
             $apiQuery['filter[status]'] = 'planned';
             $today = Carbon::now('Europe/London')->format('Y-m-d');
             
-            $response = $client->get($apiUrl . 'orders', [
+            $response = $this->apiGet($client, $apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,
                     'Content-Type'  => 'application/json',
@@ -864,7 +885,7 @@ class CurrentJobsController extends Controller
                 ],
                 'query' => $apiQuery,
                 'verify' => env('TRANSPORT_API_VERIFY_SSL', true),
-            ]);
+            ], 'notifications');
 
             $res = json_decode($response->getBody()->getContents(), true);
             $records = collect($res['data'] ?? []);
