@@ -867,16 +867,24 @@ class CurrentJobsController extends Controller
 
     public function getNotifications(Request $request)
     {
+        // TEMPORARILY DISABLED — client request to pause notifications (no API hits)
+        return response()->json([
+            'success'      => true,
+            'total_count'  => 0,
+            'notifications'=> [],
+            'last_updated' => \Carbon\Carbon::now('Europe/London')->format('H:i:s'),
+        ]);
+
         try {
             $client = new Client();
-            $apiUrl = env('TRANSPORT_API_URL'); 
+            $apiUrl = env('TRANSPORT_API_URL');
             $apiKey = env('TRANSPORT_API_KEY');
 
             // Get sorting parameters
             $apiQuery['sort'] = '-orderNo';
             $apiQuery['filter[status]'] = 'planned';
             $today = Carbon::now('Europe/London')->format('Y-m-d');
-            
+
             $response = $this->apiGet($client, $apiUrl . 'orders', [
                 'headers' => [
                     'Authorization' => 'Basic ' . $apiKey,

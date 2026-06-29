@@ -432,6 +432,7 @@
             <!-- Top Bar Nav -->
          <!-- Top Bar Nav -->
             <ul class="right-side-content d-flex align-items-center">
+              {{-- TEMPORARILY DISABLED — notifications paused on client request
               <li class="nav-item dropdown">
                 <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="notificationBell">
                   <i class="bx bx-bell bx-tada"></i>
@@ -463,6 +464,7 @@
                   </div>
                 </div>
               </li>
+              --}}
 
               <li class="nav-item dropdown">
                 <button
@@ -634,7 +636,8 @@ $(document).ready(function() {
         e.stopPropagation();
     });
 
-    initializeNotifications();
+    // TEMPORARILY DISABLED — client request to pause notifications
+    // initializeNotifications();
 });
 
 function initializeNotifications() {
