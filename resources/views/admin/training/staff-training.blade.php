@@ -611,6 +611,42 @@
                             </div>
                         </a>
                     </div>
+
+                    <!-- ADR Training Guide -->
+                    <div class="col-md-6 mb-3">
+                        <a href="https://docs.google.com/document/d/1pz4AeWMVXANVnrCOT2oqrNLs8L7uXotK/edit?usp=drive_link&ouid=100559360821818587824&rtpof=true&sd=true" target="_blank" class="adr-resource-card">
+                            <div class="resource-title">
+                                ADR Training Guide
+                            </div>
+                            <div class="resource-desc">
+                                Step-by-step guide covering ADR training requirements and procedures.
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- ADR Consignment Note -->
+                    <div class="col-md-6 mb-3">
+                        <a href="https://docs.google.com/document/d/1lyHnabXwHkXvJpHpBxUcF2PbiPg3Av8P/edit?usp=drive_link&ouid=100559360821818587824&rtpof=true&sd=true" target="_blank" class="adr-resource-card">
+                            <div class="resource-title">
+                                ADR Consignment Note
+                            </div>
+                            <div class="resource-desc">
+                                Template and guidance for completing the ADR consignment note.
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- ADR Licence Check -->
+                    <div class="col-md-6 mb-3">
+                        <a href="https://docs.google.com/document/d/1uDSViylAJ8Oebb1m3pOguwL-FV_rwxVM/edit?usp=drive_link&ouid=100559360821818587824&rtpof=true&sd=true" target="_blank" class="adr-resource-card">
+                            <div class="resource-title">
+                                ADR Licence Check
+                            </div>
+                            <div class="resource-desc">
+                                Process and documentation for checking ADR driver licence compliance.
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

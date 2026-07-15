@@ -793,3 +793,5 @@ DST Off\">2026-02-24 23:59:59.999999 Europe/London (+00:00)</span>
 [2026-02-24 16:41:28] local.ERROR: Notification fetch error: cURL error 6: Could not resolve host: orders (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for orders?sort=-orderNo&filter%5Bstatus%5D=planned  
 [2026-02-24 16:41:59] local.ERROR: Notification fetch error: cURL error 6: Could not resolve host: orders (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for orders?sort=-orderNo&filter%5Bstatus%5D=planned  
 [2026-02-24 16:42:24] local.ERROR: Notification fetch error: cURL error 6: Could not resolve host: orders (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for orders?sort=-orderNo&filter%5Bstatus%5D=planned  
+[2026-07-15 21:42:21] local.INFO: Fetched 7811 rows from Google Sheets  
+[2026-07-15 21:42:34] local.INFO: Fetched 905 rows from Google Sheets Leads tab  
