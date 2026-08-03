@@ -87,6 +87,7 @@ Route::middleware(['ip.whitelist'])->group(function () {
 
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|super-admin', 'ensure2fa'])->group(function () {
         Route::resource('users', UserController::class);
+        Route::post('users/{user}/reset-2fa', [UserController::class, 'reset2fa'])->name('users.reset2fa')->middleware('role:super-admin');
 
         // Sales Target Dashboard Routes (Admin Only)
         Route::prefix('sales-dashboard')->name('sales-dashboard.')->group(function () {

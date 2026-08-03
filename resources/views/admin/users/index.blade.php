@@ -226,6 +226,13 @@
                                                         <td>
                                                         <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-primary">Edit</a>
 
+                                                        @if(auth()->user()->role === 'super-admin' && $user->google2fa_enabled)
+                                                        <form action="{{ route('admin.users.reset2fa', $user->id) }}" method="POST" style="display:inline;">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Reset 2FA for {{ $user->name }}? They will need to set it up again on next login.')">Reset 2FA</button>
+                                                        </form>
+                                                        @endif
+
                                                         @if(auth()->id() != $user->id)
                                                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display:inline;">
                                                                 @csrf

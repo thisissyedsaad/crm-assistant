@@ -126,6 +126,20 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully!');
     }
 
+    public function reset2fa($id)
+    {
+        if (auth()->user()->role !== 'super-admin') {
+            abort(403);
+        }
+
+        $user = User::findOrFail($id);
+        $user->google2fa_enabled = false;
+        $user->google2fa_secret  = null;
+        $user->save();
+
+        return redirect()->route('admin.users.index')->with('success', $user->name . "'s authenticator has been reset. They can set it up again on next login.");
+    }
+
     public function destroy($id)
     {
         $user = User::findOrFail($id);  
